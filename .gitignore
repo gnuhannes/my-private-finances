@@ -1,0 +1,10 @@
+data/
+*.sqlite
+*.db
+*.parquet
+**/__pycache__/
+.env
+.DS_Store
+node_modules/
+dist/
+target/
