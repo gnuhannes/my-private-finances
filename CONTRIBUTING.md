@@ -1,8 +1,8 @@
 # CONTRIBUTING.md
-## Contributing to Finassist
+## Contributing to "My Private Finances"
 
-Thanks for your interest in contributing to Finassist!
-Finassist is a local-first, privacy-respecting personal finance assistant.
+Thanks for your interest in contributing to "My Private Finances"!
+"My Private Finances" is a local-first, privacy-respecting personal finance assistant.
 
 ***
 
@@ -43,14 +43,14 @@ poetry install
 Run the API locally:
 
 ```bash
-poetry run uvicorn finassist_api.main:app --reload
+poetry run uvicorn my_private_finances_api.main:app --reload
 ```
 
 Run checks:
 
 ```bash
 poetry run ruff check .
-poetry run mypy finassist_api
+poetry run mypy my_private_finances_api
 poetry run pytest
 ```
 

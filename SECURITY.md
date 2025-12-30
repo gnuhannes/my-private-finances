@@ -1,12 +1,12 @@
 # Security Policy
 
-This document describes how to report security issues related to Finassist.
+This document describes how to report security issues related to "My Private Finances".
 
 ***
 
 ## Scope
 
-Finassist is an early-stage project.
+"My Private Finances" is an early-stage project.
 
 The following components are considered in scope:
 - Backend API (api/)
@@ -47,7 +47,7 @@ Do not open a public GitHub issue for security-sensitive reports.
 ***
 
 ## Security Design Notes
-- Finassist is designed to minimize attack surface by operating locally
+- "My Private Finances" is designed to minimize attack surface by operating locally
 - No user data is transmitted to external services by default
 - All dependencies are managed explicitly and audited via CI
 - Contributors are encouraged to keep security and privacy considerations in mind

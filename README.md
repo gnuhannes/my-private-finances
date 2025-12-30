@@ -1,7 +1,7 @@
-# Finassist
-[![CI](https://github.com/gnuhannes/finassist/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/gnuhannes/finassist/actions/workflows/ci.yml)
+# My Private Finances
+[![CI](https://github.com/gnuhannes/my-private-finances/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/gnuhannes/my-private-finances/actions/workflows/ci.yml)
 
-Finassist is a local-first, privacy-respecting personal finance assistant.
+"My Private Finances" is a local-first, privacy-respecting personal finance assistant.
 
 The goal of this project is to help individuals understand and organize their
 personal finances without sending sensitive financial data to third-party
@@ -38,7 +38,7 @@ Backend (API):
 ```bash
 cd api
 poetry install
-poetry run uvicorn finassist_api.main:app --reload
+poetry run uvicorn my_private_finances_api.main:app --reload
 ```
 
 The API will be available at:
@@ -61,7 +61,7 @@ http://localhost:5173
 
 ## Privacy and Data Handling
 
-Finassist is designed to work entirely offline.
+"My Private Finances" is designed to work entirely offline.
 - Financial data is stored locally (e.g. SQLite)
 - No external APIs are contacted by default
 - No analytics, telemetry, or tracking is performed

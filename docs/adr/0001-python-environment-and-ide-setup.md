@@ -26,7 +26,7 @@ IDE integration (PyCharm 2025.x) also required a clear decision.
 `api/.venv/bin/python`
 - The backend is always run with:
 `cd api`
-`uvicorn finassist_api.main:app`
+`uvicorn my_private_finances_api.main:app`
 
 ***
 

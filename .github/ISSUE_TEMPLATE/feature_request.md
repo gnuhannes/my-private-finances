@@ -1,6 +1,6 @@
 # Feature Request
 
-Thanks for your interest in improving Finassist.
+Thanks for your interest in improving "My Private Finances".
 
 ***
 

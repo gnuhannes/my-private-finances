@@ -2,7 +2,7 @@
 package-mode = false
 
 [project]
-name = "finassist-api"
+name = "my-private-finances-api"
 version = "0.1.0"
 description = "Local, privacy-first finance backend"
 authors = [
