@@ -1,90 +1,85 @@
 # Finassist
 
-Local, privacy-first finance assistant.
-This repository is a monorepo containing a Python backend and a React frontend.
+Finassist is a local-first, privacy-respecting personal finance assistant.
 
-No cloud services. No telemetry. All data stays local.
+The goal of this project is to help individuals understand and organize their
+personal finances without sending sensitive financial data to third-party
+services or cloud providers.
 
-## Prerequisites
+All processing happens locally.
 
-This repository contains multiple runtimes.
+***
 
-### Backend:
+## Key Principles
 
-Python 3.11 or newer
+- Local-first: all data stays on your machine
+- Privacy by design: no telemetry, no tracking, no hidden network calls
+- Open source: transparent implementation and auditable behavior
+- Developer-friendly: clean architecture, reproducible setup, strong tooling
 
-Poetry
+*** 
 
-### Frontend:
+## Repository Structure:
 
-Node.js 20 LTS
+This repository is a monorepo:
+- api/ Python backend (FastAPI, Poetry, local SQLite)
+- app/ Frontend (React, Vite, pnpm)
+- docs/ Architecture decisions and develop
 
-pnpm (recommended via Corepack and nvm)
+Each subproject is developed and run independently.
 
-Recommended:
+***
 
-Use nvm together with the provided .nvmrc file
+## Quickstart
 
-## Backend Setup (FastAPI)
-
-Change into the backend directory and install dependencies:
+Backend (API):
 
 ```bash
 cd api
 poetry install
-```
-
-### Run the backend locally:
-
-```bash
 poetry run uvicorn finassist_api.main:app --reload
 ```
 
 The API will be available at:
 http://127.0.0.1:5179
 
-IDE and Python environment decisions are documented in:
-[docs/adr/0001-python-environment-and-ide-setup.md](docs/adr/0001-python-environment-and-ide-setup.md)
+***
 
-## Frontend Setup (React + Vite)
-
-Change into the frontend directory:
+Frontend (UI):
 
 ```bash
 cd app
-```
-
-Install dependencies:
-
-```bash
 pnpm install
-```
-
-Start the development server:
-
-```
 pnpm dev
 ```
 
 The frontend will be available at:
 http://localhost:5173
 
-Notes:
+***
 
-pnpm is used for faster installs and better monorepo support
+## Privacy and Data Handling
 
-Some dependencies require explicit approval of build scripts:
-```bash
-pnpm approve-builds
-```
+Finassist is designed to work entirely offline.
+- Financial data is stored locally (e.g. SQLite)
+- No external APIs are contacted by default
+- No analytics, telemetry, or tracking is performed
+- Network access is only required for dependency installation during development
 
-## Repository Structure
+Users are encouraged to inspect the source code and CI configuration to verify
+this behavior.
 
-```
-finassist/
-|___api/ Python backend (FastAPI, Poetry, local venv)
-|
-|___app/ Frontend (React, Vite, pnpm)
-|
-|___docs/ Documentation and architecture decisions
-```
+***
+
+## Development Setup
+See the following documents for details:
+- [docs/dev-setup.md](docs/dev-setup.md)
+- [docs/adr/0001-python-environment-and-ide-setup.md](docs/adr/0001-python-environment-and-ide-setup.md)
+- [CONTRIBUTING.md](CONTRIBUTING.md)
+
+***
+
+## License
+
+This project is licensed under the Apache License 2.0.
+See the [LICENSE](LICENSE) file for details.
