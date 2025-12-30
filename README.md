@@ -81,5 +81,5 @@ See the following documents for details:
 
 ## License
 
-This project is licensed under the Apache License 2.0.
+This project is licensed under the MIT License.
 See the [LICENSE](LICENSE) file for details.
