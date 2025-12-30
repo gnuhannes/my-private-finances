@@ -1,4 +1,5 @@
 # Finassist
+[![CI](https://github.com/gnuhannes/finassist/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/gnuhannes/finassist/actions/workflows/ci.yml)
 
 Finassist is a local-first, privacy-respecting personal finance assistant.
 

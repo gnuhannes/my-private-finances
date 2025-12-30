@@ -3,6 +3,8 @@
 ## Status
 Accepted
 
+***
+
 ## Context
 This repository is a monorepo containing:
 - a Python backend (`api/`, FastAPI)
@@ -12,6 +14,8 @@ This repository is a monorepo containing:
 During initial setup, multiple virtual environment locations were possible
 (root-level `.venv`, Poetry cache venv, or per-subproject venv).
 IDE integration (PyCharm 2025.x) also required a clear decision.
+
+***
 
 ## Decision
 - The Python virtual environment is located at:
@@ -24,6 +28,8 @@ IDE integration (PyCharm 2025.x) also required a clear decision.
 `cd api`
 `uvicorn finassist_api.main:app`
 
+***
+
 ## Rationale
 - Each `pyproject.toml` owns its own environment
 - The backend is isolated from frontend tooling
@@ -32,16 +38,22 @@ IDE integration (PyCharm 2025.x) also required a clear decision.
 - IDE configuration becomes explicit and reproducible
 - Avoids ambiguity caused by Poetry cache environments
 
+***
+
 ## Alternatives Considered
 ### Root-level `.venv`
 Rejected because:
 - the repository is not a single Python project
 - frontend and future services would not use this environment
 
+***
+
 ### Poetry cache venv only
 Rejected because:
 - IDE paths become opaque
 - harder to reason about environment location
+
+*** 
 
 ## Consequences
 - PyCharm must explicitly select `api/.venv/bin/python`
