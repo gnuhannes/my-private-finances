@@ -16,7 +16,7 @@ from my_private_finances.api.routes import accounts_router, health_router
 def create_app(db_path: Path = DEFAULT_DB_PATH) -> FastAPI:
     app = FastAPI(title="My Private Finances")
 
-    engine: AsyncEngine = create_engine(db_path)
+    engine: AsyncEngine = create_engine()
     session_factory: async_sessionmaker[AsyncSession] = create_session_factory(engine)
 
     app.state.engine = engine
