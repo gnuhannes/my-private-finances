@@ -16,7 +16,9 @@ SessionDep = Annotated[AsyncSession, Depends(get_session)]
 
 
 @router.post("", response_model=AccountRead)
-async def create_account(account: Annotated[AccountCreate, Body()], session: SessionDep):
+async def create_account(
+    account: Annotated[AccountCreate, Body()], session: SessionDep
+):
     db_obj = Account(name=account.name, currency=account.currency)
     session.add(db_obj)
     await session.commit()

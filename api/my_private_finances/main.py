@@ -5,7 +5,11 @@ from pathlib import Path
 from fastapi import FastAPI
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker
 
-from my_private_finances.db import DEFAULT_DB_PATH, create_engine, create_session_factory
+from my_private_finances.db import (
+    DEFAULT_DB_PATH,
+    create_engine,
+    create_session_factory,
+)
 from my_private_finances.api.routes import accounts_router, health_router
 
 
