@@ -50,4 +50,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Run CI (Makefile)
-        run: make ci
+        run: |
+          set -euxo pipefail
+          make -n ci || true
+          make ci
