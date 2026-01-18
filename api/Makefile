@@ -33,8 +33,15 @@ migrate:
 
 .PHONY: check-migrations
 check-migrations:
+	@# Ensure the target DB is at head so autogenerate can diff metadata vs database
+	@poetry run alembic upgrade head >/dev/null
+
 	@rm -f alembic/versions/__ci_check__*.py
-	@poetry run alembic revision --autogenerate -m "__ci_check__" --rev-id __ci_check__ >/dev/null
+	@poetry run alembic revision --autogenerate -m "__ci_check__" --rev-id __ci_check__ >/dev/null || { \
+		echo "❌ Alembic autogenerate failed. Is the database up to date?"; \
+		exit 1; \
+	}
+
 	@f=$$(ls alembic/versions/__ci_check__*.py 2>/dev/null | head -n 1); \
 	if [ -z "$$f" ]; then \
 		echo "✅ No schema drift (no file generated)."; \
@@ -51,7 +58,6 @@ check-migrations:
 		echo "✅ No schema drift (autogenerate produced empty migration)."; \
 		rm -f "$$f"; \
 	fi
-
 
 .PHONY: ci
 ci: lint typecheck test check-migrations
