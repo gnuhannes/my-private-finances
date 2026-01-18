@@ -2,64 +2,54 @@ name: ci
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
   pull_request:
-    branches:
-      - main
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  backend:
-    name: backend (python)
+  ci:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: api
+
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v5
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
           python-version: "3.12"
 
       - name: Install Poetry
         run: pipx install poetry
 
-      - name: Install dependencies
-        run: poetry install
+      - name: Cache backend venv
+        uses: actions/cache@v4
+        with:
+          path: api/.venv
+          key: venv-${{ runner.os }}-py312-${{ hashFiles('api/poetry.lock') }}
 
-      - name: Ruff
-        run: poetry run ruff check .
+      - name: Install backend dependencies
+        working-directory: api
+        run: poetry install --no-interaction
 
-      - name: MyPy
-        run: poetry run mypy my_private_finances
-
-      - name: Pytest
-        run: poetry run pytest -q
-  frontend:
-    name: frontend (node)
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: app
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-node@v4
+      - name: Set up Node
+        uses: actions/setup-node@v4
         with:
           node-version: "20"
+          cache: "pnpm"
+          cache-dependency-path: "app/pnpm-lock.yaml"
 
-      - uses: pnpm/action-setup@v4
-        with:
-          version: "10.26.2"
+      - name: Enable pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@9.15.0 --activate
 
-      - name: pnpm version
-        run: pnpm -v
-
-      - name: Install dependencies
+      - name: Install frontend dependencies
+        working-directory: app
         run: pnpm install --frozen-lockfile
 
-      - name: Lint
-        run: pnpm lint
-
-      - name: Build
-        run: pnpm build
+      - name: Run CI (Makefile)
+        run: make ci
