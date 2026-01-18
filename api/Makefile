@@ -62,3 +62,8 @@ check-migrations:
 .PHONY: ci
 ci: lint typecheck test check-migrations
 	@echo "✅ api checks passed"
+
+.PHONY: sync
+sync:
+	poetry install --no-interaction --sync
+

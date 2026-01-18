@@ -22,3 +22,7 @@ test:
 .PHONY: ci
 ci: lint typecheck test
 	@echo "✅ app checks passed"
+
+.PHONY: sync
+sync:
+	pnpm install --frozen-lockfile

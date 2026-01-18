@@ -38,3 +38,14 @@ fe-typecheck:
 
 fe-test:
 	$(MAKE) -C app test
+
+.PHONY: sync sync-backend sync-frontend
+sync: sync-backend sync-frontend
+	@echo "✅ Dependencies synced (backend + frontend)"
+
+sync-backend:
+	$(MAKE) -C api sync
+
+sync-frontend:
+	$(MAKE) -C app sync
+
