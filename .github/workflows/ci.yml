@@ -13,6 +13,8 @@ concurrency:
 jobs:
   ci:
     runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: sqlite+aiosqlite:///${{ github.workspace }}/api/.ci/my_private_finances.sqlite
 
     steps:
       - uses: actions/checkout@v4
@@ -48,6 +50,9 @@ jobs:
       - name: Install frontend dependencies
         working-directory: app
         run: pnpm install --frozen-lockfile
+
+      - name: Prepare CI database dir
+        run: mkdir -p api/.ci
 
       - name: Run CI (Makefile)
         run: |
