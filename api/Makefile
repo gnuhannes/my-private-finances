@@ -8,6 +8,8 @@ help:
 	@echo "  make test            - Pytest"
 	@echo "  make migrate         - Alembic upgrade head"
 	@echo "  make check-migrations - Detect schema drift via autogenerate"
+	@echo "  make sync             - Install dependencies"
+	@echo "  make run              - Start backend application"
 
 .PHONY: lint
 lint:
@@ -66,4 +68,8 @@ ci: lint typecheck test check-migrations
 .PHONY: sync
 sync:
 	poetry install --no-interaction --sync
+
+.PHONY: run
+run:
+	poetry run uvicorn my_private_finances.main:app --reload --port 5179
 

@@ -38,7 +38,7 @@ Backend (API):
 ```bash
 cd api
 poetry install
-poetry run uvicorn my_private_finances_api.main:app --reload
+poetry run uvicorn my_private_finances.main:app --reload --port 5179
 ```
 
 The API will be available at:
