@@ -15,7 +15,7 @@ router = APIRouter(prefix="/accounts", tags=["accounts"])
 SessionDep = Annotated[AsyncSession, Depends(get_session)]
 
 
-@router.post("", response_model=AccountRead)
+@router.post("", response_model=AccountRead, status_code=201)
 async def create_account(
     account: Annotated[AccountCreate, Body()], session: SessionDep
 ):

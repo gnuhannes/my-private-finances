@@ -10,7 +10,7 @@ from my_private_finances.db import (
     create_engine,
     create_session_factory,
 )
-from my_private_finances.api.routes import accounts_router, health_router
+from my_private_finances.api.router import api_router
 
 
 def create_app(db_path: Path = DEFAULT_DB_PATH) -> FastAPI:
@@ -21,9 +21,7 @@ def create_app(db_path: Path = DEFAULT_DB_PATH) -> FastAPI:
 
     app.state.engine = engine
     app.state.session_factory = session_factory
-
-    app.include_router(health_router)
-    app.include_router(accounts_router)
+    app.include_router(api_router)
 
     return app
 
