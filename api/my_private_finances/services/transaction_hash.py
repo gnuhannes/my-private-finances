@@ -21,7 +21,7 @@ def compute_import_hash(data: HashInput) -> str:
     parts = [
         str(data.account_id),
         data.booking_date.isoformat(),
-        f"{data.amount: .2f}",
+        f"{data.amount:.2f}",
         data.currency.upper(),
         (data.payee or "").strip(),
         (data.purpose or "").strip(),

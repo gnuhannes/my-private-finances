@@ -5,7 +5,7 @@ from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from my_private_finances.models import Transaction
+from my_private_finances.models import Transaction, Account
 from my_private_finances.schemas import TransactionRead, TransactionCreate
 
 from my_private_finances.deps import get_session
@@ -19,6 +19,12 @@ async def create_transaction(
     tx: TransactionCreate,
     session: AsyncSession = Depends(get_session),
 ) -> TransactionRead:
+    res = await session.execute(
+        select(Account).where(Account.id == tx.account_id)  # type: ignore[arg-type]
+    )
+    if res.scalar_one_or_none() is None:
+        raise HTTPException(status_code=404, detail="Account not found")
+
     import_hash = compute_import_hash(
         HashInput(
             account_id=tx.account_id,
