@@ -1,15 +1,17 @@
 .PHONY: help
 help:
 	@echo "Targets (api):"
-	@echo "  make ci              - ruff + mypy + pytest + migration drift check"
-	@echo "  make lint            - Ruff check + format check"
-	@echo "  make lint-fix         - Ruff auto-fix + format"
-	@echo "  make typecheck       - Mypy"
-	@echo "  make test            - Pytest"
-	@echo "  make migrate         - Alembic upgrade head"
+	@echo "  make ci               - ruff + mypy + pytest (coverage gate) + migration drift check"
+	@echo "  make lint             - Ruff check + format check"
+	@echo "  make lint-fix          - Ruff auto-fix + format"
+	@echo "  make typecheck        - Mypy"
+	@echo "  make test             - Pytest"
+	@echo "  make test-cov          - Pytest with coverage report (no gate)"
+	@echo "  make coverage          - Pytest with coverage gate (MIN_COVERAGE)"
+	@echo "  make migrate          - Alembic upgrade head"
 	@echo "  make check-migrations - Detect schema drift via autogenerate"
-	@echo "  make sync             - Install dependencies"
-	@echo "  make run              - Start backend application"
+	@echo "  make sync              - Install dependencies"
+	@echo "  make run               - Start backend application"
 
 .PHONY: lint
 lint:
@@ -28,6 +30,17 @@ typecheck:
 .PHONY: test
 test:
 	poetry run pytest
+
+.PHONY: test-cov
+test-cov:
+	poetry run pytest --cov=my_private_finances --cov-report=term-missing
+
+# CI/Gate: fail under MIN_COVERAGE
+MIN_COVERAGE ?= 75
+
+.PHONY: coverage
+coverage:
+	poetry run pytest --cov=my_private_finances --cov-fail-under=$(MIN_COVERAGE) --cov-report=term-missing
 
 .PHONY: migrate
 migrate:
@@ -62,7 +75,7 @@ check-migrations:
 	fi
 
 .PHONY: ci
-ci: lint typecheck test check-migrations
+ci: lint typecheck coverage check-migrations
 	@echo "✅ api checks passed"
 
 .PHONY: sync
@@ -72,4 +85,3 @@ sync:
 .PHONY: run
 run:
 	poetry run uvicorn my_private_finances.main:app --reload --port 5179
-

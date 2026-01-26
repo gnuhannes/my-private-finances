@@ -5,6 +5,8 @@ help:
 	@echo "  make lint       - ESLint"
 	@echo "  make typecheck  - TypeScript typecheck"
 	@echo "  make test       - Frontend tests (if configured)"
+	@echo "  make sync       - Install dependencies"
+
 
 .PHONY: lint
 lint:

@@ -1,17 +1,20 @@
 .PHONY: help
 help:
 	@echo "Targets (root):"
-	@echo "  make ci           - Run backend + frontend checks"
-	@echo "  make ci-backend   - Run backend checks"
-	@echo "  make ci-frontend  - Run frontend checks"
-	@echo "  make lint         - Backend lint (ruff)"
-	@echo "  make typecheck    - Backend typecheck (mypy)"
-	@echo "  make test         - Backend tests (pytest)"
-	@echo "  make migrate      - Apply backend migrations (alembic upgrade head)"
+	@echo "  make ci            - Run backend + frontend checks"
+	@echo "  make ci-backend    - Run backend checks"
+	@echo "  make ci-frontend   - Run frontend checks"
+	@echo "  make lint          - Backend lint (ruff)"
+	@echo "  make typecheck     - Backend typecheck (mypy)"
+	@echo "  make test          - Backend tests (pytest)"
+	@echo "  make test-cov      - Backend tests with coverage report"
+	@echo "  make coverage      - Backend coverage gate (MIN_COVERAGE)"
+	@echo "  make migrate       - Apply backend migrations (alembic upgrade head)"
 	@echo "  make check-migrations - Fail if alembic autogenerate detects drift"
-	@echo "  make fe-lint      - Frontend lint"
-	@echo "  make fe-typecheck - Frontend typecheck"
-	@echo "  make fe-test      - Frontend tests (if configured)"
+	@echo "  make fe-lint       - Frontend lint"
+	@echo "  make fe-typecheck  - Frontend typecheck"
+	@echo "  make fe-test       - Frontend tests (if configured)"
+	@echo "  make sync          - Install deps (backend + frontend)"
 
 .PHONY: ci
 ci: ci-backend ci-frontend
@@ -25,8 +28,8 @@ ci-backend:
 ci-frontend:
 	$(MAKE) -C app ci
 
-.PHONY: lint typecheck test migrate check-migrations
-lint typecheck test migrate check-migrations:
+.PHONY: lint typecheck test migrate check-migrations test-cov coverage
+lint typecheck test migrate check-migrations test-cov coverage:
 	$(MAKE) -C api $@
 
 .PHONY: fe-lint fe-typecheck fe-test
@@ -48,4 +51,3 @@ sync-backend:
 
 sync-frontend:
 	$(MAKE) -C app sync
-
