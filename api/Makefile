@@ -1,3 +1,10 @@
+DB_URL ?= sqlite+aiosqlite:///./data/my_private_finances.sqlite
+ACCOUNT_ID ?= 1
+CSV ?=
+DELIMITER ?= ,
+DATE_FORMAT ?= iso
+DECIMAL_COMMA ?=
+
 .PHONY: help
 help:
 	@echo "Targets (api):"
@@ -87,5 +94,12 @@ run:
 	poetry run uvicorn my_private_finances.main:app --reload --port 5179
 
 import-csv:
-	poetry run python -m my_private_finances.cli.import_csv --db $(DB_URL) --account-id $(ACCOUNT_ID) $(CSV)
+	poetry run python -m my_private_finances.cli.import_csv \
+		--db $(DB_URL) \
+		--account-id $(ACCOUNT_ID) \
+		--delimiter "$(DELIMITER)" \
+		--date-format $(DATE_FORMAT) \
+		$(if $(DECIMAL_COMMA),--decimal-comma,) \
+		$(CSV)
+
 

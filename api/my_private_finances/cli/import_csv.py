@@ -30,12 +30,30 @@ def _build_parser() -> argparse.ArgumentParser:
         default=50,
         help="Max errors to print/store",
     )
+    p.add_argument("--delimiter", default=",", help="CSV delimiter (default: ,)")
+    p.add_argument(
+        "--date-format",
+        choices=["iso", "dmy"],
+        default="iso",
+        help="Date format: iso=YYYY-MM-DD, dmy=DD.MM.YYYY",
+    )
+    p.add_argument(
+        "--decimal-comma",
+        action="store_true",
+        help="Use decimal comma (e.g. 1.234,56)",
+    )
 
     return p
 
 
 async def _run(
-    database_url: str, account_id: int, csv_path: Path, max_errors: int
+    database_url: str,
+    account_id: int,
+    csv_path: Path,
+    max_errors: int,
+    delimiter: str,
+    date_format: str,
+    decimal_comma: bool,
 ) -> int:
     engine = create_engine(database_url)
     session_factory = create_session_factory(engine)
@@ -47,6 +65,9 @@ async def _run(
                 account_id=account_id,
                 csv_path=csv_path,
                 max_errors=max_errors,
+                delimiter=delimiter,
+                date_format=date_format,
+                decimal_comma=decimal_comma,
             )
 
         print(f"total rows: {result.total_rows}")

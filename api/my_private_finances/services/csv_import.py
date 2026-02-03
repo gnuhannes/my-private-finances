@@ -1,7 +1,7 @@
 import csv
 import hashlib
 from dataclasses import dataclass
-from datetime import date
+from datetime import date, datetime
 from decimal import Decimal, InvalidOperation
 from pathlib import Path
 from typing import Any
@@ -29,12 +29,20 @@ def _normalize_currency(value: str) -> str:
     return value.strip().upper()
 
 
-def _parse_date(value: str) -> date:
-    return date.fromisoformat(value.strip())
+def _parse_date(value: str, date_format: str) -> date:
+    raw = value.strip()
+    if date_format == "iso":
+        return date.fromisoformat(raw)
+    if date_format == "dmy":
+        return datetime.strptime(raw, "%d.%m.%Y").date()
+    raise ValueError(f"Unsupported date format: {date_format}")
 
 
-def _parse_decimal(value: str) -> Decimal:
-    return Decimal(value.strip())
+def _parse_decimal(value: str, *, decimal_comma: bool) -> Decimal:
+    raw = value.strip()
+    if decimal_comma:
+        raw = raw.replace(".", "").replace(",", ".")
+    return Decimal(raw)
 
 
 def _row_fingerprint(row: dict[str, Any]) -> str:
@@ -59,6 +67,9 @@ async def import_transactions_from_csv_path(
     account_id: int,
     csv_path: Path,
     max_errors: int = 50,
+    delimiter: str = ",",
+    date_format: str = "iso",
+    decimal_comma: bool = False,
 ) -> ImportResult:
     res = await session.execute(select(Account).where(Account.id == account_id))  # type: ignore[arg-type]
     if res.scalar_one_or_none() is None:
@@ -71,7 +82,7 @@ async def import_transactions_from_csv_path(
     errors: list[str] = []
 
     with csv_path.open("r", encoding="utf-8", newline="") as f:
-        reader = csv.DictReader(f, delimiter=",")
+        reader = csv.DictReader(f, delimiter=delimiter)
         if reader.fieldnames is None:
             raise ValueError("CSV has no header row")
 
@@ -79,8 +90,8 @@ async def import_transactions_from_csv_path(
             total_rows += 1
 
             try:
-                booking_date = _parse_date(row["booking_date"])
-                amount = _parse_decimal(row["amount"])
+                booking_date = _parse_date(row["booking_date"], date_format=date_format)
+                amount = _parse_decimal(row["amount"], decimal_comma=decimal_comma)
                 currency = _normalize_currency(row["currency"])
 
                 payee = (row.get("payee") or "").strip() or None
