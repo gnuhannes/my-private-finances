@@ -12,6 +12,7 @@ from tests.helpers import create_account
 @pytest.mark.asyncio
 async def test_csv_import_creates_transactions_and_is_idempotent(
     test_app: AsyncClient,
+    tmp_path: Path,
 ) -> None:
     acc = await create_account(test_app)
     account_id = acc["id"]
@@ -22,15 +23,16 @@ async def test_csv_import_creates_transactions_and_is_idempotent(
         "2026-01-19,-4.50,EUR,Baecker,Bread,\n"
     )
 
-    tmp_path = Path("tests/_tmp_import.csv")
-    tmp_path.write_text(csv_content, encoding="utf-8")
+    csv_file = tmp_path / "import.csv"
+    csv_file.write_text(csv_content, encoding="utf-8")
+
     try:
         session_factory = test_app._transport.app.state.session_factory  # type: ignore[attr-defined]
         async with session_factory() as session:  # type: ignore[call-arg]
             res1 = await import_transactions_from_csv_path(
                 session=session,
                 account_id=account_id,
-                csv_path=tmp_path,
+                csv_path=csv_file,
             )
 
         assert res1.total_rows == 2, f"Expected 2 total_rows, got {res1}"
@@ -43,7 +45,7 @@ async def test_csv_import_creates_transactions_and_is_idempotent(
             res2 = await import_transactions_from_csv_path(
                 session=session,
                 account_id=account_id,
-                csv_path=tmp_path,
+                csv_path=csv_file,
             )
 
         assert res2.total_rows == 2, f"Expected 2 total_rows, got {res2}"
@@ -80,4 +82,4 @@ async def test_csv_import_creates_transactions_and_is_idempotent(
         assert other["import_hash"], f"import_hash missing: {other}"
 
     finally:
-        tmp_path.unlink(missing_ok=True)
+        csv_file.unlink(missing_ok=True)
