@@ -85,3 +85,7 @@ sync:
 .PHONY: run
 run:
 	poetry run uvicorn my_private_finances.main:app --reload --port 5179
+
+import-csv:
+	poetry run python -m my_private_finances.cli.import_csv --db $(DB_URL) --account-id $(ACCOUNT_ID) $(CSV)
+
