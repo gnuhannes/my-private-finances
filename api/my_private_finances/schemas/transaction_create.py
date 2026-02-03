@@ -4,10 +4,12 @@ from datetime import date
 from decimal import Decimal
 from typing import Optional
 
-from pydantic import BaseModel, Field, field_serializer
+from pydantic import Field, field_serializer
+
+from my_private_finances.schemas.base import StrictSQLModel
 
 
-class TransactionCreate(BaseModel):
+class TransactionCreate(StrictSQLModel):
     account_id: int
     booking_date: date
     amount: Decimal
