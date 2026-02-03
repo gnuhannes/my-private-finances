@@ -34,7 +34,12 @@ def _parse_date(value: str, date_format: str) -> date:
     if date_format == "iso":
         return date.fromisoformat(raw)
     if date_format == "dmy":
-        return datetime.strptime(raw, "%d.%m.%Y").date()
+        for fmt in ("%d.%m.%Y", "%d.%m.%y"):
+            try:
+                return datetime.strptime(raw, fmt).date()
+            except ValueError:
+                continue
+        raise ValueError(f"Invalid DMY date: {raw}")
     raise ValueError(f"Unsupported date format: {date_format}")
 
 
@@ -61,6 +66,14 @@ def _row_fingerprint(row: dict[str, Any]) -> str:
     return hashlib.sha1(raw).hexdigest()
 
 
+def _first_present(row: dict[str, Any], keys: list[str]) -> str | None:
+    for k in keys:
+        if k in row:
+            val = (row.get(k) or "").strip()
+            return val or None
+    return None
+
+
 async def import_transactions_from_csv_path(
     *,
     session: AsyncSession,
@@ -81,7 +94,7 @@ async def import_transactions_from_csv_path(
     failed = 0
     errors: list[str] = []
 
-    with csv_path.open("r", encoding="utf-8", newline="") as f:
+    with csv_path.open("r", encoding="utf-8-sig", newline="") as f:
         reader = csv.DictReader(f, delimiter=delimiter)
         if reader.fieldnames is None:
             raise ValueError("CSV has no header row")
@@ -90,14 +103,37 @@ async def import_transactions_from_csv_path(
             total_rows += 1
 
             try:
-                booking_date = _parse_date(row["booking_date"], date_format=date_format)
-                amount = _parse_decimal(row["amount"], decimal_comma=decimal_comma)
-                currency = _normalize_currency(row["currency"])
+                booking_date_raw = _first_present(
+                    row, ["booking_date", "Buchungstag", "Valutadatum"]
+                )
+                amount_raw = _first_present(row, ["amount", "Betrag"])
+                currency_raw = _first_present(row, ["currency", "Waehrung"])
 
-                payee = (row.get("payee") or "").strip() or None
-                purpose = (row.get("purpose") or "").strip() or None
+                if booking_date_raw is None:
+                    raise KeyError("booking_date/Buchungstag/Valutadatum")
+                if amount_raw is None:
+                    raise KeyError("amount/Betrag")
+                if currency_raw is None:
+                    raise KeyError("currency/Waehrung")
 
-                external_id = (row.get("external_id") or "").strip() or None
+                booking_date = _parse_date(booking_date_raw, date_format=date_format)
+                amount = _parse_decimal(amount_raw, decimal_comma=decimal_comma)
+                currency = _normalize_currency(currency_raw)
+
+                payee = _first_present(
+                    row, ["payee", "Beguenstigter/Zahlungspflichtiger"]
+                )
+                purpose = _first_present(row, ["purpose", "Verwendungszweck"])
+
+                external_id = _first_present(
+                    row,
+                    [
+                        "external_id",
+                        "Kundenreferenz (End-to-End)",
+                        "Sammlerreferenz",
+                        "Mandatsreferenz",
+                    ],
+                )
                 if external_id is None:
                     external_id = _row_fingerprint(row)
 

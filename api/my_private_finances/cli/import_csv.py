@@ -94,6 +94,9 @@ def main() -> None:
             account_id=args.account_id,
             csv_path=args.csv_path,
             max_errors=args.max_errors,
+            delimiter=args.delimiter,
+            date_format=args.date_format,
+            decimal_comma=args.decimal_comma,
         )
     )
     raise SystemExit(exit_code)
