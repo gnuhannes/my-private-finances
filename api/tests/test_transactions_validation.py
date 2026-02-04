@@ -19,7 +19,7 @@ async def test_create_transaction_missing_required_field_returns_422(
         "import_source": "manual",
     }
 
-    res = await test_app.post("/transactions", json=payload)
+    res = await test_app.post("/api/transactions", json=payload)
     assert res.status_code == 422, res.text
 
 
@@ -43,7 +43,7 @@ async def test_create_transaction_with_typo_field_returns_422(
         "import_surce": "manual",
     }
 
-    res = await test_app.post("/transactions", json=payload)
+    res = await test_app.post("/api/transactions", json=payload)
     assert res.status_code == 422, res.text
 
 
@@ -51,5 +51,5 @@ async def test_create_transaction_with_typo_field_returns_422(
 async def test_list_transactions_without_account_id_returns_422(
     test_app: AsyncClient,
 ) -> None:
-    res = await test_app.get("/transactions")
+    res = await test_app.get("/api/transactions")
     assert res.status_code == 422, res.text

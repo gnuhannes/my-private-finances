@@ -6,7 +6,7 @@ from tests.helpers import create_account
 
 @pytest.mark.asyncio
 async def test_list_accounts_empty_returns_empty_list(test_app: AsyncClient) -> None:
-    res = await test_app.get("/accounts")
+    res = await test_app.get("/api/accounts")
     assert res.status_code == 200, f"Expected 200, got {res.status_code}: {res.text}"
     assert res.json() == [], f"Expected empty list, got: {res.json()}"
 
@@ -18,7 +18,7 @@ async def test_list_accounts_returns_created_accounts_in_id_order(
     a1 = await create_account(test_app, name="A1", currency="EUR")
     a2 = await create_account(test_app, name="A2", currency="EUR")
 
-    res = await test_app.get("/accounts")
+    res = await test_app.get("/api/accounts")
     assert res.status_code == 200, f"Expected 200, got {res.status_code}: {res.text}"
     data = res.json()
 

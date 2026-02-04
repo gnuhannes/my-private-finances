@@ -21,7 +21,7 @@ def create_app(db_path: Path = DEFAULT_DB_PATH) -> FastAPI:
 
     app.state.engine = engine
     app.state.session_factory = session_factory
-    app.include_router(api_router)
+    app.include_router(api_router, prefix="/api")
 
     return app
 

@@ -66,7 +66,9 @@ async def test_csv_import_de_bank_format_is_supported_and_idempotent(
     assert res2.failed == 0, f"Expected 0 failed, got {res2}"
 
     # Verify through API
-    res_list = await test_app.get("/transactions", params={"account_id": account_id})
+    res_list = await test_app.get(
+        "/api/transactions", params={"account_id": account_id}
+    )
     assert res_list.status_code == 200, (
         f"Expected 200, got {res_list.status_code}: {res_list.text}"
     )

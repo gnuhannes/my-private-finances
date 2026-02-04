@@ -8,7 +8,7 @@ from tests.helpers import create_account, create_transaction
 async def test_list_transactions_empty_for_account(test_app: AsyncClient) -> None:
     acc = await create_account(test_app)
 
-    res = await test_app.get("/transactions", params={"account_id": acc["id"]})
+    res = await test_app.get("/api/transactions", params={"account_id": acc["id"]})
     assert res.status_code == 200, f"Expected 200, got {res.status_code}: {res.text}"
     assert res.json() == [], f"Expected empty list, got: {res.json()}"
 
@@ -23,7 +23,7 @@ async def test_list_transactions_only_returns_transactions_for_given_account(
     tx1 = await create_transaction(test_app, account_id=acc1["id"], external_id="a1-1")
     await create_transaction(test_app, account_id=acc2["id"], external_id="a2-1")
 
-    res = await test_app.get("/transactions", params={"account_id": acc1["id"]})
+    res = await test_app.get("/api/transactions", params={"account_id": acc1["id"]})
     assert res.status_code == 200, f"Expected 200, got {res.status_code}: {res.text}"
     rows = res.json()
 
@@ -61,7 +61,7 @@ async def test_list_transactions_ordering_by_booking_date_desc_then_id_desc(
         external_id="order-3",
     )
 
-    res = await test_app.get("/transactions", params={"account_id": acc["id"]})
+    res = await test_app.get("/api/transactions", params={"account_id": acc["id"]})
     assert res.status_code == 200, f"Expected 200, got {res.status_code}: {res.text}"
     rows = res.json()
 

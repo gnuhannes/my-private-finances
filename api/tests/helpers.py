@@ -2,12 +2,14 @@ from typing import Any
 
 from httpx import AsyncClient
 
+API_PREFIX = "/api"
+
 
 async def create_account(
     client: AsyncClient, *, name: str = "Main", currency: str = "EUR"
 ) -> dict[str, Any]:
     response = await client.post(
-        "/accounts",
+        f"{API_PREFIX}/accounts",
         json={
             "name": name,
             "currency": currency,
@@ -40,6 +42,6 @@ async def create_transaction(
         "external_id": external_id,
     }
 
-    response = await client.post("/transactions", json=payload)
+    response = await client.post(f"{API_PREFIX}/transactions", json=payload)
     assert response.status_code == 201, response.text
     return response.json()

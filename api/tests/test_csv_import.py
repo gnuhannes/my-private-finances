@@ -54,7 +54,7 @@ async def test_csv_import_creates_transactions_and_is_idempotent(
         assert res2.failed == 0, f"Expected 0 failed, got {res2}"
 
         res_list = await test_app.get(
-            "/transactions", params={"account_id": account_id}
+            "/api/transactions", params={"account_id": account_id}
         )
         assert res_list.status_code == 200, (
             f"Expected 200, got {res_list.status_code}: {res_list.text}"

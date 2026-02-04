@@ -17,6 +17,6 @@ async def test_create_transaction_unknown_account_returns_404(
         "external_id": "abc-1",
     }
 
-    res = await test_app.post("/transactions", json=payload)
+    res = await test_app.post("/api/transactions", json=payload)
     assert res.status_code == 404, res.text
     assert res.json()["detail"] == "Account not found"
