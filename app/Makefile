@@ -6,6 +6,7 @@ help:
 	@echo "  make typecheck  - TypeScript typecheck"
 	@echo "  make test       - Frontend tests (if configured)"
 	@echo "  make sync       - Install dependencies"
+	@echo "  make run        - Run dev server"
 
 
 .PHONY: lint
@@ -28,3 +29,7 @@ ci: lint typecheck test
 .PHONY: sync
 sync:
 	pnpm install --frozen-lockfile
+
+.PHONY: run
+run:
+	pnpm dev
