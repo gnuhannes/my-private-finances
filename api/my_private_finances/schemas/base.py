@@ -4,5 +4,5 @@ from pydantic import ConfigDict
 from sqlmodel import SQLModel
 
 
-class StrictSQLModel(SQLModel):
+class StrictSchema(SQLModel):
     model_config = cast(Any, ConfigDict(extra="forbid"))

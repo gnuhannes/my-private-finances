@@ -3,15 +3,15 @@ from typing import Optional
 
 from pydantic import Field
 
-from my_private_finances.schemas import StrictSQLModel
+from my_private_finances.schemas import StrictSchema
 
 
-class PayeeTotal(StrictSQLModel):
+class PayeeTotal(StrictSchema):
     payee: Optional[str] = Field(default=None)
     total: Decimal
 
 
-class MonthlyReport(StrictSQLModel):
+class MonthlyReport(StrictSchema):
     account_id: int
     month: str
     currency: str

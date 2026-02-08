@@ -2,10 +2,10 @@ from __future__ import annotations
 
 from pydantic import BaseModel, Field
 
-from my_private_finances.schemas.base import StrictSQLModel
+from my_private_finances.schemas.base import StrictSchema
 
 
-class AccountCreate(StrictSQLModel):
+class AccountCreate(StrictSchema):
     name: str = Field(min_length=1, max_length=120)
     currency: str = Field(default="EUR", min_length=3, max_length=3)
 

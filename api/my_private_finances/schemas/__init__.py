@@ -1,7 +1,7 @@
 from .account import AccountCreate, AccountRead
 from .transaction_create import TransactionCreate
 from .transaction_read import TransactionRead
-from .base import StrictSQLModel
+from .base import StrictSchema
 from .report_monthly import MonthlyReport, PayeeTotal
 
 __all__ = [
@@ -9,7 +9,7 @@ __all__ = [
     "AccountRead",
     "TransactionCreate",
     "TransactionRead",
-    "StrictSQLModel",
+    "StrictSchema",
     "MonthlyReport",
     "PayeeTotal",
 ]

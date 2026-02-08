@@ -6,10 +6,10 @@ from typing import Optional
 
 from pydantic import Field, field_serializer
 
-from my_private_finances.schemas.base import StrictSQLModel
+from my_private_finances.schemas.base import StrictSchema
 
 
-class TransactionCreate(StrictSQLModel):
+class TransactionCreate(StrictSchema):
     account_id: int
     booking_date: date
     amount: Decimal
