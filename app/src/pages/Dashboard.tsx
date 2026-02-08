@@ -1,5 +1,7 @@
-import { useMemo, useState } from "react";
-import { useAccounts } from "../hooks/useAccounts";
+import {useMemo, useState} from "react";
+import {useAccounts} from "../hooks/useAccounts";
+import {useMonthlyReport} from "../hooks/useMonthlyReport";
+
 
 function monthKey(d: Date): string {
     const y = d.getFullYear();
@@ -18,32 +20,40 @@ function lastNMonths(n: number): string[] {
 }
 
 export default function Dashboard() {
-    const { data: accounts, isLoading, error } = useAccounts();
+    const {data: accounts, isLoading, error} = useAccounts();
 
     const months = useMemo(() => lastNMonths(24), []);
     const [accountId, setAccountId] = useState<number | null>(null);
     const [month, setMonth] = useState<string>(months[0]);
 
+    const selectedAccountId =
+        accountId ?? (accounts && accounts.length > 0 ? accounts[0].id : null);
+
+    const report = useMonthlyReport(selectedAccountId, month);
+
     if (isLoading) return <div>Loading accounts…</div>;
     if (error) return <div>Failed to load accounts.</div>;
     if (!accounts || accounts.length === 0) return <div>No accounts yet.</div>;
 
-    const selectedAccountId = accountId ?? accounts[0].id;
 
     return (
         <div>
-            <h1 style={{ margin: 0 }}>My Private Finances</h1>
-            <p style={{ marginTop: 8, opacity: 0.8 }}>
+            <h1 style={{margin: 0}}>My Private Finances</h1>
+            <p style={{marginTop: 8, opacity: 0.8}}>
                 Local-first dashboard (frontend).
             </p>
 
-            <div style={{ display: "flex", gap: 12, marginTop: 16 }}>
-                <label style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+            <div style={{display: "flex", gap: 12, marginTop: 16}}>
+                <label style={{display: "flex", flexDirection: "column", gap: 6}}>
                     <span>Account</span>
                     <select
-                        value={selectedAccountId}
-                        onChange={(e) => setAccountId(Number(e.target.value))}
+                        value={selectedAccountId ?? ""}
+                        onChange={(e) => {
+                            const v = e.target.value;
+                            setAccountId(v === "" ? null : Number(v));
+                        }}
                     >
+                        <option value="">Select account…</option>
                         {accounts.map((a) => (
                             <option key={a.id} value={a.id}>
                                 #{a.id} — {a.name} ({a.currency})
@@ -52,7 +62,7 @@ export default function Dashboard() {
                     </select>
                 </label>
 
-                <label style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                <label style={{display: "flex", flexDirection: "column", gap: 6}}>
                     <span>Month</span>
                     <select value={month} onChange={(e) => setMonth(e.target.value)}>
                         {months.map((m) => (
@@ -64,10 +74,21 @@ export default function Dashboard() {
                 </label>
             </div>
 
-            <div style={{ marginTop: 24 }}>
-                <strong>Next:</strong> load monthly report for account {selectedAccountId} /{" "}
-                {month}.
-            </div>
+            {report.isLoading && <div style={{marginTop: 16}}>Loading report…</div>}
+            {report.isError && (
+                <div style={{marginTop: 16, color: "crimson"}}>
+                    Failed to load report: {(report.error as Error).message}
+                </div>
+            )}
+            {report.data && (
+                <div style={{marginTop: 16}}>
+                    <div>Income: {report.data.income_total}</div>
+                    <div>Expenses: {report.data.expense_total}</div>
+                    <div>Net: {report.data.net_total}</div>
+                    <div>Transactions: {report.data.transactions_count}</div>
+                </div>
+            )}
+
         </div>
     );
 }
