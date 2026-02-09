@@ -1,8 +1,9 @@
 import { useMemo, useState } from "react";
 import { useAccounts } from "../hooks/useAccounts";
 import { useMonthlyReport } from "../hooks/useMonthlyReport";
-import { formatMoneyString } from "../utils/money";
+import { formatMoneyString, formatCurrency } from "../utils/money";
 import { KpiCard } from "../components/KpiCard";
+import { TopPayeesBarChart, type TopPayee } from "../components/TopPayeesBarChart";
 
 function monthKey(d: Date): string {
     const y = d.getFullYear();
@@ -108,26 +109,21 @@ export default function Dashboard() {
                     </div>
 
                     {report.data.top_payees.length > 0 ? (
-                        <div
-                            style={{
-                                border: "1px solid rgba(0,0,0,0.15)",
-                                borderRadius: 12,
-                                padding: 14,
-                            }}
-                        >
-                            <div style={{ fontSize: 13, opacity: 0.75, marginBottom: 10 }}>
-                                Top Payees
-                            </div>
+                        <TopPayeesBarChart
+                            data={report.data.top_payees
+                                .map((p) => {
+                                    const payee = p.payee ?? "(unknown)";
+                                    const amount = Math.abs(Number(p.total));
 
-                            <ul style={{ margin: 0, paddingLeft: 18 }}>
-                                {report.data.top_payees.slice(0, 10).map((p, idx) => (
-                                    <li key={`${p.payee ?? "unknown"}-${idx}`}>
-                                        {p.payee ?? "(unknown)"}:{" "}
-                                        {formatMoneyString(p.total, report.data.currency)}
-                                    </li>
-                                ))}
-                            </ul>
-                        </div>
+                                    if (!Number.isFinite(amount)) {
+                                        return null;
+                                    }
+
+                                    return { payee, amount } satisfies TopPayee;
+                                })
+                                .filter((x): x is TopPayee => x !== null)}
+                            formatValue={(v) => formatCurrency(v, report.data.currency)}
+                        />
                     ) : (
                         <div style={{ opacity: 0.7 }}>No top payees for this month.</div>
                     )}
