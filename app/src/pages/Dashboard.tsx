@@ -5,6 +5,7 @@ import { formatMoneyString, formatCurrency } from "../utils/money";
 import { KpiCard } from "../components/KpiCard";
 import { TopPayeesBarChart } from "../components/TopPayeesBarChart";
 import { mapTopPayeesForChart } from "../domain/reports";
+import styles from "./Dashboard.module.css";
 
 function monthKey(d: Date): string {
   const y = d.getFullYear();
@@ -83,7 +84,7 @@ export default function Dashboard() {
 
       {report.data && (
         <div style={{ marginTop: 16, display: "grid", gap: 12 }}>
-          <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+          <div className={styles.kpiGrid}>
             <KpiCard
               label="Income"
               value={formatMoneyString(report.data.income_total, report.data.currency)}
