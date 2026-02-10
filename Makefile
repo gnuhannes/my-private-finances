@@ -12,6 +12,7 @@ help:
 	@echo "  make migrate       - Apply backend migrations (alembic upgrade head)"
 	@echo "  make check-migrations - Fail if alembic autogenerate detects drift"
 	@echo "  make fe-lint       - Frontend lint"
+	@echo "  make fe-format-check - Frontend prettier check"
 	@echo "  make fe-typecheck  - Frontend typecheck"
 	@echo "  make fe-test       - Frontend tests (if configured)"
 	@echo "  make sync          - Install deps (backend + frontend)"
@@ -35,6 +36,10 @@ lint typecheck test migrate check-migrations test-cov coverage:
 .PHONY: fe-lint fe-typecheck fe-test
 fe-lint:
 	$(MAKE) -C app lint
+
+.PHONY: fe-format-check
+fe-format-check:
+	$(MAKE) -C app format-check
 
 fe-typecheck:
 	$(MAKE) -C app typecheck
