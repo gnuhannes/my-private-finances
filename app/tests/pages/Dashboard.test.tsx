@@ -3,43 +3,43 @@ import { render, screen } from "@testing-library/react";
 import Dashboard from "../../src/pages/Dashboard";
 
 vi.mock("../../src/hooks/useAccounts", () => ({
-    useAccounts: () => ({
-        data: [{ id: 1, name: "Main", currency: "EUR" }],
-        isLoading: false,
-        error: null,
-    }),
+  useAccounts: () => ({
+    data: [{ id: 1, name: "Main", currency: "EUR" }],
+    isLoading: false,
+    error: null,
+  }),
 }));
 
 vi.mock("../../src/hooks/useMonthlyReport", () => ({
-    useMonthlyReport: () => ({
-        isLoading: false,
-        isError: false,
-        error: null,
-        data: {
-            account_id: 1,
-            month: "2026-02",
-            currency: "EUR",
-            transactions_count: 12,
-            income_total: "1000.00",
-            expense_total: "-400.00",
-            net_total: "600.00",
-            top_payees: [{ payee: "REWE", total: "-120.00" }],
-        },
-    }),
+  useMonthlyReport: () => ({
+    isLoading: false,
+    isError: false,
+    error: null,
+    data: {
+      account_id: 1,
+      month: "2026-02",
+      currency: "EUR",
+      transactions_count: 12,
+      income_total: "1000.00",
+      expense_total: "-400.00",
+      net_total: "600.00",
+      top_payees: [{ payee: "REWE", total: "-120.00" }],
+    },
+  }),
 }));
 
 describe("Dashboard", () => {
-    it("renders KPI labels", () => {
-        render(<Dashboard />);
+  it("renders KPI labels", () => {
+    render(<Dashboard />);
 
-        expect(screen.getByText("Income")).toBeInTheDocument();
-        expect(screen.getByText("Expenses")).toBeInTheDocument();
-        expect(screen.getByText("Net")).toBeInTheDocument();
-        expect(screen.getByText("Transactions")).toBeInTheDocument();
-    });
+    expect(screen.getByText("Income")).toBeInTheDocument();
+    expect(screen.getByText("Expenses")).toBeInTheDocument();
+    expect(screen.getByText("Net")).toBeInTheDocument();
+    expect(screen.getByText("Transactions")).toBeInTheDocument();
+  });
 
-    it("renders Top Payees section", () => {
-        render(<Dashboard />);
-        expect(screen.getByText("Top Payees")).toBeInTheDocument();
-    });
+  it("renders Top Payees section", () => {
+    render(<Dashboard />);
+    expect(screen.getByText("Top Payees")).toBeInTheDocument();
+  });
 });

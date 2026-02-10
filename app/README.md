@@ -1,16 +1,16 @@
-Frontend (React + Vite)
-=======================
+# Frontend (React + Vite)
 
 This directory contains the frontend application.
 
-Quickstart
-----------
-1) Install dependencies:
+## Quickstart
+
+1. Install dependencies:
+
    ```bash
    pnpm install
    ```
 
-2) Run dev server:
+2. Run dev server:
    ```bash
    pnpm dev
    ```
@@ -18,8 +18,8 @@ Quickstart
 The dev server runs at:
 http://localhost:5173
 
-Notes
------
+## Notes
+
 - Use Node.js 20 LTS (see ../.nvmrc)
 - If pnpm blocks build scripts, run:
   ```bash
