@@ -29,8 +29,7 @@ typecheck:
 
 .PHONY: test
 test:
-	@# only if you have tests wired; otherwise keep it green:
-	@if pnpm -s run | grep -q "^test"; then pnpm run test; else echo "ℹ️  no frontend tests configured"; fi
+	pnpm run -s test
 
 .PHONY: ci
 ci: lint typecheck format-check test
