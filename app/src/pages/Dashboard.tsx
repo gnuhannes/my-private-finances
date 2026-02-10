@@ -3,7 +3,9 @@ import { useAccounts } from "../hooks/useAccounts";
 import { useMonthlyReport } from "../hooks/useMonthlyReport";
 import { formatMoneyString, formatCurrency } from "../utils/money";
 import { KpiCard } from "../components/KpiCard";
-import { TopPayeesBarChart, type TopPayee } from "../components/TopPayeesBarChart";
+import { TopPayeesBarChart } from "../components/TopPayeesBarChart";
+import { mapTopPayeesForChart } from "../domain/reports";
+
 
 function monthKey(d: Date): string {
     const y = d.getFullYear();
@@ -110,18 +112,7 @@ export default function Dashboard() {
 
                     {report.data.top_payees.length > 0 ? (
                         <TopPayeesBarChart
-                            data={report.data.top_payees
-                                .map((p) => {
-                                    const payee = p.payee ?? "(unknown)";
-                                    const amount = Math.abs(Number(p.total));
-
-                                    if (!Number.isFinite(amount)) {
-                                        return null;
-                                    }
-
-                                    return { payee, amount } satisfies TopPayee;
-                                })
-                                .filter((x): x is TopPayee => x !== null)}
+                            data={mapTopPayeesForChart(report.data.top_payees)}
                             formatValue={(v) => formatCurrency(v, report.data.currency)}
                         />
                     ) : (
