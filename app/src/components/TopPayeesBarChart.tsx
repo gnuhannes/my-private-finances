@@ -31,7 +31,7 @@ export function TopPayeesBarChart({ data, formatValue }: Props) {
                                     <div
                                         style={{
                                             background: "white",
-                                            color: "#111", // <- wichtig: explizite Textfarbe
+                                            color: "#111",
                                             border: "1px solid rgba(0,0,0,0.2)",
                                             borderRadius: 10,
                                             padding: 10,
