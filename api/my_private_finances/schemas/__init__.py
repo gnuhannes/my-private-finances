@@ -3,6 +3,7 @@ from .transaction_create import TransactionCreate
 from .transaction_read import TransactionRead
 from .base import StrictSchema
 from .report_monthly import MonthlyReport, PayeeTotal
+from .import_result import ImportResultResponse
 
 __all__ = [
     "AccountCreate",
@@ -12,4 +13,5 @@ __all__ = [
     "StrictSchema",
     "MonthlyReport",
     "PayeeTotal",
+    "ImportResultResponse",
 ]
