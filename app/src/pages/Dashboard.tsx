@@ -39,12 +39,12 @@ export default function Dashboard() {
   if (!accounts || accounts.length === 0) return <div>No accounts yet.</div>;
 
   return (
-    <div style={{ padding: 24 }}>
-      <h1 style={{ margin: 0 }}>My Private Finances</h1>
-      <p style={{ marginTop: 8, opacity: 0.8 }}>Local-first dashboard (frontend).</p>
+    <div className={styles.page}>
+      <h1 className={styles.title}>My Private Finances</h1>
+      <p className={styles.subtitle}>Local-first dashboard.</p>
 
-      <div style={{ display: "flex", gap: 12, marginTop: 16, flexWrap: "wrap" }}>
-        <label style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+      <div className={styles.controlsRow}>
+        <label className={styles.control}>
           <span>Account</span>
           <select
             value={selectedAccountId ?? ""}
@@ -62,7 +62,7 @@ export default function Dashboard() {
           </select>
         </label>
 
-        <label style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+        <label className={styles.control}>
           <span>Month</span>
           <select value={month} onChange={(e) => setMonth(e.target.value)}>
             {months.map((m) => (
@@ -74,16 +74,14 @@ export default function Dashboard() {
         </label>
       </div>
 
-      {report.isLoading && <div style={{ marginTop: 16 }}>Loading report…</div>}
+      {report.isLoading && <div className={styles.status}>Loading report…</div>}
 
       {report.isError && (
-        <div style={{ marginTop: 16, color: "crimson" }}>
-          Failed to load report: {(report.error as Error).message}
-        </div>
+        <div className={styles.error}>Failed to load report: {(report.error as Error).message}</div>
       )}
 
       {report.data && (
-        <div style={{ marginTop: 16, display: "grid", gap: 12 }}>
+        <div className={styles.section}>
           <div className={styles.kpiGrid}>
             <KpiCard
               label="Income"
@@ -113,7 +111,7 @@ export default function Dashboard() {
               formatValue={(v) => formatCurrency(v, report.data.currency)}
             />
           ) : (
-            <div style={{ opacity: 0.7 }}>No top payees for this month.</div>
+            <div className={styles.muted}>No top payees for this month.</div>
           )}
         </div>
       )}
