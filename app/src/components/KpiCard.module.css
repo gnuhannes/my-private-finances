@@ -1,0 +1,19 @@
+.card {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px;
+  min-width: 180px;
+  background: var(--surface);
+}
+
+.label {
+  font-size: 13px;
+  opacity: 0.75;
+}
+
+.value {
+  margin-top: 10px;
+  font-size: 22px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}

@@ -9,7 +9,7 @@ type Props = {
 
 export function TransactionTable({ items, currency }: Props) {
   if (items.length === 0) {
-    return <p>No transactions found.</p>;
+    return <p className={styles.empty}>No transactions found.</p>;
   }
 
   return (

@@ -31,13 +31,14 @@ export default function Transactions() {
 
   const currency = accounts?.find((a) => a.id === selectedAccountId)?.currency ?? "EUR";
 
-  if (isLoading) return <div className={styles.status}>Loading accounts...</div>;
+  if (isLoading) return <div className={styles.status}>Loading accounts…</div>;
   if (error) return <div className={styles.error}>Failed to load accounts.</div>;
   if (!accounts || accounts.length === 0) return <div>No accounts yet.</div>;
 
   return (
     <div className={styles.page}>
       <h1 className={styles.title}>Transactions</h1>
+      <p className={styles.subtitle}>Browse and filter transactions for an account.</p>
 
       <div className={styles.controlsRow}>
         <label className={styles.control}>
@@ -49,7 +50,7 @@ export default function Transactions() {
               setOffset(0);
             }}
           >
-            <option value="">Select account...</option>
+            <option value="">Select account…</option>
             {accounts.map((a) => (
               <option key={a.id} value={a.id}>
                 #{a.id} — {a.name} ({a.currency})
@@ -83,7 +84,8 @@ export default function Transactions() {
         </label>
       </div>
 
-      {txQuery.isLoading && <div className={styles.status}>Loading transactions...</div>}
+      {txQuery.isLoading && <div className={styles.status}>Loading transactions…</div>}
+
       {txQuery.isError && (
         <div className={styles.error}>
           Failed to load transactions: {(txQuery.error as Error).message}
@@ -91,7 +93,7 @@ export default function Transactions() {
       )}
 
       {txQuery.data && (
-        <>
+        <div className={styles.section}>
           <TransactionTable items={txQuery.data.items} currency={currency} />
           <Pagination
             page={page}
@@ -100,7 +102,7 @@ export default function Transactions() {
             onPrevious={() => setOffset((o) => Math.max(0, o - PAGE_SIZE))}
             onNext={() => setOffset((o) => o + PAGE_SIZE)}
           />
-        </>
+        </div>
       )}
     </div>
   );
