@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
+import { MemoryRouter } from "react-router-dom";
 import Dashboard from "../../src/pages/Dashboard";
 
 vi.mock("../../src/hooks/useAccounts", () => ({
@@ -30,7 +31,11 @@ vi.mock("../../src/hooks/useMonthlyReport", () => ({
 
 describe("Dashboard", () => {
   it("renders KPI labels", () => {
-    render(<Dashboard />);
+    render(
+      <MemoryRouter>
+        <Dashboard />
+      </MemoryRouter>,
+    );
 
     expect(screen.getByText("Income")).toBeInTheDocument();
     expect(screen.getByText("Expenses")).toBeInTheDocument();
@@ -39,7 +44,11 @@ describe("Dashboard", () => {
   });
 
   it("renders Top Payees section", () => {
-    render(<Dashboard />);
+    render(
+      <MemoryRouter>
+        <Dashboard />
+      </MemoryRouter>,
+    );
     expect(screen.getByText("Top Payees")).toBeInTheDocument();
   });
 });

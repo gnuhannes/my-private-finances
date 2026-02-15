@@ -1,0 +1,29 @@
+.page {
+  padding: 24px;
+}
+
+.title {
+  margin: 0;
+}
+
+.controlsRow {
+  display: flex;
+  gap: 12px;
+  margin-top: 16px;
+  flex-wrap: wrap;
+}
+
+.control {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.status {
+  margin-top: 16px;
+}
+
+.error {
+  margin-top: 16px;
+  color: crimson;
+}
