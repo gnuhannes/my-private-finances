@@ -23,7 +23,7 @@ async def test_create_and_list_transactions(test_app: AsyncClient) -> None:
         "/api/transactions", params={"account_id": account_id}
     )
     assert res_list.status_code == 200, res_list.text
-    rows = res_list.json()
+    rows = res_list.json()["items"]
     assert len(rows) == 1
     assert rows[0]["id"] == created["id"]
     assert rows[0]["payee"] == "Rewe"

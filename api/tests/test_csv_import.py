@@ -59,10 +59,10 @@ async def test_csv_import_creates_transactions_and_is_idempotent(
         assert res_list.status_code == 200, (
             f"Expected 200, got {res_list.status_code}: {res_list.text}"
         )
-        rows = res_list.json()
+        rows = res_list.json()["items"]
         assert len(rows) == 2, f"Expected 2 transactions in DB, got {len(rows)}: {rows}"
 
-        # Map correctness (don’t depend on ordering too much; find by external_id or payee)
+        # Map correctness (don't depend on ordering too much; find by external_id or payee)
         by_payee = {r.get("payee"): r for r in rows}
 
         assert "Rewe" in by_payee, (

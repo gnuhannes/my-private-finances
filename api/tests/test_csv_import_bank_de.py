@@ -72,7 +72,7 @@ async def test_csv_import_de_bank_format_is_supported_and_idempotent(
     assert res_list.status_code == 200, (
         f"Expected 200, got {res_list.status_code}: {res_list.text}"
     )
-    rows = res_list.json()
+    rows = res_list.json()["items"]
 
     assert len(rows) == 2, f"Expected 2 transactions in DB, got {len(rows)}: {rows}"
 

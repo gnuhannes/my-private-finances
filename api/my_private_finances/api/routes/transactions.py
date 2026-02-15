@@ -1,12 +1,18 @@
+from datetime import date
+
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.params import Query
 from typing import Annotated
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from my_private_finances.models import Transaction, Account
-from my_private_finances.schemas import TransactionRead, TransactionCreate
+from my_private_finances.schemas import (
+    TransactionRead,
+    TransactionCreate,
+    TransactionListResponse,
+)
 
 from my_private_finances.deps import get_session
 from my_private_finances.services.transaction_hash import compute_import_hash, HashInput
@@ -81,16 +87,27 @@ async def create_transaction(
     )
 
 
-@router.get("", response_model=list[TransactionRead])
+@router.get("", response_model=TransactionListResponse)
 async def list_transactions(
     account_id: Annotated[int, Query(ge=1)],
-    limit: Annotated[int, Query(ge=1, le=500)] = 100,
+    limit: Annotated[int, Query(ge=1, le=500)] = 50,
     offset: Annotated[int, Query(ge=0)] = 0,
+    date_from: date | None = None,
+    date_to: date | None = None,
     session: AsyncSession = Depends(get_session),
-) -> list[TransactionRead]:
+) -> TransactionListResponse:
+    filters = [Transaction.account_id == account_id]  # type: ignore[arg-type]
+    if date_from is not None:
+        filters.append(Transaction.booking_date >= date_from)  # type: ignore[arg-type]
+    if date_to is not None:
+        filters.append(Transaction.booking_date <= date_to)  # type: ignore[arg-type]
+
+    count_stmt = select(func.count()).select_from(Transaction).where(*filters)  # type: ignore[arg-type]
+    total = (await session.execute(count_stmt)).scalar_one()
+
     stmt = (
         select(Transaction)
-        .where(Transaction.account_id == account_id)  # type: ignore[arg-type]
+        .where(*filters)  # type: ignore[arg-type]
         .order_by(
             Transaction.booking_date.desc(),  # type: ignore[attr-defined]
             Transaction.id.desc(),  # type: ignore[union-attr]
@@ -102,11 +119,11 @@ async def list_transactions(
     res = await session.execute(stmt)
     rows = list(res.scalars().all())
 
-    out: list[TransactionRead] = []
+    items: list[TransactionRead] = []
     for row in rows:
         if row.id is None:
             continue
-        out.append(
+        items.append(
             TransactionRead(
                 id=row.id,
                 account_id=row.account_id,
@@ -122,4 +139,4 @@ async def list_transactions(
             )
         )
 
-    return out
+    return TransactionListResponse(items=items, total=total)
