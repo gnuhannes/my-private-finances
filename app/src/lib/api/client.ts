@@ -9,8 +9,11 @@ export class ApiError extends Error {
   }
 }
 
-export async function apiGet<T>(path: string): Promise<T> {
-  const res = await fetch(path, { headers: { Accept: "application/json" } });
+async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
+  const res = await fetch(path, {
+    headers: { Accept: "application/json", "Content-Type": "application/json" },
+    ...init,
+  });
   const body = await res.json().catch(() => null);
 
   if (!res.ok) {
@@ -18,4 +21,24 @@ export async function apiGet<T>(path: string): Promise<T> {
   }
 
   return body as T;
+}
+
+export async function apiGet<T>(path: string): Promise<T> {
+  return apiFetch<T>(path);
+}
+
+export async function apiPost<T>(path: string, data: unknown): Promise<T> {
+  return apiFetch<T>(path, { method: "POST", body: JSON.stringify(data) });
+}
+
+export async function apiPatch<T>(path: string, data: unknown): Promise<T> {
+  return apiFetch<T>(path, { method: "PATCH", body: JSON.stringify(data) });
+}
+
+export async function apiDelete(path: string): Promise<void> {
+  const res = await fetch(path, { method: "DELETE" });
+  if (!res.ok) {
+    const body = await res.json().catch(() => null);
+    throw new ApiError(res.status, body);
+  }
 }

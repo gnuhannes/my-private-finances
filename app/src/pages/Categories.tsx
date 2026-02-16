@@ -1,0 +1,161 @@
+import { useState } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useCategories } from "../hooks/useCategories";
+import {
+  createCategory,
+  updateCategory,
+  deleteCategory,
+  type Category,
+} from "../lib/api/categories";
+import styles from "./Categories.module.css";
+
+export default function Categories() {
+  const queryClient = useQueryClient();
+  const { data: categories, isLoading, error } = useCategories();
+
+  const [newName, setNewName] = useState("");
+  const [newParentId, setNewParentId] = useState<number | null>(null);
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [editName, setEditName] = useState("");
+
+  const invalidate = () => queryClient.invalidateQueries({ queryKey: ["categories"] });
+
+  const addMutation = useMutation({
+    mutationFn: createCategory,
+    onSuccess: () => {
+      setNewName("");
+      setNewParentId(null);
+      invalidate();
+    },
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: ({ id, name }: { id: number; name: string }) => updateCategory(id, { name }),
+    onSuccess: () => {
+      setEditingId(null);
+      invalidate();
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: deleteCategory,
+    onSuccess: invalidate,
+  });
+
+  const handleAdd = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newName.trim()) return;
+    addMutation.mutate({ name: newName.trim(), parent_id: newParentId });
+  };
+
+  const startEdit = (cat: Category) => {
+    setEditingId(cat.id);
+    setEditName(cat.name);
+  };
+
+  const handleEditKeyDown = (e: React.KeyboardEvent, id: number) => {
+    if (e.key === "Enter") {
+      updateMutation.mutate({ id, name: editName.trim() });
+    } else if (e.key === "Escape") {
+      setEditingId(null);
+    }
+  };
+
+  const handleDelete = (cat: Category) => {
+    if (window.confirm(`Delete category "${cat.name}"?`)) {
+      deleteMutation.mutate(cat.id);
+    }
+  };
+
+  const parentName = (parentId: number | null): string => {
+    if (parentId === null) return "";
+    return categories?.find((c) => c.id === parentId)?.name ?? `#${parentId}`;
+  };
+
+  if (isLoading) return <div className={styles.status}>Loading categories...</div>;
+  if (error) return <div className={styles.error}>Failed to load categories.</div>;
+
+  return (
+    <div className={styles.page}>
+      <h1 className={styles.title}>Categories</h1>
+      <p className={styles.subtitle}>Manage transaction categories.</p>
+
+      <form className={styles.addForm} onSubmit={handleAdd}>
+        <div className={styles.field}>
+          <label>Name</label>
+          <input
+            type="text"
+            value={newName}
+            onChange={(e) => setNewName(e.target.value)}
+            placeholder="Category name"
+            required
+          />
+        </div>
+        <div className={styles.field}>
+          <label>Parent</label>
+          <select
+            value={newParentId ?? ""}
+            onChange={(e) => setNewParentId(e.target.value === "" ? null : Number(e.target.value))}
+          >
+            <option value="">None</option>
+            {categories?.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.name}
+              </option>
+            ))}
+          </select>
+        </div>
+        <button type="submit" disabled={addMutation.isPending}>
+          Add
+        </button>
+      </form>
+
+      {categories && categories.length === 0 && (
+        <p className={styles.empty}>No categories yet. Create one above.</p>
+      )}
+
+      {categories && categories.length > 0 && (
+        <table className={styles.table}>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Parent</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {categories.map((cat) => (
+              <tr key={cat.id}>
+                <td>
+                  {editingId === cat.id ? (
+                    <input
+                      className={styles.editInput}
+                      value={editName}
+                      onChange={(e) => setEditName(e.target.value)}
+                      onKeyDown={(e) => handleEditKeyDown(e, cat.id)}
+                      onBlur={() => setEditingId(null)}
+                      autoFocus
+                    />
+                  ) : (
+                    cat.name
+                  )}
+                </td>
+                <td>{parentName(cat.parent_id)}</td>
+                <td>
+                  <div className={styles.actions}>
+                    <button type="button" onClick={() => startEdit(cat)}>
+                      Edit
+                    </button>
+                    <button type="button" onClick={() => handleDelete(cat)}>
+                      Delete
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+    </div>
+  );
+}

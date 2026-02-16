@@ -10,6 +10,9 @@ export function NavBar() {
       <NavLink to="/transactions" className={({ isActive }) => (isActive ? styles.active : "")}>
         Transactions
       </NavLink>
+      <NavLink to="/categories" className={({ isActive }) => (isActive ? styles.active : "")}>
+        Categories
+      </NavLink>
       <NavLink to="/import" className={({ isActive }) => (isActive ? styles.active : "")}>
         Import
       </NavLink>
