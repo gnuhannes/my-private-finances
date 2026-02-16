@@ -31,6 +31,10 @@ export async function apiPost<T>(path: string, data: unknown): Promise<T> {
   return apiFetch<T>(path, { method: "POST", body: JSON.stringify(data) });
 }
 
+export async function apiPut<T>(path: string, data: unknown): Promise<T> {
+  return apiFetch<T>(path, { method: "PUT", body: JSON.stringify(data) });
+}
+
 export async function apiPatch<T>(path: string, data: unknown): Promise<T> {
   return apiFetch<T>(path, { method: "PATCH", body: JSON.stringify(data) });
 }

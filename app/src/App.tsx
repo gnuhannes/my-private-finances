@@ -3,6 +3,7 @@ import { NavBar } from "./components/NavBar";
 import Dashboard from "./pages/Dashboard";
 import Transactions from "./pages/Transactions";
 import Categories from "./pages/Categories";
+import CategorizationRules from "./pages/CategorizationRules";
 import Import from "./pages/Import";
 import "./App.css";
 
@@ -14,6 +15,7 @@ export default function App() {
         <Route path="/" element={<Dashboard />} />
         <Route path="/transactions" element={<Transactions />} />
         <Route path="/categories" element={<Categories />} />
+        <Route path="/rules" element={<CategorizationRules />} />
         <Route path="/import" element={<Import />} />
       </Routes>
     </>

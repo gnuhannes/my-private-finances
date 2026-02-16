@@ -11,6 +11,10 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from my_private_finances.models import Account, Transaction
+from my_private_finances.services.categorization import (
+    load_rules_ordered,
+    match_transaction,
+)
 from my_private_finances.services.transaction_hash import compute_import_hash, HashInput
 
 IMPORT_SOURCE = "csv"
@@ -88,6 +92,8 @@ async def import_transactions_from_csv_path(
     if res.scalar_one_or_none() is None:
         raise ValueError(f"Account {account_id} not found")
 
+    rules = await load_rules_ordered(session)
+
     total_rows = 0
     created = 0
     duplicates = 0
@@ -162,6 +168,11 @@ async def import_transactions_from_csv_path(
                     import_source=IMPORT_SOURCE,
                     import_hash=import_hash,
                 )
+
+                if rules:
+                    matched_cat = match_transaction(db_obj, rules)
+                    if matched_cat is not None:
+                        db_obj.category_id = matched_cat
 
                 session.add(db_obj)
                 try:

@@ -20,6 +20,25 @@ async def create_category(
     return response.json()
 
 
+async def create_rule(
+    client: AsyncClient,
+    *,
+    field: str = "payee",
+    operator: str = "contains",
+    value: str = "Rewe",
+    category_id: int,
+) -> dict[str, Any]:
+    payload = {
+        "field": field,
+        "operator": operator,
+        "value": value,
+        "category_id": category_id,
+    }
+    response = await client.post(f"{API_PREFIX}/categorization-rules", json=payload)
+    assert response.status_code == 201, response.text
+    return response.json()
+
+
 async def create_account(
     client: AsyncClient, *, name: str = "Main", currency: str = "EUR"
 ) -> dict[str, Any]:
