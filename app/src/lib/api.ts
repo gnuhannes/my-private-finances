@@ -12,3 +12,6 @@ export type {
   TransactionListResponse,
   TransactionParams,
 } from "./api/transactions";
+
+export { importCsv } from "./api/imports";
+export type { ImportResult, ImportCsvParams } from "./api/imports";

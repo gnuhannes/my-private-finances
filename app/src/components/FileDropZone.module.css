@@ -1,0 +1,36 @@
+.zone {
+  border: 2px dashed var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
+  text-align: center;
+  cursor: pointer;
+  transition:
+    border-color 0.15s,
+    background 0.15s;
+}
+
+.zone:hover {
+  border-color: var(--border-strong);
+}
+
+.dragging {
+  border-color: var(--primary);
+  background: rgba(59, 91, 219, 0.06);
+}
+
+.hasFile {
+  border-style: solid;
+  border-color: var(--border-strong);
+}
+
+.input {
+  display: none;
+}
+
+.placeholder {
+  color: var(--text-muted);
+}
+
+.fileInfo {
+  font-weight: 500;
+}

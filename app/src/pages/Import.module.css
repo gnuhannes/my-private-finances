@@ -1,0 +1,16 @@
+.page {
+  padding: 24px;
+}
+
+.title {
+  margin: 0;
+}
+
+.subtitle {
+  margin-top: 8px;
+  opacity: 0.8;
+}
+
+.importBtn {
+  margin-top: 16px;
+}
