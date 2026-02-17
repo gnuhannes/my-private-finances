@@ -12,7 +12,7 @@ from .transaction_read import TransactionRead
 from .transaction_update import TransactionUpdate
 from .transaction_list import TransactionListResponse
 from .base import StrictSchema
-from .report_monthly import MonthlyReport, PayeeTotal
+from .report_monthly import CategoryTotal, MonthlyReport, PayeeTotal
 from .import_result import ImportResultResponse
 
 __all__ = [
@@ -20,6 +20,7 @@ __all__ = [
     "AccountRead",
     "ApplyResult",
     "CategoryCreate",
+    "CategoryTotal",
     "CategoryRead",
     "CategoryUpdate",
     "RuleCreate",

@@ -4,7 +4,8 @@ import { useMonthlyReport } from "../hooks/useMonthlyReport";
 import { formatMoneyString, formatCurrency } from "../utils/money";
 import { KpiCard } from "../components/KpiCard";
 import { TopPayeesBarChart } from "../components/TopPayeesBarChart";
-import { mapTopPayeesForChart } from "../domain/reports";
+import { CategoryBreakdownChart } from "../components/CategoryBreakdownChart";
+import { mapTopPayeesForChart, mapCategoryBreakdownForChart } from "../domain/reports";
 import styles from "./Dashboard.module.css";
 
 function monthKey(d: Date): string {
@@ -105,14 +106,25 @@ export default function Dashboard() {
             />
           </div>
 
-          {report.data.top_payees.length > 0 ? (
-            <TopPayeesBarChart
-              data={mapTopPayeesForChart(report.data.top_payees)}
-              formatValue={(v) => formatCurrency(v, report.data.currency)}
-            />
-          ) : (
-            <div className={styles.muted}>No top payees for this month.</div>
-          )}
+          <div className={styles.chartsRow}>
+            {report.data.top_payees.length > 0 ? (
+              <TopPayeesBarChart
+                data={mapTopPayeesForChart(report.data.top_payees)}
+                formatValue={(v) => formatCurrency(v, report.data.currency)}
+              />
+            ) : (
+              <div className={styles.muted}>No top payees for this month.</div>
+            )}
+
+            {report.data.category_breakdown.length > 0 ? (
+              <CategoryBreakdownChart
+                data={mapCategoryBreakdownForChart(report.data.category_breakdown)}
+                formatValue={(v) => formatCurrency(v, report.data.currency)}
+              />
+            ) : (
+              <div className={styles.muted}>No category breakdown for this month.</div>
+            )}
+          </div>
         </div>
       )}
     </div>

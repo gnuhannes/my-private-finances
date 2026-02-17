@@ -10,8 +10,8 @@ from sqlalchemy import func, literal, select, case
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from my_private_finances.deps import get_session
-from my_private_finances.models import Account, Transaction
-from my_private_finances.schemas import MonthlyReport, PayeeTotal
+from my_private_finances.models import Account, Category, Transaction
+from my_private_finances.schemas import CategoryTotal, MonthlyReport, PayeeTotal
 
 router = APIRouter(prefix="/reports", tags=["reports"])
 
@@ -91,6 +91,28 @@ async def get_monthly_report(
         PayeeTotal(payee=r.payee, total=Decimal(str(r.total))) for r in payees_rows
     ]
 
+    cat = cast(Any, Category).__table__
+    stmt_categories = (
+        select(
+            cat.c.name.label("category_name"),
+            func.coalesce(func.sum(tx.c.amount), 0).label("total"),
+        )
+        .select_from(tx.outerjoin(cat, tx.c.category_id == cat.c.id))
+        .where(base_filter)
+        .where(tx.c.amount < 0)
+        .group_by(tx.c.category_id)
+        .order_by(func.sum(tx.c.amount).asc())
+    )
+
+    cat_rows = (await session.execute(stmt_categories)).all()
+    categories = [
+        CategoryTotal(
+            category_name=r.category_name,
+            total=Decimal(str(r.total)),
+        )
+        for r in cat_rows
+    ]
+
     return MonthlyReport(
         account_id=account_id,
         month=month,
@@ -100,4 +122,5 @@ async def get_monthly_report(
         expense_total=expense_total,
         net_total=net_total,
         top_payees=payees,
+        category_breakdown=categories,
     )

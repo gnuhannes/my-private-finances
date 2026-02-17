@@ -25,6 +25,7 @@ vi.mock("../../src/hooks/useMonthlyReport", () => ({
       expense_total: "-400.00",
       net_total: "600.00",
       top_payees: [{ payee: "REWE", total: "-120.00" }],
+      category_breakdown: [{ category_name: "Groceries", total: "-120.00" }],
     },
   }),
 }));

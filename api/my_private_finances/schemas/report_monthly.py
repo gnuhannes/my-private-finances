@@ -11,6 +11,11 @@ class PayeeTotal(StrictSchema):
     total: Decimal
 
 
+class CategoryTotal(StrictSchema):
+    category_name: Optional[str] = Field(default=None)
+    total: Decimal
+
+
 class MonthlyReport(StrictSchema):
     account_id: int
     month: str
@@ -23,3 +28,4 @@ class MonthlyReport(StrictSchema):
     net_total: Decimal
 
     top_payees: list[PayeeTotal]
+    category_breakdown: list[CategoryTotal]

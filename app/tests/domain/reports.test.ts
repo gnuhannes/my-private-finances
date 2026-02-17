@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { mapTopPayeesForChart } from "../../src/domain/reports";
+import { mapTopPayeesForChart, mapCategoryBreakdownForChart } from "../../src/domain/reports";
 
 describe("mapTopPayeesForChart", () => {
   it("maps payee totals to positive chart values", () => {
@@ -19,5 +19,25 @@ describe("mapTopPayeesForChart", () => {
     ]);
 
     expect(out).toEqual([{ payee: "B", amount: 10 }]);
+  });
+});
+
+describe("mapCategoryBreakdownForChart", () => {
+  it("maps category totals to positive chart values", () => {
+    const out = mapCategoryBreakdownForChart([{ category_name: "Groceries", total: "-50.00" }]);
+    expect(out).toEqual([{ category: "Groceries", amount: 50 }]);
+  });
+
+  it("uses Uncategorized for null category_name", () => {
+    const out = mapCategoryBreakdownForChart([{ category_name: null, total: "-10.00" }]);
+    expect(out[0]?.category).toBe("Uncategorized");
+  });
+
+  it("filters invalid totals", () => {
+    const out = mapCategoryBreakdownForChart([
+      { category_name: "A", total: "abc" },
+      { category_name: "B", total: "-20.00" },
+    ]);
+    expect(out).toEqual([{ category: "B", amount: 20 }]);
   });
 });

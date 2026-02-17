@@ -3,7 +3,7 @@ from __future__ import annotations
 import pytest
 from httpx import AsyncClient
 
-from tests.helpers import create_account, create_transaction
+from tests.helpers import create_account, create_category, create_transaction
 
 
 @pytest.mark.asyncio
@@ -89,6 +89,84 @@ async def test_reports_monthly_aggregates_correctly(test_app: AsyncClient) -> No
     assert payees["REWE"]["total"] == "-12.34", (
         f"REWE total mismatch. Expected -12.34, got {payees['REWE']['total']}. top_payees: {top_payees}"
     )
+
+    # Uncategorized expense shows up in category_breakdown with null name
+    cat_breakdown = body["category_breakdown"]
+    assert len(cat_breakdown) == 1
+    assert cat_breakdown[0]["category_name"] is None
+    assert cat_breakdown[0]["total"] == "-12.34"
+
+
+@pytest.mark.asyncio
+async def test_reports_monthly_category_breakdown(test_app: AsyncClient) -> None:
+    acc = await create_account(test_app)
+    cat_groceries = await create_category(test_app, name="Groceries")
+    cat_transport = await create_category(test_app, name="Transport")
+
+    # Two categorized expenses + one uncategorized
+    tx1 = await create_transaction(
+        test_app,
+        account_id=acc["id"],
+        booking_date="2026-03-01",
+        amount="-50.00",
+        payee="REWE",
+        external_id="cat-1",
+    )
+    await test_app.patch(
+        f"/api/transactions/{tx1['id']}",
+        json={"category_id": cat_groceries["id"]},
+    )
+
+    tx2 = await create_transaction(
+        test_app,
+        account_id=acc["id"],
+        booking_date="2026-03-05",
+        amount="-30.00",
+        payee="DB",
+        external_id="cat-2",
+    )
+    await test_app.patch(
+        f"/api/transactions/{tx2['id']}",
+        json={"category_id": cat_transport["id"]},
+    )
+
+    await create_transaction(
+        test_app,
+        account_id=acc["id"],
+        booking_date="2026-03-10",
+        amount="-15.00",
+        payee="Unknown",
+        external_id="cat-3",
+    )
+
+    # Income should not appear in breakdown
+    await create_transaction(
+        test_app,
+        account_id=acc["id"],
+        booking_date="2026-03-15",
+        amount="3000.00",
+        payee="Employer",
+        external_id="cat-4",
+    )
+
+    res = await test_app.get(
+        "/api/reports/monthly",
+        params={"account_id": acc["id"], "month": "2026-03"},
+    )
+    assert res.status_code == 200
+    body = res.json()
+
+    breakdown = body["category_breakdown"]
+    assert len(breakdown) == 3
+
+    by_name = {c["category_name"]: c["total"] for c in breakdown}
+    assert by_name["Groceries"] == "-50.00"
+    assert by_name["Transport"] == "-30.00"
+    assert by_name[None] == "-15.00"
+
+    # Ordered by total ascending (most spending first)
+    assert breakdown[0]["category_name"] == "Groceries"
+    assert breakdown[1]["category_name"] == "Transport"
 
 
 @pytest.mark.asyncio

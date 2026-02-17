@@ -5,6 +5,11 @@ export type PayeeTotal = {
   total: string;
 };
 
+export type CategoryTotal = {
+  category_name: string | null;
+  total: string;
+};
+
 export type MonthlyReport = {
   account_id: number;
   month: string;
@@ -17,6 +22,7 @@ export type MonthlyReport = {
   net_total: string;
 
   top_payees: PayeeTotal[];
+  category_breakdown: CategoryTotal[];
 };
 
 export function getMonthlyReport(params: {

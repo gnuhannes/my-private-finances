@@ -22,3 +22,28 @@ export function mapTopPayeesForChart(items: PayeeTotalDto[]): TopPayee[] {
     })
     .filter((x): x is TopPayee => x !== null);
 }
+
+export type CategoryTotalDto = {
+  category_name: string | null;
+  total: string;
+};
+
+export type CategoryBreakdownItem = {
+  category: string;
+  amount: number;
+};
+
+export function mapCategoryBreakdownForChart(items: CategoryTotalDto[]): CategoryBreakdownItem[] {
+  return items
+    .map((c) => {
+      const category = c.category_name ?? "Uncategorized";
+      const amount = Math.abs(Number(c.total));
+
+      if (!Number.isFinite(amount)) {
+        return null;
+      }
+
+      return { category, amount } satisfies CategoryBreakdownItem;
+    })
+    .filter((x): x is CategoryBreakdownItem => x !== null);
+}
