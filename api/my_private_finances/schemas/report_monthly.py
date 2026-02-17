@@ -1,3 +1,4 @@
+from datetime import date
 from decimal import Decimal
 from typing import Optional
 
@@ -16,6 +17,14 @@ class CategoryTotal(StrictSchema):
     total: Decimal
 
 
+class TopSpending(StrictSchema):
+    booking_date: date
+    payee: Optional[str] = Field(default=None)
+    purpose: Optional[str] = Field(default=None)
+    amount: Decimal
+    category_name: Optional[str] = Field(default=None)
+
+
 class MonthlyReport(StrictSchema):
     account_id: int
     month: str
@@ -29,3 +38,4 @@ class MonthlyReport(StrictSchema):
 
     top_payees: list[PayeeTotal]
     category_breakdown: list[CategoryTotal]
+    top_spendings: list[TopSpending]

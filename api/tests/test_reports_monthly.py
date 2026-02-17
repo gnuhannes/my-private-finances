@@ -96,6 +96,12 @@ async def test_reports_monthly_aggregates_correctly(test_app: AsyncClient) -> No
     assert cat_breakdown[0]["category_name"] is None
     assert cat_breakdown[0]["total"] == "-12.34"
 
+    # Top spendings contains the single expense
+    top_spendings = body["top_spendings"]
+    assert len(top_spendings) == 1
+    assert top_spendings[0]["amount"] == "-12.34"
+    assert top_spendings[0]["payee"] == "REWE"
+
 
 @pytest.mark.asyncio
 async def test_reports_monthly_category_breakdown(test_app: AsyncClient) -> None:
@@ -167,6 +173,78 @@ async def test_reports_monthly_category_breakdown(test_app: AsyncClient) -> None
     # Ordered by total ascending (most spending first)
     assert breakdown[0]["category_name"] == "Groceries"
     assert breakdown[1]["category_name"] == "Transport"
+
+
+@pytest.mark.asyncio
+async def test_reports_monthly_top_spendings_ranked(test_app: AsyncClient) -> None:
+    acc = await create_account(test_app)
+    cat = await create_category(test_app, name="Shopping")
+
+    tx1 = await create_transaction(
+        test_app,
+        account_id=acc["id"],
+        booking_date="2026-04-01",
+        amount="-200.00",
+        payee="MediaMarkt",
+        purpose="TV",
+        external_id="ts-1",
+    )
+    await test_app.patch(
+        f"/api/transactions/{tx1['id']}",
+        json={"category_id": cat["id"]},
+    )
+
+    await create_transaction(
+        test_app,
+        account_id=acc["id"],
+        booking_date="2026-04-05",
+        amount="-50.00",
+        payee="REWE",
+        purpose="Groceries",
+        external_id="ts-2",
+    )
+
+    await create_transaction(
+        test_app,
+        account_id=acc["id"],
+        booking_date="2026-04-10",
+        amount="-500.00",
+        payee="Landlord",
+        purpose="Rent",
+        external_id="ts-3",
+    )
+
+    # Income should not appear
+    await create_transaction(
+        test_app,
+        account_id=acc["id"],
+        booking_date="2026-04-15",
+        amount="3000.00",
+        payee="Employer",
+        external_id="ts-4",
+    )
+
+    res = await test_app.get(
+        "/api/reports/monthly",
+        params={"account_id": acc["id"], "month": "2026-04"},
+    )
+    assert res.status_code == 200
+    body = res.json()
+
+    spendings = body["top_spendings"]
+    assert len(spendings) == 3
+
+    # Ranked by amount ascending (most negative first)
+    assert spendings[0]["amount"] == "-500.00"
+    assert spendings[0]["payee"] == "Landlord"
+    assert spendings[0]["category_name"] is None
+
+    assert spendings[1]["amount"] == "-200.00"
+    assert spendings[1]["payee"] == "MediaMarkt"
+    assert spendings[1]["category_name"] == "Shopping"
+
+    assert spendings[2]["amount"] == "-50.00"
+    assert spendings[2]["payee"] == "REWE"
 
 
 @pytest.mark.asyncio

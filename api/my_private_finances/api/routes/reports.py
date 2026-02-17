@@ -11,7 +11,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from my_private_finances.deps import get_session
 from my_private_finances.models import Account, Category, Transaction
-from my_private_finances.schemas import CategoryTotal, MonthlyReport, PayeeTotal
+from my_private_finances.schemas import (
+    CategoryTotal,
+    MonthlyReport,
+    PayeeTotal,
+    TopSpending,
+)
 
 router = APIRouter(prefix="/reports", tags=["reports"])
 
@@ -113,6 +118,33 @@ async def get_monthly_report(
         for r in cat_rows
     ]
 
+    stmt_top_spendings = (
+        select(
+            tx.c.booking_date,
+            tx.c.payee,
+            tx.c.purpose,
+            tx.c.amount,
+            cat.c.name.label("category_name"),
+        )
+        .select_from(tx.outerjoin(cat, tx.c.category_id == cat.c.id))
+        .where(base_filter)
+        .where(tx.c.amount < 0)
+        .order_by(tx.c.amount.asc())
+        .limit(10)
+    )
+
+    spending_rows = (await session.execute(stmt_top_spendings)).all()
+    spendings = [
+        TopSpending(
+            booking_date=r.booking_date,
+            payee=r.payee,
+            purpose=r.purpose,
+            amount=Decimal(str(r.amount)),
+            category_name=r.category_name,
+        )
+        for r in spending_rows
+    ]
+
     return MonthlyReport(
         account_id=account_id,
         month=month,
@@ -123,4 +155,5 @@ async def get_monthly_report(
         net_total=net_total,
         top_payees=payees,
         category_breakdown=categories,
+        top_spendings=spendings,
     )

@@ -10,6 +10,14 @@ export type CategoryTotal = {
   total: string;
 };
 
+export type TopSpending = {
+  booking_date: string;
+  payee: string | null;
+  purpose: string | null;
+  amount: string;
+  category_name: string | null;
+};
+
 export type MonthlyReport = {
   account_id: number;
   month: string;
@@ -23,6 +31,7 @@ export type MonthlyReport = {
 
   top_payees: PayeeTotal[];
   category_breakdown: CategoryTotal[];
+  top_spendings: TopSpending[];
 };
 
 export function getMonthlyReport(params: {

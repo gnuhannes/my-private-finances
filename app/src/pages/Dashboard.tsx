@@ -5,6 +5,7 @@ import { formatMoneyString, formatCurrency } from "../utils/money";
 import { KpiCard } from "../components/KpiCard";
 import { TopPayeesBarChart } from "../components/TopPayeesBarChart";
 import { CategoryBreakdownChart } from "../components/CategoryBreakdownChart";
+import { TopSpendingsTable } from "../components/TopSpendingsTable";
 import { mapTopPayeesForChart, mapCategoryBreakdownForChart } from "../domain/reports";
 import styles from "./Dashboard.module.css";
 
@@ -125,6 +126,15 @@ export default function Dashboard() {
               <div className={styles.muted}>No category breakdown for this month.</div>
             )}
           </div>
+
+          {report.data.top_spendings.length > 0 ? (
+            <TopSpendingsTable
+              items={report.data.top_spendings}
+              formatAmount={(v) => formatMoneyString(v, report.data.currency)}
+            />
+          ) : (
+            <div className={styles.muted}>No spendings for this month.</div>
+          )}
         </div>
       )}
     </div>
