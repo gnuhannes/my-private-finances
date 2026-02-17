@@ -7,11 +7,12 @@ from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from my_private_finances.models import Transaction, Account
+from my_private_finances.models import Transaction, Account, Category
 from my_private_finances.schemas import (
     TransactionRead,
     TransactionCreate,
     TransactionListResponse,
+    TransactionUpdate,
 )
 
 from my_private_finances.deps import get_session
@@ -87,6 +88,41 @@ async def create_transaction(
     )
 
 
+@router.patch("/{transaction_id}", response_model=TransactionRead)
+async def update_transaction(
+    transaction_id: int,
+    payload: TransactionUpdate,
+    session: AsyncSession = Depends(get_session),
+) -> TransactionRead:
+    db_obj = await session.get(Transaction, transaction_id)
+    if db_obj is None:
+        raise HTTPException(status_code=404, detail="Transaction not found")
+
+    if payload.category_id is not None:
+        cat = await session.get(Category, payload.category_id)
+        if cat is None:
+            raise HTTPException(status_code=422, detail="Category not found")
+
+    db_obj.category_id = payload.category_id
+    await session.commit()
+    await session.refresh(db_obj)
+
+    assert db_obj.id is not None
+    return TransactionRead(
+        id=db_obj.id,
+        account_id=db_obj.account_id,
+        booking_date=db_obj.booking_date,
+        amount=db_obj.amount,
+        currency=db_obj.currency,
+        payee=db_obj.payee,
+        purpose=db_obj.purpose,
+        category_id=db_obj.category_id,
+        external_id=db_obj.external_id,
+        import_source=db_obj.import_source,
+        import_hash=db_obj.import_hash,
+    )
+
+
 @router.get("", response_model=TransactionListResponse)
 async def list_transactions(
     account_id: Annotated[int, Query(ge=1)],
@@ -94,6 +130,7 @@ async def list_transactions(
     offset: Annotated[int, Query(ge=0)] = 0,
     date_from: date | None = None,
     date_to: date | None = None,
+    category_filter: str | None = None,
     session: AsyncSession = Depends(get_session),
 ) -> TransactionListResponse:
     filters = [Transaction.account_id == account_id]  # type: ignore[arg-type]
@@ -101,6 +138,8 @@ async def list_transactions(
         filters.append(Transaction.booking_date >= date_from)  # type: ignore[arg-type]
     if date_to is not None:
         filters.append(Transaction.booking_date <= date_to)  # type: ignore[arg-type]
+    if category_filter == "uncategorized":
+        filters.append(Transaction.category_id.is_(None))  # type: ignore[union-attr]
 
     count_stmt = select(func.count()).select_from(Transaction).where(*filters)  # type: ignore[arg-type]
     total = (await session.execute(count_stmt)).scalar_one()

@@ -1,4 +1,4 @@
-import { apiGet } from "./client";
+import { apiGet, apiPatch } from "./client";
 
 export type TransactionItem = {
   id: number;
@@ -25,6 +25,7 @@ export type TransactionParams = {
   offset?: number;
   dateFrom?: string;
   dateTo?: string;
+  categoryFilter?: string;
 };
 
 export function getTransactions(params: TransactionParams): Promise<TransactionListResponse> {
@@ -36,6 +37,16 @@ export function getTransactions(params: TransactionParams): Promise<TransactionL
   if (params.offset !== undefined) q.set("offset", String(params.offset));
   if (params.dateFrom) q.set("date_from", params.dateFrom);
   if (params.dateTo) q.set("date_to", params.dateTo);
+  if (params.categoryFilter) q.set("category_filter", params.categoryFilter);
 
   return apiGet<TransactionListResponse>(`/api/transactions?${q.toString()}`);
+}
+
+export function updateTransactionCategory(
+  id: number,
+  categoryId: number | null,
+): Promise<TransactionItem> {
+  return apiPatch<TransactionItem>(`/api/transactions/${id}`, {
+    category_id: categoryId,
+  });
 }

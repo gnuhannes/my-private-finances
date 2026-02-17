@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useAccounts } from "../hooks/useAccounts";
+import { useCategories } from "../hooks/useCategories";
 import { useTransactions } from "../hooks/useTransactions";
+import { useUpdateTransactionCategory } from "../hooks/useUpdateTransactionCategory";
 import { TransactionTable } from "../components/TransactionTable";
 import { Pagination } from "../components/Pagination";
 import styles from "./Transactions.module.css";
@@ -9,11 +11,13 @@ const PAGE_SIZE = 50;
 
 export default function Transactions() {
   const { data: accounts, isLoading, error } = useAccounts();
+  const { data: categories } = useCategories();
 
   const [accountId, setAccountId] = useState<number | null>(null);
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
   const [offset, setOffset] = useState(0);
+  const [uncategorizedOnly, setUncategorizedOnly] = useState(false);
 
   const selectedAccountId = accountId ?? (accounts && accounts.length > 0 ? accounts[0].id : null);
 
@@ -23,7 +27,10 @@ export default function Transactions() {
     offset,
     dateFrom: dateFrom || undefined,
     dateTo: dateTo || undefined,
+    categoryFilter: uncategorizedOnly ? "uncategorized" : undefined,
   });
+
+  const updateCategory = useUpdateTransactionCategory();
 
   const total = txQuery.data?.total ?? 0;
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
@@ -82,6 +89,18 @@ export default function Transactions() {
             }}
           />
         </label>
+
+        <label className={styles.checkboxControl}>
+          <input
+            type="checkbox"
+            checked={uncategorizedOnly}
+            onChange={(e) => {
+              setUncategorizedOnly(e.target.checked);
+              setOffset(0);
+            }}
+          />
+          <span>Uncategorized only</span>
+        </label>
       </div>
 
       {txQuery.isLoading && <div className={styles.status}>Loading transactions…</div>}
@@ -94,7 +113,14 @@ export default function Transactions() {
 
       {txQuery.data && (
         <div className={styles.section}>
-          <TransactionTable items={txQuery.data.items} currency={currency} />
+          <TransactionTable
+            items={txQuery.data.items}
+            currency={currency}
+            categories={categories ?? []}
+            onCategoryChange={(transactionId, categoryId) => {
+              updateCategory.mutate({ id: transactionId, categoryId });
+            }}
+          />
           <Pagination
             page={page}
             totalPages={totalPages}

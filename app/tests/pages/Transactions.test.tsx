@@ -11,6 +11,20 @@ vi.mock("../../src/hooks/useAccounts", () => ({
   }),
 }));
 
+vi.mock("../../src/hooks/useCategories", () => ({
+  useCategories: () => ({
+    data: [{ id: 1, name: "Groceries", parent_id: null }],
+    isLoading: false,
+    error: null,
+  }),
+}));
+
+vi.mock("../../src/hooks/useUpdateTransactionCategory", () => ({
+  useUpdateTransactionCategory: () => ({
+    mutate: vi.fn(),
+  }),
+}));
+
 vi.mock("../../src/hooks/useTransactions", () => ({
   useTransactions: () => ({
     isLoading: false,
@@ -78,7 +92,7 @@ describe("Transactions", () => {
     );
 
     expect(screen.getByText("Rewe")).toBeInTheDocument();
-    expect(screen.getByText("Groceries")).toBeInTheDocument();
+    expect(screen.getAllByText("Groceries").length).toBeGreaterThanOrEqual(1);
     expect(screen.getByText("2026-01-18")).toBeInTheDocument();
   });
 });

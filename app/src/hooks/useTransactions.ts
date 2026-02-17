@@ -7,6 +7,7 @@ export function useTransactions(params: {
   offset?: number;
   dateFrom?: string;
   dateTo?: string;
+  categoryFilter?: string;
 }) {
   return useQuery({
     queryKey: [
@@ -16,6 +17,7 @@ export function useTransactions(params: {
       params.offset,
       params.dateFrom,
       params.dateTo,
+      params.categoryFilter,
     ],
     queryFn: () =>
       getTransactions({
@@ -24,6 +26,7 @@ export function useTransactions(params: {
         offset: params.offset,
         dateFrom: params.dateFrom,
         dateTo: params.dateTo,
+        categoryFilter: params.categoryFilter,
       }),
     enabled: params.accountId !== null,
   });

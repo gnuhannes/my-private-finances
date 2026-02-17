@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { TransactionTable } from "../../src/components/TransactionTable";
 import type { TransactionItem } from "../../src/lib/api";
@@ -32,9 +32,18 @@ const sampleItems: TransactionItem[] = [
   },
 ];
 
+const noop = vi.fn();
+
 describe("TransactionTable", () => {
   it("renders rows for each transaction", () => {
-    render(<TransactionTable items={sampleItems} currency="EUR" />);
+    render(
+      <TransactionTable
+        items={sampleItems}
+        currency="EUR"
+        categories={[]}
+        onCategoryChange={noop}
+      />,
+    );
 
     expect(screen.getByText("Rewe")).toBeInTheDocument();
     expect(screen.getByText("Employer")).toBeInTheDocument();
@@ -45,7 +54,7 @@ describe("TransactionTable", () => {
   });
 
   it("shows empty message when no items", () => {
-    render(<TransactionTable items={[]} currency="EUR" />);
+    render(<TransactionTable items={[]} currency="EUR" categories={[]} onCategoryChange={noop} />);
     expect(screen.getByText("No transactions found.")).toBeInTheDocument();
   });
 });

@@ -9,6 +9,7 @@ from .categorization_rule import (
 from .category import CategoryCreate, CategoryRead, CategoryUpdate
 from .transaction_create import TransactionCreate
 from .transaction_read import TransactionRead
+from .transaction_update import TransactionUpdate
 from .transaction_list import TransactionListResponse
 from .base import StrictSchema
 from .report_monthly import MonthlyReport, PayeeTotal
@@ -27,6 +28,7 @@ __all__ = [
     "RuleUpdate",
     "TransactionCreate",
     "TransactionRead",
+    "TransactionUpdate",
     "TransactionListResponse",
     "StrictSchema",
     "MonthlyReport",
