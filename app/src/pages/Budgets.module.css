@@ -1,0 +1,83 @@
+.page {
+  padding: 24px;
+}
+
+.title {
+  margin: 0;
+}
+
+.subtitle {
+  margin-top: 8px;
+  opacity: 0.8;
+}
+
+.addForm {
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+  align-items: flex-end;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.field label {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.field input,
+.field select {
+  padding: 6px 10px;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 16px;
+}
+
+.table th,
+.table td {
+  padding: 8px 12px;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+
+.table th {
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.amount {
+  text-align: right;
+}
+
+.actions {
+  display: flex;
+  gap: 6px;
+}
+
+.editInput {
+  padding: 4px 8px;
+  width: 100px;
+  text-align: right;
+}
+
+.status {
+  margin-top: 16px;
+}
+
+.error {
+  margin-top: 16px;
+  color: var(--danger);
+}
+
+.empty {
+  margin-top: 16px;
+  opacity: 0.7;
+}

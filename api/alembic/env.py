@@ -10,7 +10,7 @@ from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
 from sqlmodel import SQLModel
 
-from my_private_finances.models import Account, Category, Transaction  # noqa: F401
+from my_private_finances.models import Account, Budget, Category, Transaction  # noqa: F401
 
 config = context.config
 if config.config_file_name is not None:

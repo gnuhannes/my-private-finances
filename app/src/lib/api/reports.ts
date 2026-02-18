@@ -34,6 +34,26 @@ export type MonthlyReport = {
   top_spendings: TopSpending[];
 };
 
+export type BudgetComparison = {
+  category_id: number;
+  category_name: string;
+  budgeted: string;
+  actual: string;
+  remaining: string;
+};
+
+export function getBudgetVsActual(params: {
+  accountId: number;
+  month: string;
+}): Promise<BudgetComparison[]> {
+  const q = new URLSearchParams({
+    account_id: String(params.accountId),
+    month: params.month,
+  });
+
+  return apiGet<BudgetComparison[]>(`/api/reports/budget-vs-actual?${q.toString()}`);
+}
+
 export function getMonthlyReport(params: {
   accountId: number;
   month: string;

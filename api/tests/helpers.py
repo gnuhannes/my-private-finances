@@ -53,6 +53,18 @@ async def create_account(
     return response.json()
 
 
+async def create_budget(
+    client: AsyncClient,
+    *,
+    category_id: int,
+    amount: str = "300.00",
+) -> dict[str, Any]:
+    payload = {"category_id": category_id, "amount": amount}
+    response = await client.post(f"{API_PREFIX}/budgets", json=payload)
+    assert response.status_code == 201, response.text
+    return response.json()
+
+
 async def create_transaction(
     client: AsyncClient,
     *,

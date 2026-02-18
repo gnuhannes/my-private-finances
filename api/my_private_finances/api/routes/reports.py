@@ -10,8 +10,9 @@ from sqlalchemy import func, literal, select, case
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from my_private_finances.deps import get_session
-from my_private_finances.models import Account, Category, Transaction
+from my_private_finances.models import Account, Budget, Category, Transaction
 from my_private_finances.schemas import (
+    BudgetComparison,
     CategoryTotal,
     MonthlyReport,
     PayeeTotal,
@@ -157,3 +158,71 @@ async def get_monthly_report(
         category_breakdown=categories,
         top_spendings=spendings,
     )
+
+
+@router.get("/budget-vs-actual", response_model=list[BudgetComparison])
+async def get_budget_vs_actual(
+    account_id: Annotated[int, Query(ge=1)],
+    month: Annotated[str, Query(min_length=7, max_length=7)],
+    session: SessionDep,
+) -> list[BudgetComparison]:
+    start, end = _parse_month(month)
+
+    res_acc = await session.execute(select(Account).where(Account.id == account_id))  # type: ignore[arg-type]
+    if res_acc.scalar_one_or_none() is None:
+        raise HTTPException(status_code=404, detail="Account not found")
+
+    tx = cast(Any, Transaction).__table__
+    cat = cast(Any, Category).__table__
+    budget_t = cast(Any, Budget).__table__
+
+    # Get all budgets with category names
+    stmt_budgets = (
+        select(
+            budget_t.c.category_id,
+            cat.c.name.label("category_name"),
+            budget_t.c.amount.label("budgeted"),
+        )
+        .join(cat, budget_t.c.category_id == cat.c.id)
+        .order_by(cat.c.name)
+    )
+    budget_rows = (await session.execute(stmt_budgets)).all()
+
+    if not budget_rows:
+        return []
+
+    # Get actual spending per category for this month
+    base_filter = (
+        (tx.c.account_id == account_id)
+        & (tx.c.booking_date >= start)
+        & (tx.c.booking_date < end)
+        & (tx.c.amount < 0)
+    )
+
+    stmt_actuals = (
+        select(
+            tx.c.category_id,
+            func.coalesce(func.sum(tx.c.amount), 0).label("actual"),
+        )
+        .where(base_filter)
+        .group_by(tx.c.category_id)
+    )
+    actual_rows = (await session.execute(stmt_actuals)).all()
+    actuals = {r.category_id: Decimal(str(r.actual)) for r in actual_rows}
+
+    result = []
+    for row in budget_rows:
+        raw_actual = actuals.get(row.category_id, Decimal("0"))
+        actual = abs(raw_actual)
+        budgeted = Decimal(str(row.budgeted))
+        result.append(
+            BudgetComparison(
+                category_id=row.category_id,
+                category_name=row.category_name,
+                budgeted=budgeted,
+                actual=actual,
+                remaining=budgeted - actual,
+            )
+        )
+
+    return result

@@ -39,6 +39,14 @@ vi.mock("../../src/hooks/useMonthlyReport", () => ({
   }),
 }));
 
+vi.mock("../../src/hooks/useBudgetVsActual", () => ({
+  useBudgetVsActual: () => ({
+    data: [],
+    isLoading: false,
+    isError: false,
+  }),
+}));
+
 describe("Dashboard", () => {
   it("renders KPI labels", () => {
     render(

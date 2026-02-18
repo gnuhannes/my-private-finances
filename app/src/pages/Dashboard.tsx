@@ -1,11 +1,13 @@
 import { useMemo, useState } from "react";
 import { useAccounts } from "../hooks/useAccounts";
 import { useMonthlyReport } from "../hooks/useMonthlyReport";
+import { useBudgetVsActual } from "../hooks/useBudgetVsActual";
 import { formatMoneyString, formatCurrency } from "../utils/money";
 import { KpiCard } from "../components/KpiCard";
 import { TopPayeesBarChart } from "../components/TopPayeesBarChart";
 import { CategoryBreakdownChart } from "../components/CategoryBreakdownChart";
 import { TopSpendingsTable } from "../components/TopSpendingsTable";
+import { BudgetVsActualTable } from "../components/BudgetVsActualTable";
 import { mapTopPayeesForChart, mapCategoryBreakdownForChart } from "../domain/reports";
 import styles from "./Dashboard.module.css";
 
@@ -35,6 +37,7 @@ export default function Dashboard() {
   const selectedAccountId = accountId ?? (accounts && accounts.length > 0 ? accounts[0].id : null);
 
   const report = useMonthlyReport(selectedAccountId, month);
+  const budgetReport = useBudgetVsActual(selectedAccountId, month);
 
   if (isLoading) return <div>Loading accounts…</div>;
   if (error) return <div>Failed to load accounts.</div>;
@@ -134,6 +137,13 @@ export default function Dashboard() {
             />
           ) : (
             <div className={styles.muted}>No spendings for this month.</div>
+          )}
+
+          {budgetReport.data && budgetReport.data.length > 0 && (
+            <BudgetVsActualTable
+              items={budgetReport.data}
+              formatAmount={(v) => formatMoneyString(v, report.data.currency)}
+            />
           )}
         </div>
       )}

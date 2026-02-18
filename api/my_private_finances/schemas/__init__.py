@@ -1,4 +1,5 @@
 from .account import AccountCreate, AccountRead
+from .budget import BudgetCreate, BudgetRead, BudgetUpdate
 from .categorization_rule import (
     ApplyResult,
     RuleCreate,
@@ -12,12 +13,17 @@ from .transaction_read import TransactionRead
 from .transaction_update import TransactionUpdate
 from .transaction_list import TransactionListResponse
 from .base import StrictSchema
+from .report_budget import BudgetComparison
 from .report_monthly import CategoryTotal, MonthlyReport, PayeeTotal, TopSpending
 from .import_result import ImportResultResponse
 
 __all__ = [
     "AccountCreate",
     "AccountRead",
+    "BudgetCreate",
+    "BudgetRead",
+    "BudgetUpdate",
+    "BudgetComparison",
     "ApplyResult",
     "CategoryCreate",
     "CategoryTotal",
