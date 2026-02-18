@@ -20,6 +20,7 @@ class TransactionRead(BaseModel):
     external_id: Optional[str] = None
     import_source: Optional[str] = None
     import_hash: str
+    is_transfer: bool = False
 
     @field_serializer("amount")
     def _serialize_amount(self, value: Decimal) -> str:

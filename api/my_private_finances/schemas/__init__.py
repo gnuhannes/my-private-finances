@@ -23,6 +23,7 @@ from .report_budget import BudgetComparison
 from .report_cost_type import CostTypeBreakdown, FixedVsVariableReport
 from .report_monthly import CategoryTotal, MonthlyReport, PayeeTotal, TopSpending
 from .import_result import ImportResultResponse
+from .transfer import TransferCandidateRead, TransferLeg
 
 __all__ = [
     "AccountCreate",
@@ -55,4 +56,6 @@ __all__ = [
     "RecurringPatternUpdate",
     "RecurringSummary",
     "ImportResultResponse",
+    "TransferCandidateRead",
+    "TransferLeg",
 ]

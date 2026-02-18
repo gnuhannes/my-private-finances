@@ -1,7 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
-import { getMonthlyReport } from "../lib/api";
+import { getMonthlyReport } from "../lib/api/reports";
 
-export function useMonthlyReport(accountId: number | null, month: string) {
+/** accountId: number for per-account, "all" for aggregated, null while loading */
+export function useMonthlyReport(accountId: number | "all" | null, month: string) {
   return useQuery({
     queryKey: ["reports", "monthly", accountId, month],
     queryFn: () => getMonthlyReport({ accountId: accountId!, month }),

@@ -26,7 +26,7 @@ class TopSpending(StrictSchema):
 
 
 class MonthlyReport(StrictSchema):
-    account_id: int
+    account_id: Optional[int]
     month: str
     currency: str
 

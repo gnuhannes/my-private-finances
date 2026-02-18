@@ -19,6 +19,9 @@ export function NavBar() {
       <NavLink to="/recurring" className={({ isActive }) => (isActive ? styles.active : "")}>
         Recurring
       </NavLink>
+      <NavLink to="/transfers" className={({ isActive }) => (isActive ? styles.active : "")}>
+        Transfers
+      </NavLink>
       <NavLink to="/rules" className={({ isActive }) => (isActive ? styles.active : "")}>
         Rules
       </NavLink>

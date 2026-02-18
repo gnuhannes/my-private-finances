@@ -15,3 +15,11 @@ export type {
 
 export { importCsv } from "./api/imports";
 export type { ImportResult, ImportCsvParams } from "./api/imports";
+
+export {
+  detectTransfers,
+  getTransferCandidates,
+  confirmTransfer,
+  dismissTransfer,
+} from "./api/transfers";
+export type { TransferCandidate, TransferLeg } from "./api/transfers";

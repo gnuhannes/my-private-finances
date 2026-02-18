@@ -19,7 +19,7 @@ export type TopSpending = {
 };
 
 export type MonthlyReport = {
-  account_id: number;
+  account_id: number | null;
   month: string;
   currency: string;
 
@@ -42,18 +42,6 @@ export type BudgetComparison = {
   remaining: string;
 };
 
-export function getBudgetVsActual(params: {
-  accountId: number;
-  month: string;
-}): Promise<BudgetComparison[]> {
-  const q = new URLSearchParams({
-    account_id: String(params.accountId),
-    month: params.month,
-  });
-
-  return apiGet<BudgetComparison[]>(`/api/reports/budget-vs-actual?${q.toString()}`);
-}
-
 export type CostTypeBreakdown = {
   cost_type: string | null;
   total: string;
@@ -61,7 +49,7 @@ export type CostTypeBreakdown = {
 };
 
 export type FixedVsVariableReport = {
-  account_id: number;
+  account_id: number | null;
   month: string;
   currency: string;
   fixed_total: string;
@@ -70,26 +58,36 @@ export type FixedVsVariableReport = {
   breakdown: CostTypeBreakdown[];
 };
 
+/** accountId: a number for per-account, or "all" to aggregate all accounts. */
 export function getMonthlyReport(params: {
-  accountId: number;
+  accountId: number | "all";
   month: string;
 }): Promise<MonthlyReport> {
-  const q = new URLSearchParams({
-    account_id: String(params.accountId),
-    month: params.month,
-  });
-
+  const q = new URLSearchParams({ month: params.month });
+  if (params.accountId !== "all") {
+    q.set("account_id", String(params.accountId));
+  }
   return apiGet<MonthlyReport>(`/api/reports/monthly?${q.toString()}`);
 }
 
+export function getBudgetVsActual(params: {
+  accountId: number | "all";
+  month: string;
+}): Promise<BudgetComparison[]> {
+  const q = new URLSearchParams({ month: params.month });
+  if (params.accountId !== "all") {
+    q.set("account_id", String(params.accountId));
+  }
+  return apiGet<BudgetComparison[]>(`/api/reports/budget-vs-actual?${q.toString()}`);
+}
+
 export function getFixedVsVariable(params: {
-  accountId: number;
+  accountId: number | "all";
   month: string;
 }): Promise<FixedVsVariableReport> {
-  const q = new URLSearchParams({
-    account_id: String(params.accountId),
-    month: params.month,
-  });
-
+  const q = new URLSearchParams({ month: params.month });
+  if (params.accountId !== "all") {
+    q.set("account_id", String(params.accountId));
+  }
   return apiGet<FixedVsVariableReport>(`/api/reports/fixed-vs-variable?${q.toString()}`);
 }

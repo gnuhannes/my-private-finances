@@ -29,6 +29,7 @@ class TransactionBase(SQLModel):
 
 class Transaction(TransactionBase, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
+    is_transfer: bool = Field(default=False)
 
     __table_args__ = (
         UniqueConstraint("account_id", "import_hash", name="uq_tx_account_import_hash"),

@@ -85,6 +85,7 @@ async def create_transaction(
         external_id=db_obj.external_id,
         import_source=db_obj.import_source,
         import_hash=db_obj.import_hash,
+        is_transfer=db_obj.is_transfer,
     )
 
 
@@ -120,6 +121,7 @@ async def update_transaction(
         external_id=db_obj.external_id,
         import_source=db_obj.import_source,
         import_hash=db_obj.import_hash,
+        is_transfer=db_obj.is_transfer,
     )
 
 
@@ -175,6 +177,7 @@ async def list_transactions(
                 external_id=row.external_id,
                 import_source=row.import_source,
                 import_hash=row.import_hash,
+                is_transfer=row.is_transfer,
             )
         )
 

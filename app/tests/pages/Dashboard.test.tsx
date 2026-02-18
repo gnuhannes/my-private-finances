@@ -81,7 +81,7 @@ describe("Dashboard", () => {
     );
 
     expect(screen.getByText("Income")).toBeInTheDocument();
-    expect(screen.getByText("Expenses")).toBeInTheDocument();
+    expect(screen.getByText(/Expenses/)).toBeInTheDocument();
     expect(screen.getByText("Net")).toBeInTheDocument();
     expect(screen.getByText("Transactions")).toBeInTheDocument();
   });

@@ -13,7 +13,7 @@ class CostTypeBreakdown(StrictSchema):
 
 
 class FixedVsVariableReport(StrictSchema):
-    account_id: int
+    account_id: Optional[int]
     month: str
     currency: str
     fixed_total: Decimal

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from datetime import date
 from decimal import Decimal
-from typing import Annotated, Any, cast
+from typing import Annotated, Any, Optional, cast
 
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.params import Query
@@ -42,26 +42,34 @@ def _parse_month(value: str) -> tuple[date, date]:
     return start, end
 
 
+async def _resolve_currency(session: AsyncSession, account_id: Optional[int]) -> str:
+    """Return currency for a single account, or 'EUR' when aggregating all accounts."""
+    if account_id is None:
+        return "EUR"
+    res = await session.execute(select(Account).where(Account.id == account_id))  # type: ignore[arg-type]
+    acc = res.scalar_one_or_none()
+    if acc is None:
+        raise HTTPException(status_code=404, detail="Account not found")
+    return acc.currency
+
+
 @router.get("/monthly", response_model=MonthlyReport)
 async def get_monthly_report(
-    account_id: Annotated[int, Query(ge=1)],
     month: Annotated[str, Query(min_length=7, max_length=7)],
     session: SessionDep,
+    account_id: Annotated[Optional[int], Query(ge=1)] = None,
 ) -> MonthlyReport:
     start, end = _parse_month(month)
-
-    res_acc = await session.execute(select(Account).where(Account.id == account_id))  # type: ignore[arg-type]
-    acc = res_acc.scalar_one_or_none()
-    if acc is None or acc.id is None:
-        raise HTTPException(status_code=404, detail="Account not found")
+    currency = await _resolve_currency(session, account_id)
 
     tx = cast(Any, Transaction).__table__
 
-    base_filter = (
-        (tx.c.account_id == account_id)
-        & (tx.c.booking_date >= start)
-        & (tx.c.booking_date < end)
-    )
+    date_filter = (tx.c.booking_date >= start) & (tx.c.booking_date < end)
+    transfer_filter = tx.c.is_transfer == False  # noqa: E712
+    if account_id is not None:
+        base_filter = (tx.c.account_id == account_id) & date_filter & transfer_filter
+    else:
+        base_filter = date_filter & transfer_filter
 
     stmt_totals = select(
         func.count(literal(1)).label("tx_count"),
@@ -151,7 +159,7 @@ async def get_monthly_report(
     return MonthlyReport(
         account_id=account_id,
         month=month,
-        currency=acc.currency,
+        currency=currency,
         transactions_count=tx_count,
         income_total=income_total,
         expense_total=expense_total,
@@ -164,15 +172,16 @@ async def get_monthly_report(
 
 @router.get("/budget-vs-actual", response_model=list[BudgetComparison])
 async def get_budget_vs_actual(
-    account_id: Annotated[int, Query(ge=1)],
     month: Annotated[str, Query(min_length=7, max_length=7)],
     session: SessionDep,
+    account_id: Annotated[Optional[int], Query(ge=1)] = None,
 ) -> list[BudgetComparison]:
     start, end = _parse_month(month)
 
-    res_acc = await session.execute(select(Account).where(Account.id == account_id))  # type: ignore[arg-type]
-    if res_acc.scalar_one_or_none() is None:
-        raise HTTPException(status_code=404, detail="Account not found")
+    if account_id is not None:
+        res_acc = await session.execute(select(Account).where(Account.id == account_id))  # type: ignore[arg-type]
+        if res_acc.scalar_one_or_none() is None:
+            raise HTTPException(status_code=404, detail="Account not found")
 
     tx = cast(Any, Transaction).__table__
     cat = cast(Any, Category).__table__
@@ -194,12 +203,14 @@ async def get_budget_vs_actual(
         return []
 
     # Get actual spending per category for this month
-    base_filter = (
-        (tx.c.account_id == account_id)
-        & (tx.c.booking_date >= start)
-        & (tx.c.booking_date < end)
-        & (tx.c.amount < 0)
+    transfer_filter = tx.c.is_transfer == False  # noqa: E712
+    date_filter = (
+        (tx.c.booking_date >= start) & (tx.c.booking_date < end) & (tx.c.amount < 0)
     )
+    if account_id is not None:
+        base_filter = (tx.c.account_id == account_id) & date_filter & transfer_filter
+    else:
+        base_filter = date_filter & transfer_filter
 
     stmt_actuals = (
         select(
@@ -232,26 +243,24 @@ async def get_budget_vs_actual(
 
 @router.get("/fixed-vs-variable", response_model=FixedVsVariableReport)
 async def get_fixed_vs_variable(
-    account_id: Annotated[int, Query(ge=1)],
     month: Annotated[str, Query(min_length=7, max_length=7)],
     session: SessionDep,
+    account_id: Annotated[Optional[int], Query(ge=1)] = None,
 ) -> FixedVsVariableReport:
     start, end = _parse_month(month)
-
-    res_acc = await session.execute(select(Account).where(Account.id == account_id))  # type: ignore[arg-type]
-    acc = res_acc.scalar_one_or_none()
-    if acc is None or acc.id is None:
-        raise HTTPException(status_code=404, detail="Account not found")
+    currency = await _resolve_currency(session, account_id)
 
     tx = cast(Any, Transaction).__table__
     cat = cast(Any, Category).__table__
 
-    base_filter = (
-        (tx.c.account_id == account_id)
-        & (tx.c.booking_date >= start)
-        & (tx.c.booking_date < end)
-        & (tx.c.amount < 0)
+    transfer_filter = tx.c.is_transfer == False  # noqa: E712
+    date_filter = (
+        (tx.c.booking_date >= start) & (tx.c.booking_date < end) & (tx.c.amount < 0)
     )
+    if account_id is not None:
+        base_filter = (tx.c.account_id == account_id) & date_filter & transfer_filter
+    else:
+        base_filter = date_filter & transfer_filter
 
     stmt = (
         select(
@@ -282,7 +291,7 @@ async def get_fixed_vs_variable(
     return FixedVsVariableReport(
         account_id=account_id,
         month=month,
-        currency=acc.currency,
+        currency=currency,
         fixed_total=totals.get("fixed", Decimal("0")),
         variable_total=totals.get("variable", Decimal("0")),
         unclassified_total=totals.get(None, Decimal("0")),

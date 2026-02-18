@@ -29,19 +29,35 @@ function lastNMonths(n: number): string[] {
   return out;
 }
 
+/** "all" = aggregate all accounts; number = specific account; null = loading */
+type AccountFilter = "all" | number | null;
+
 export default function Dashboard() {
   const { data: accounts, isLoading, error } = useAccounts();
 
   const months = useMemo(() => lastNMonths(24), []);
-  const [accountId, setAccountId] = useState<number | null>(null);
+  const [accountId, setAccountId] = useState<AccountFilter>(null);
   const [month, setMonth] = useState<string>(months[0]);
 
-  const selectedAccountId = accountId ?? (accounts && accounts.length > 0 ? accounts[0].id : null);
+  // Default to "all" once accounts are loaded (null = not yet decided)
+  const selectedAccountId: AccountFilter =
+    accountId !== null ? accountId : accounts && accounts.length > 0 ? "all" : null;
+
+  const isAllAccounts = selectedAccountId === "all";
+
+  // Currency: use selected account's currency, or EUR when aggregating
+  const currency =
+    typeof selectedAccountId === "number"
+      ? (accounts?.find((a) => a.id === selectedAccountId)?.currency ?? "EUR")
+      : "EUR";
 
   const report = useMonthlyReport(selectedAccountId, month);
   const budgetReport = useBudgetVsActual(selectedAccountId, month);
   const fixedVsVariable = useFixedVsVariable(selectedAccountId, month);
-  const recurringSummary = useRecurringSummary(selectedAccountId);
+  // Recurring summary is per-account only — disabled in "All Accounts" mode
+  const recurringSummaryAccountId =
+    typeof selectedAccountId === "number" ? selectedAccountId : null;
+  const recurringSummary = useRecurringSummary(recurringSummaryAccountId);
 
   if (isLoading) return <div>Loading accounts…</div>;
   if (error) return <div>Failed to load accounts.</div>;
@@ -56,13 +72,14 @@ export default function Dashboard() {
         <label className={styles.control}>
           <span>Account</span>
           <select
-            value={selectedAccountId ?? ""}
+            value={selectedAccountId === "all" ? "all" : (selectedAccountId ?? "")}
             onChange={(e) => {
               const v = e.target.value;
-              setAccountId(v === "" ? null : Number(v));
+              if (v === "all") setAccountId("all");
+              else setAccountId(v === "" ? null : Number(v));
             }}
           >
-            <option value="">Select account…</option>
+            <option value="all">All Accounts</option>
             {accounts.map((a) => (
               <option key={a.id} value={a.id}>
                 #{a.id} — {a.name} ({a.currency})
@@ -94,17 +111,17 @@ export default function Dashboard() {
           <div className={styles.kpiGrid}>
             <KpiCard
               label="Income"
-              value={formatMoneyString(report.data.income_total, report.data.currency)}
+              value={formatMoneyString(report.data.income_total, currency)}
               loading={report.isLoading}
             />
             <KpiCard
-              label="Expenses"
-              value={formatMoneyString(report.data.expense_total, report.data.currency)}
+              label={isAllAccounts ? "Expenses (excl. transfers)" : "Expenses"}
+              value={formatMoneyString(report.data.expense_total, currency)}
               loading={report.isLoading}
             />
             <KpiCard
               label="Net"
-              value={formatMoneyString(report.data.net_total, report.data.currency)}
+              value={formatMoneyString(report.data.net_total, currency)}
               loading={report.isLoading}
             />
             <KpiCard
@@ -116,15 +133,12 @@ export default function Dashboard() {
               <>
                 <KpiCard
                   label="Fixed Costs"
-                  value={formatMoneyString(fixedVsVariable.data.fixed_total, report.data.currency)}
+                  value={formatMoneyString(fixedVsVariable.data.fixed_total, currency)}
                   loading={fixedVsVariable.isLoading}
                 />
                 <KpiCard
                   label="Variable Costs"
-                  value={formatMoneyString(
-                    fixedVsVariable.data.variable_total,
-                    report.data.currency,
-                  )}
+                  value={formatMoneyString(fixedVsVariable.data.variable_total, currency)}
                   loading={fixedVsVariable.isLoading}
                 />
               </>
@@ -132,10 +146,7 @@ export default function Dashboard() {
             {recurringSummary.data && (
               <KpiCard
                 label="Monthly Recurring"
-                value={formatMoneyString(
-                  recurringSummary.data.total_monthly_recurring,
-                  report.data.currency,
-                )}
+                value={formatMoneyString(recurringSummary.data.total_monthly_recurring, currency)}
                 loading={recurringSummary.isLoading}
               />
             )}
@@ -145,7 +156,7 @@ export default function Dashboard() {
             {report.data.top_payees.length > 0 ? (
               <TopPayeesBarChart
                 data={mapTopPayeesForChart(report.data.top_payees)}
-                formatValue={(v) => formatCurrency(v, report.data.currency)}
+                formatValue={(v) => formatCurrency(v, currency)}
               />
             ) : (
               <div className={styles.muted}>No top payees for this month.</div>
@@ -154,7 +165,7 @@ export default function Dashboard() {
             {report.data.category_breakdown.length > 0 ? (
               <CategoryBreakdownChart
                 data={mapCategoryBreakdownForChart(report.data.category_breakdown)}
-                formatValue={(v) => formatCurrency(v, report.data.currency)}
+                formatValue={(v) => formatCurrency(v, currency)}
               />
             ) : (
               <div className={styles.muted}>No category breakdown for this month.</div>
@@ -164,7 +175,7 @@ export default function Dashboard() {
           {report.data.top_spendings.length > 0 ? (
             <TopSpendingsTable
               items={report.data.top_spendings}
-              formatAmount={(v) => formatMoneyString(v, report.data.currency)}
+              formatAmount={(v) => formatMoneyString(v, currency)}
             />
           ) : (
             <div className={styles.muted}>No spendings for this month.</div>
@@ -173,7 +184,7 @@ export default function Dashboard() {
           {budgetReport.data && budgetReport.data.length > 0 && (
             <BudgetVsActualTable
               items={budgetReport.data}
-              formatAmount={(v) => formatMoneyString(v, report.data.currency)}
+              formatAmount={(v) => formatMoneyString(v, currency)}
             />
           )}
         </div>
