@@ -9,6 +9,9 @@ from sqlmodel import Field, SQLModel
 class CategoryBase(SQLModel):
     name: str = Field(sa_column=Column(String(120), nullable=False, index=True))
     parent_id: Optional[int] = Field(default=None, foreign_key="category.id")
+    cost_type: Optional[str] = Field(
+        default=None, sa_column=Column(String(10), nullable=True)
+    )
 
 
 class Category(CategoryBase, table=True):

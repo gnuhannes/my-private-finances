@@ -54,6 +54,22 @@ export function getBudgetVsActual(params: {
   return apiGet<BudgetComparison[]>(`/api/reports/budget-vs-actual?${q.toString()}`);
 }
 
+export type CostTypeBreakdown = {
+  cost_type: string | null;
+  total: string;
+  category_count: number;
+};
+
+export type FixedVsVariableReport = {
+  account_id: number;
+  month: string;
+  currency: string;
+  fixed_total: string;
+  variable_total: string;
+  unclassified_total: string;
+  breakdown: CostTypeBreakdown[];
+};
+
 export function getMonthlyReport(params: {
   accountId: number;
   month: string;
@@ -64,4 +80,16 @@ export function getMonthlyReport(params: {
   });
 
   return apiGet<MonthlyReport>(`/api/reports/monthly?${q.toString()}`);
+}
+
+export function getFixedVsVariable(params: {
+  accountId: number;
+  month: string;
+}): Promise<FixedVsVariableReport> {
+  const q = new URLSearchParams({
+    account_id: String(params.accountId),
+    month: params.month,
+  });
+
+  return apiGet<FixedVsVariableReport>(`/api/reports/fixed-vs-variable?${q.toString()}`);
 }

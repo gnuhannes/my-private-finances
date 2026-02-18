@@ -47,6 +47,19 @@ vi.mock("../../src/hooks/useBudgetVsActual", () => ({
   }),
 }));
 
+vi.mock("../../src/hooks/useFixedVsVariable", () => ({
+  useFixedVsVariable: () => ({
+    data: {
+      fixed_total: "500.00",
+      variable_total: "200.00",
+      unclassified_total: "50.00",
+      breakdown: [],
+    },
+    isLoading: false,
+    isError: false,
+  }),
+}));
+
 describe("Dashboard", () => {
   it("renders KPI labels", () => {
     render(

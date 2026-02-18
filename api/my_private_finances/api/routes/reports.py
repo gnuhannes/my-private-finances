@@ -14,6 +14,8 @@ from my_private_finances.models import Account, Budget, Category, Transaction
 from my_private_finances.schemas import (
     BudgetComparison,
     CategoryTotal,
+    CostTypeBreakdown,
+    FixedVsVariableReport,
     MonthlyReport,
     PayeeTotal,
     TopSpending,
@@ -226,3 +228,63 @@ async def get_budget_vs_actual(
         )
 
     return result
+
+
+@router.get("/fixed-vs-variable", response_model=FixedVsVariableReport)
+async def get_fixed_vs_variable(
+    account_id: Annotated[int, Query(ge=1)],
+    month: Annotated[str, Query(min_length=7, max_length=7)],
+    session: SessionDep,
+) -> FixedVsVariableReport:
+    start, end = _parse_month(month)
+
+    res_acc = await session.execute(select(Account).where(Account.id == account_id))  # type: ignore[arg-type]
+    acc = res_acc.scalar_one_or_none()
+    if acc is None or acc.id is None:
+        raise HTTPException(status_code=404, detail="Account not found")
+
+    tx = cast(Any, Transaction).__table__
+    cat = cast(Any, Category).__table__
+
+    base_filter = (
+        (tx.c.account_id == account_id)
+        & (tx.c.booking_date >= start)
+        & (tx.c.booking_date < end)
+        & (tx.c.amount < 0)
+    )
+
+    stmt = (
+        select(
+            cat.c.cost_type,
+            func.coalesce(func.sum(tx.c.amount), 0).label("total"),
+            func.count(func.distinct(cat.c.id)).label("category_count"),
+        )
+        .select_from(tx.outerjoin(cat, tx.c.category_id == cat.c.id))
+        .where(base_filter)
+        .group_by(cat.c.cost_type)
+    )
+
+    rows = (await session.execute(stmt)).all()
+
+    totals: dict[str | None, Decimal] = {}
+    breakdown: list[CostTypeBreakdown] = []
+    for r in rows:
+        total = abs(Decimal(str(r.total)))
+        totals[r.cost_type] = total
+        breakdown.append(
+            CostTypeBreakdown(
+                cost_type=r.cost_type,
+                total=total,
+                category_count=int(r.category_count),
+            )
+        )
+
+    return FixedVsVariableReport(
+        account_id=account_id,
+        month=month,
+        currency=acc.currency,
+        fixed_total=totals.get("fixed", Decimal("0")),
+        variable_total=totals.get("variable", Decimal("0")),
+        unclassified_total=totals.get(None, Decimal("0")),
+        breakdown=breakdown,
+    )

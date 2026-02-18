@@ -6,6 +6,7 @@ import {
   updateCategory,
   deleteCategory,
   type Category,
+  type CostType,
 } from "../lib/api/categories";
 import styles from "./Categories.module.css";
 
@@ -15,8 +16,10 @@ export default function Categories() {
 
   const [newName, setNewName] = useState("");
   const [newParentId, setNewParentId] = useState<number | null>(null);
+  const [newCostType, setNewCostType] = useState<CostType | null>(null);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editName, setEditName] = useState("");
+  const [editCostType, setEditCostType] = useState<CostType | null>(null);
 
   const invalidate = () => queryClient.invalidateQueries({ queryKey: ["categories"] });
 
@@ -25,12 +28,14 @@ export default function Categories() {
     onSuccess: () => {
       setNewName("");
       setNewParentId(null);
+      setNewCostType(null);
       invalidate();
     },
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, name }: { id: number; name: string }) => updateCategory(id, { name }),
+    mutationFn: ({ id, ...data }: { id: number; name?: string; cost_type?: CostType | null }) =>
+      updateCategory(id, data),
     onSuccess: () => {
       setEditingId(null);
       invalidate();
@@ -45,20 +50,37 @@ export default function Categories() {
   const handleAdd = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newName.trim()) return;
-    addMutation.mutate({ name: newName.trim(), parent_id: newParentId });
+    addMutation.mutate({
+      name: newName.trim(),
+      parent_id: newParentId,
+      cost_type: newCostType,
+    });
   };
 
   const startEdit = (cat: Category) => {
     setEditingId(cat.id);
     setEditName(cat.name);
+    setEditCostType(cat.cost_type);
   };
 
   const handleEditKeyDown = (e: React.KeyboardEvent, id: number) => {
     if (e.key === "Enter") {
-      updateMutation.mutate({ id, name: editName.trim() });
+      updateMutation.mutate({
+        id,
+        name: editName.trim(),
+        cost_type: editCostType,
+      });
     } else if (e.key === "Escape") {
       setEditingId(null);
     }
+  };
+
+  const handleEditSave = (id: number) => {
+    updateMutation.mutate({
+      id,
+      name: editName.trim(),
+      cost_type: editCostType,
+    });
   };
 
   const handleDelete = (cat: Category) => {
@@ -70,6 +92,12 @@ export default function Categories() {
   const parentName = (parentId: number | null): string => {
     if (parentId === null) return "";
     return categories?.find((c) => c.id === parentId)?.name ?? `#${parentId}`;
+  };
+
+  const costTypeLabel = (ct: CostType | null): string => {
+    if (ct === "fixed") return "Fixed";
+    if (ct === "variable") return "Variable";
+    return "";
   };
 
   if (isLoading) return <div className={styles.status}>Loading categories...</div>;
@@ -105,6 +133,19 @@ export default function Categories() {
             ))}
           </select>
         </div>
+        <div className={styles.field}>
+          <label>Cost Type</label>
+          <select
+            value={newCostType ?? ""}
+            onChange={(e) =>
+              setNewCostType(e.target.value === "" ? null : (e.target.value as CostType))
+            }
+          >
+            <option value="">Unclassified</option>
+            <option value="fixed">Fixed</option>
+            <option value="variable">Variable</option>
+          </select>
+        </div>
         <button type="submit" disabled={addMutation.isPending}>
           Add
         </button>
@@ -120,6 +161,7 @@ export default function Categories() {
             <tr>
               <th>Name</th>
               <th>Parent</th>
+              <th>Cost Type</th>
               <th>Actions</th>
             </tr>
           </thead>
@@ -133,7 +175,6 @@ export default function Categories() {
                       value={editName}
                       onChange={(e) => setEditName(e.target.value)}
                       onKeyDown={(e) => handleEditKeyDown(e, cat.id)}
-                      onBlur={() => setEditingId(null)}
                       autoFocus
                     />
                   ) : (
@@ -142,13 +183,42 @@ export default function Categories() {
                 </td>
                 <td>{parentName(cat.parent_id)}</td>
                 <td>
+                  {editingId === cat.id ? (
+                    <select
+                      value={editCostType ?? ""}
+                      onChange={(e) =>
+                        setEditCostType(e.target.value === "" ? null : (e.target.value as CostType))
+                      }
+                    >
+                      <option value="">Unclassified</option>
+                      <option value="fixed">Fixed</option>
+                      <option value="variable">Variable</option>
+                    </select>
+                  ) : (
+                    costTypeLabel(cat.cost_type)
+                  )}
+                </td>
+                <td>
                   <div className={styles.actions}>
-                    <button type="button" onClick={() => startEdit(cat)}>
-                      Edit
-                    </button>
-                    <button type="button" onClick={() => handleDelete(cat)}>
-                      Delete
-                    </button>
+                    {editingId === cat.id ? (
+                      <>
+                        <button type="button" onClick={() => handleEditSave(cat.id)}>
+                          Save
+                        </button>
+                        <button type="button" onClick={() => setEditingId(null)}>
+                          Cancel
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <button type="button" onClick={() => startEdit(cat)}>
+                          Edit
+                        </button>
+                        <button type="button" onClick={() => handleDelete(cat)}>
+                          Delete
+                        </button>
+                      </>
+                    )}
                   </div>
                 </td>
               </tr>

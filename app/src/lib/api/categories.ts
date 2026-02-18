@@ -1,19 +1,24 @@
 import { apiDelete, apiGet, apiPatch, apiPost } from "./client";
 
+export type CostType = "fixed" | "variable";
+
 export type Category = {
   id: number;
   name: string;
   parent_id: number | null;
+  cost_type: CostType | null;
 };
 
 export type CategoryCreate = {
   name: string;
   parent_id?: number | null;
+  cost_type?: CostType | null;
 };
 
 export type CategoryUpdate = {
   name?: string;
   parent_id?: number | null;
+  cost_type?: CostType | null;
 };
 
 export function getCategories(): Promise<Category[]> {

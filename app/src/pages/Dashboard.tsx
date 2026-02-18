@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { useAccounts } from "../hooks/useAccounts";
 import { useMonthlyReport } from "../hooks/useMonthlyReport";
 import { useBudgetVsActual } from "../hooks/useBudgetVsActual";
+import { useFixedVsVariable } from "../hooks/useFixedVsVariable";
 import { formatMoneyString, formatCurrency } from "../utils/money";
 import { KpiCard } from "../components/KpiCard";
 import { TopPayeesBarChart } from "../components/TopPayeesBarChart";
@@ -38,6 +39,7 @@ export default function Dashboard() {
 
   const report = useMonthlyReport(selectedAccountId, month);
   const budgetReport = useBudgetVsActual(selectedAccountId, month);
+  const fixedVsVariable = useFixedVsVariable(selectedAccountId, month);
 
   if (isLoading) return <div>Loading accounts…</div>;
   if (error) return <div>Failed to load accounts.</div>;
@@ -108,6 +110,23 @@ export default function Dashboard() {
               value={String(report.data.transactions_count)}
               loading={report.isLoading}
             />
+            {fixedVsVariable.data && (
+              <>
+                <KpiCard
+                  label="Fixed Costs"
+                  value={formatMoneyString(fixedVsVariable.data.fixed_total, report.data.currency)}
+                  loading={fixedVsVariable.isLoading}
+                />
+                <KpiCard
+                  label="Variable Costs"
+                  value={formatMoneyString(
+                    fixedVsVariable.data.variable_total,
+                    report.data.currency,
+                  )}
+                  loading={fixedVsVariable.isLoading}
+                />
+              </>
+            )}
           </div>
 
           <div className={styles.chartsRow}>

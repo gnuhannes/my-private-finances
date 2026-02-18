@@ -17,7 +17,9 @@ SessionDep = Annotated[AsyncSession, Depends(get_session)]
 
 def _to_read(cat: Category) -> CategoryRead:
     assert cat.id is not None
-    return CategoryRead(id=cat.id, name=cat.name, parent_id=cat.parent_id)
+    return CategoryRead(
+        id=cat.id, name=cat.name, parent_id=cat.parent_id, cost_type=cat.cost_type
+    )
 
 
 @router.post("", response_model=CategoryRead, status_code=201)
@@ -29,7 +31,11 @@ async def create_category(
         if parent is None:
             raise HTTPException(status_code=422, detail="parent_id does not exist")
 
-    db_obj = Category(name=category.name, parent_id=category.parent_id)
+    db_obj = Category(
+        name=category.name,
+        parent_id=category.parent_id,
+        cost_type=category.cost_type,
+    )
     session.add(db_obj)
     await session.commit()
     await session.refresh(db_obj)
@@ -54,6 +60,9 @@ async def update_category(
 
     if payload.name is not None:
         db_obj.name = payload.name
+
+    if "cost_type" in payload.model_fields_set:
+        db_obj.cost_type = payload.cost_type
 
     if payload.parent_id is not None:
         if payload.parent_id == category_id:
