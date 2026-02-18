@@ -13,6 +13,12 @@ from .transaction_read import TransactionRead
 from .transaction_update import TransactionUpdate
 from .transaction_list import TransactionListResponse
 from .base import StrictSchema
+from .recurring_pattern import (
+    FrequencyTotal,
+    RecurringPatternRead,
+    RecurringPatternUpdate,
+    RecurringSummary,
+)
 from .report_budget import BudgetComparison
 from .report_cost_type import CostTypeBreakdown, FixedVsVariableReport
 from .report_monthly import CategoryTotal, MonthlyReport, PayeeTotal, TopSpending
@@ -44,5 +50,9 @@ __all__ = [
     "MonthlyReport",
     "PayeeTotal",
     "TopSpending",
+    "FrequencyTotal",
+    "RecurringPatternRead",
+    "RecurringPatternUpdate",
+    "RecurringSummary",
     "ImportResultResponse",
 ]

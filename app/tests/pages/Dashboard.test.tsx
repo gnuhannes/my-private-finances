@@ -60,6 +60,18 @@ vi.mock("../../src/hooks/useFixedVsVariable", () => ({
   }),
 }));
 
+vi.mock("../../src/hooks/useRecurringPatterns", () => ({
+  useRecurringSummary: () => ({
+    data: {
+      total_monthly_recurring: "45.97",
+      pattern_count: 3,
+      by_frequency: [],
+    },
+    isLoading: false,
+    isError: false,
+  }),
+}));
+
 describe("Dashboard", () => {
   it("renders KPI labels", () => {
     render(

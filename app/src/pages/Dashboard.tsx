@@ -3,6 +3,7 @@ import { useAccounts } from "../hooks/useAccounts";
 import { useMonthlyReport } from "../hooks/useMonthlyReport";
 import { useBudgetVsActual } from "../hooks/useBudgetVsActual";
 import { useFixedVsVariable } from "../hooks/useFixedVsVariable";
+import { useRecurringSummary } from "../hooks/useRecurringPatterns";
 import { formatMoneyString, formatCurrency } from "../utils/money";
 import { KpiCard } from "../components/KpiCard";
 import { TopPayeesBarChart } from "../components/TopPayeesBarChart";
@@ -40,6 +41,7 @@ export default function Dashboard() {
   const report = useMonthlyReport(selectedAccountId, month);
   const budgetReport = useBudgetVsActual(selectedAccountId, month);
   const fixedVsVariable = useFixedVsVariable(selectedAccountId, month);
+  const recurringSummary = useRecurringSummary(selectedAccountId);
 
   if (isLoading) return <div>Loading accounts…</div>;
   if (error) return <div>Failed to load accounts.</div>;
@@ -126,6 +128,16 @@ export default function Dashboard() {
                   loading={fixedVsVariable.isLoading}
                 />
               </>
+            )}
+            {recurringSummary.data && (
+              <KpiCard
+                label="Monthly Recurring"
+                value={formatMoneyString(
+                  recurringSummary.data.total_monthly_recurring,
+                  report.data.currency,
+                )}
+                loading={recurringSummary.isLoading}
+              />
             )}
           </div>
 
