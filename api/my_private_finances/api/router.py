@@ -13,6 +13,7 @@ from my_private_finances.api.routes.recurring_patterns import (
 )
 from my_private_finances.api.routes.transactions import router as transactions_router
 from my_private_finances.api.routes.transfers import router as transfers_router
+from my_private_finances.api.routes.net_worth import router as net_worth_router
 
 api_router = APIRouter()
 api_router.include_router(accounts_router)
@@ -24,3 +25,4 @@ api_router.include_router(recurring_patterns_router)
 api_router.include_router(reports.router)
 api_router.include_router(imports_router)
 api_router.include_router(transfers_router)
+api_router.include_router(net_worth_router)

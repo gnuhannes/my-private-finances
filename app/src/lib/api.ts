@@ -1,7 +1,7 @@
 export { ApiError, apiGet } from "./api/client";
 
-export { getAccounts } from "./api/accounts";
-export type { Account } from "./api/accounts";
+export { getAccounts, updateAccount } from "./api/accounts";
+export type { Account, AccountUpdatePayload } from "./api/accounts";
 
 export { getMonthlyReport } from "./api/reports";
 export type { CategoryTotal, MonthlyReport, PayeeTotal, TopSpending } from "./api/reports";
@@ -23,3 +23,6 @@ export {
   dismissTransfer,
 } from "./api/transfers";
 export type { TransferCandidate, TransferLeg } from "./api/transfers";
+
+export { getNetWorth } from "./api/netWorth";
+export type { NetWorthReport, NetWorthPoint, AccountNetWorthSummary } from "./api/netWorth";

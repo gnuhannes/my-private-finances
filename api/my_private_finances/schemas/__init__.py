@@ -1,4 +1,4 @@
-from .account import AccountCreate, AccountRead
+from .account import AccountCreate, AccountRead, AccountUpdate
 from .budget import BudgetCreate, BudgetRead, BudgetUpdate
 from .categorization_rule import (
     ApplyResult,
@@ -24,10 +24,17 @@ from .report_cost_type import CostTypeBreakdown, FixedVsVariableReport
 from .report_monthly import CategoryTotal, MonthlyReport, PayeeTotal, TopSpending
 from .import_result import ImportResultResponse
 from .transfer import TransferCandidateRead, TransferLeg
+from .net_worth import (
+    AccountBalancePoint,
+    AccountNetWorthSummary,
+    NetWorthPoint,
+    NetWorthReport,
+)
 
 __all__ = [
     "AccountCreate",
     "AccountRead",
+    "AccountUpdate",
     "BudgetCreate",
     "BudgetRead",
     "BudgetUpdate",
@@ -58,4 +65,8 @@ __all__ = [
     "ImportResultResponse",
     "TransferCandidateRead",
     "TransferLeg",
+    "AccountBalancePoint",
+    "AccountNetWorthSummary",
+    "NetWorthPoint",
+    "NetWorthReport",
 ]

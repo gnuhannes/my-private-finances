@@ -22,6 +22,9 @@ export function NavBar() {
       <NavLink to="/transfers" className={({ isActive }) => (isActive ? styles.active : "")}>
         Transfers
       </NavLink>
+      <NavLink to="/net-worth" className={({ isActive }) => (isActive ? styles.active : "")}>
+        Net Worth
+      </NavLink>
       <NavLink to="/rules" className={({ isActive }) => (isActive ? styles.active : "")}>
         Rules
       </NavLink>
