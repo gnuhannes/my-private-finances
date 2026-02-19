@@ -1,152 +1,54 @@
-# My Private Finances — Product Roadmap & Iterations
+# My Private Finances — Product Roadmap
 
-This document contains the initial product vision and the first planned iterations. You can later split this into separate files under `docs/product/`:
-
-- `000-vision.md`
-- `010-mvp-import-and-rules.md`
-- `020-insights-and-budgets.md`
+> This file is a high-level summary. Full specs live in the numbered files alongside this one.
+> See [README.md](README.md) for the index.
 
 ---
 
-# 000 — Vision
+## Vision
 
-## Goal
-Build a **local-first, privacy-by-design** personal finance application that helps understand, structure and optimize personal finances **without any cloud dependency**. All data stays on the local machine. The system should be automatable, reproducible, and extensible.
+Local-first, privacy-by-design personal finance app. All data stays on the local machine. No cloud, no telemetry, no external APIs. The goal: answer "where does my money go?" with full trust in the system's privacy.
 
-## Core Principles
-- Local-first (SQLite, local files)
-- No cloud, no telemetry, no external APIs required
-- Privacy-by-design
-- Deterministic imports and idempotent writes
-- Reproducible dev setup
-- Pragmatic Clean Architecture
-- Strong test coverage
-
-## Long-term Vision
-- Import data from multiple sources (banks, credit cards, manual CSVs)
-- Automatically categorize transactions using:
-  - First: rules and heuristics
-  - Later: optional local ML/AI
-- Provide insights:
-  - Monthly overviews
-  - Category breakdowns
-  - Recurring costs
-  - Budget vs actual
-- Support review & correction workflows
-- Remain fully offline-capable
-
-## Non-Goals
-- No SaaS
-- No mobile app (for now)
-- No multi-user / sync
-- No bank API integrations
-
-## Success Criteria
-- App is useful even with only CSV imports
-- User can answer: "Where does my money go?"
-- User trusts the system with sensitive data
+See [000-vision.md](000-vision.md) for full principles.
 
 ---
 
-# 010 — MVP: Import & Rules
+## Completed
 
-## Goal
-Get **real data** into the system and reach a state where transactions can be:
-- imported
-- reviewed
-- categorized semi-automatically
+### [010 — MVP: Import & Rules](010-mvp-import-and-rules.md) ✅
+CSV import pipeline, multi-bank support, idempotent deduplication, rule-based categorisation engine, manual category assignment.
 
-This is the first version that should provide **real personal value**.
+### [020 — Insights & Budgets](020-insights-and-budgets.md) ✅
+Monthly dashboard (KPIs, top payees, category breakdown, top spendings), fixed vs variable cost classification, budget definitions, budget vs actual, recurring transaction detection.
 
-## Scope
+### [030 — Multi-Account Aggregation](030-multi-account-aggregation.md) ✅
+Transfer detection and confirmation across accounts, all reports exclude transfers, cross-account aggregation mode.
 
-### Import
-- CSV import pipeline
-- Import profiles (column mapping per bank)
-- Idempotent import using `(account_id, import_hash)`
-- Import history
+### [040 — Net-Worth Tracking](040-net-worth-tracking.md) ✅
+Opening balance per account, cumulative balance series, net worth area chart with month toggle, month-over-month change.
 
-### Data Model
-- Accounts
-- Transactions
-- Categories
-- (Optional) ImportBatch / ImportRun
+### [050 — Spending Trend Analysis](050-spending-trend-analysis.md) ✅
+Rolling average vs current month per category, month-end projection, over/under/on-track indicator, 3M/6M/12M lookback toggle.
 
-### Categorization
-- Rule-based categorization engine
-  - Rules like:
-    - payee contains "REWE" -> Groceries
-    - purpose contains "AMAZON" -> Shopping
-    - amount < 0 and payee contains "Salary" -> Income
-  - Priority-ordered rules
-  - First-match-wins
+### [060 — Annual Overview](060-annual-overview.md) ✅
+All 12 months at a glance: income vs expenses grouped bar chart, savings rate per month, year selector, year-level totals.
 
-### UI (minimal)
-- Import screen
-- Transaction list
-- "Uncategorized" filter
-- Assign category manually
-
-## Non-Goals
-- No ML / AI yet
-- No budgets
-- No forecasting
-- No fancy dashboards
-
-## Definition of Done
-- Can import at least one real bank CSV
-- Can review imported transactions
-- Can define rules
-- Can re-run import without duplicates
-- Can get a categorized transaction list
-
-## Risks
-- CSV formats are messy
-- Encoding / locale issues
-- Decimal parsing
+### [070 — Transaction Search](070-transaction-search.md) ✅
+Full-text search on payee/purpose, amount range filter, all-accounts mode — all filters compose.
 
 ---
 
-# 020 — Insights & Budgets
+## Planned
 
-## Goal
-Turn structured data into **useful insights**.
-
-## Scope
-
-### Insights
-- Monthly overview
-- Category breakdown per month
-- Top spendings
-- Fixed vs variable costs
-
-### Budgets
-- Define monthly budgets per category
-- Show budget vs actual
-- Highlight overspending
-
-### Recurring Transactions
-- Detect recurring transactions (heuristic)
-- Mark them
-
-## UI
-- Simple dashboard
-- Month selector
-- Charts (local)
-
-## Non-Goals
-- No ML
-- No forecasting
-- No net-worth tracking (yet)
-
-## Definition of Done
-- User can answer:
-  - "How much did I spend last month on X?"
-  - "Am I over budget?"
+### [080 — ML Category Suggestions](080-ml-category-suggestions.md) 💡
+Local scikit-learn model (TF-IDF + Naive Bayes) trained on the user's own categorised transactions. Suggests categories for uncategorised transactions with confidence scores; bulk-accept high-confidence predictions.
 
 ---
 
-# Notes
+## Ideas (not yet planned)
 
-When this document stabilizes, split it into separate files under `docs/product/` and add a small `README.md` that explains the iteration process.
+### [090 — Cash Transactions](090-cash-transactions.md) 💡
+Manual cash account for tracking cash income and spending. Phase 2: link ATM withdrawals to a cash envelope and reconcile against manual cash entries.
 
+### [100 — Bill Scanning & Line-Item Split](100-bill-scanning.md) 💡
+Upload a receipt photo → local OCR (Tesseract) extracts line items → each item gets a category → single bank transaction is "expanded" into granular sub-transactions. Optionally use a local vision LLM (e.g., via Ollama) for better parsing accuracy on messy receipts. Entirely local, privacy-preserving.
