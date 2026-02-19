@@ -1,0 +1,10 @@
+.chartWrap {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.empty {
+  color: var(--color-text-muted, #666);
+  padding: 2rem 0;
+  text-align: center;
+}

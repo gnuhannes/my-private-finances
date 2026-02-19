@@ -26,3 +26,6 @@ export type { TransferCandidate, TransferLeg } from "./api/transfers";
 
 export { getNetWorth } from "./api/netWorth";
 export type { NetWorthReport, NetWorthPoint, AccountNetWorthSummary } from "./api/netWorth";
+
+export { getSpendingTrend } from "./api/trends";
+export type { SpendingTrendReport, CategoryTrendItem } from "./api/trends";

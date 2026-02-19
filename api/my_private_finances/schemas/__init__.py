@@ -30,6 +30,7 @@ from .net_worth import (
     NetWorthPoint,
     NetWorthReport,
 )
+from .report_trend import CategoryTrendItem, SpendingTrendReport
 
 __all__ = [
     "AccountCreate",
@@ -69,4 +70,6 @@ __all__ = [
     "AccountNetWorthSummary",
     "NetWorthPoint",
     "NetWorthReport",
+    "CategoryTrendItem",
+    "SpendingTrendReport",
 ]

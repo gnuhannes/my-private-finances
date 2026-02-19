@@ -25,6 +25,9 @@ export function NavBar() {
       <NavLink to="/net-worth" className={({ isActive }) => (isActive ? styles.active : "")}>
         Net Worth
       </NavLink>
+      <NavLink to="/spending-trends" className={({ isActive }) => (isActive ? styles.active : "")}>
+        Trends
+      </NavLink>
       <NavLink to="/rules" className={({ isActive }) => (isActive ? styles.active : "")}>
         Rules
       </NavLink>
