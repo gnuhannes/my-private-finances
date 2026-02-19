@@ -1,9 +1,10 @@
 from datetime import date
+from decimal import Decimal
 
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.params import Query
-from typing import Annotated
-from sqlalchemy import func, select
+from typing import Annotated, Any, Optional
+from sqlalchemy import func, or_, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -127,21 +128,37 @@ async def update_transaction(
 
 @router.get("", response_model=TransactionListResponse)
 async def list_transactions(
-    account_id: Annotated[int, Query(ge=1)],
     limit: Annotated[int, Query(ge=1, le=500)] = 50,
     offset: Annotated[int, Query(ge=0)] = 0,
+    account_id: Annotated[Optional[int], Query(ge=1)] = None,
     date_from: date | None = None,
     date_to: date | None = None,
     category_filter: str | None = None,
+    q: str | None = None,
+    amount_min: Decimal | None = None,
+    amount_max: Decimal | None = None,
     session: AsyncSession = Depends(get_session),
 ) -> TransactionListResponse:
-    filters = [Transaction.account_id == account_id]  # type: ignore[arg-type]
+    filters: list[Any] = []
+    if account_id is not None:
+        filters.append(Transaction.account_id == account_id)  # type: ignore[arg-type]
     if date_from is not None:
         filters.append(Transaction.booking_date >= date_from)  # type: ignore[arg-type]
     if date_to is not None:
         filters.append(Transaction.booking_date <= date_to)  # type: ignore[arg-type]
     if category_filter == "uncategorized":
         filters.append(Transaction.category_id.is_(None))  # type: ignore[union-attr]
+    if q is not None:
+        filters.append(
+            or_(
+                Transaction.payee.ilike(f"%{q}%"),  # type: ignore[union-attr]
+                Transaction.purpose.ilike(f"%{q}%"),  # type: ignore[union-attr]
+            )
+        )
+    if amount_min is not None:
+        filters.append(Transaction.amount >= amount_min)  # type: ignore[arg-type]
+    if amount_max is not None:
+        filters.append(Transaction.amount <= amount_max)  # type: ignore[arg-type]
 
     count_stmt = select(func.count()).select_from(Transaction).where(*filters)  # type: ignore[arg-type]
     total = (await session.execute(count_stmt)).scalar_one()

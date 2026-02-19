@@ -13,21 +13,25 @@ export default function Transactions() {
   const { data: accounts, isLoading, error } = useAccounts();
   const { data: categories } = useCategories();
 
-  const [accountId, setAccountId] = useState<number | null>(null);
+  const [accountId, setAccountId] = useState<number | "all">("all");
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
   const [offset, setOffset] = useState(0);
   const [uncategorizedOnly, setUncategorizedOnly] = useState(false);
-
-  const selectedAccountId = accountId ?? (accounts && accounts.length > 0 ? accounts[0].id : null);
+  const [searchQ, setSearchQ] = useState("");
+  const [amountMin, setAmountMin] = useState("");
+  const [amountMax, setAmountMax] = useState("");
 
   const txQuery = useTransactions({
-    accountId: selectedAccountId,
+    accountId,
     limit: PAGE_SIZE,
     offset,
     dateFrom: dateFrom || undefined,
     dateTo: dateTo || undefined,
     categoryFilter: uncategorizedOnly ? "uncategorized" : undefined,
+    q: searchQ || undefined,
+    amountMin: amountMin || undefined,
+    amountMax: amountMax || undefined,
   });
 
   const updateCategory = useUpdateTransactionCategory();
@@ -36,7 +40,10 @@ export default function Transactions() {
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
   const page = Math.floor(offset / PAGE_SIZE) + 1;
 
-  const currency = accounts?.find((a) => a.id === selectedAccountId)?.currency ?? "EUR";
+  const currency =
+    accountId === "all"
+      ? (accounts?.[0]?.currency ?? "EUR")
+      : (accounts?.find((a) => a.id === accountId)?.currency ?? "EUR");
 
   if (isLoading) return <div className={styles.status}>Loading accounts…</div>;
   if (error) return <div className={styles.error}>Failed to load accounts.</div>;
@@ -45,25 +52,39 @@ export default function Transactions() {
   return (
     <div className={styles.page}>
       <h1 className={styles.title}>Transactions</h1>
-      <p className={styles.subtitle}>Browse and filter transactions for an account.</p>
+      <p className={styles.subtitle}>Search and filter transactions across all accounts.</p>
 
       <div className={styles.controlsRow}>
         <label className={styles.control}>
           <span>Account</span>
           <select
-            value={selectedAccountId ?? ""}
+            value={accountId}
             onChange={(e) => {
-              setAccountId(e.target.value === "" ? null : Number(e.target.value));
+              setAccountId(e.target.value === "all" ? "all" : Number(e.target.value));
               setOffset(0);
             }}
           >
-            <option value="">Select account…</option>
+            <option value="all">All Accounts</option>
             {accounts.map((a) => (
               <option key={a.id} value={a.id}>
                 #{a.id} — {a.name} ({a.currency})
               </option>
             ))}
           </select>
+        </label>
+
+        <label className={styles.control}>
+          <span>Search</span>
+          <input
+            type="search"
+            placeholder="Payee or purpose…"
+            value={searchQ}
+            className={styles.searchInput}
+            onChange={(e) => {
+              setSearchQ(e.target.value);
+              setOffset(0);
+            }}
+          />
         </label>
 
         <label className={styles.control}>
@@ -85,6 +106,36 @@ export default function Transactions() {
             value={dateTo}
             onChange={(e) => {
               setDateTo(e.target.value);
+              setOffset(0);
+            }}
+          />
+        </label>
+
+        <label className={styles.control}>
+          <span>Min amount</span>
+          <input
+            type="number"
+            step="0.01"
+            placeholder="-200.00"
+            value={amountMin}
+            className={styles.amountInput}
+            onChange={(e) => {
+              setAmountMin(e.target.value);
+              setOffset(0);
+            }}
+          />
+        </label>
+
+        <label className={styles.control}>
+          <span>Max amount</span>
+          <input
+            type="number"
+            step="0.01"
+            placeholder="-10.00"
+            value={amountMax}
+            className={styles.amountInput}
+            onChange={(e) => {
+              setAmountMax(e.target.value);
               setOffset(0);
             }}
           />

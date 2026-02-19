@@ -50,3 +50,11 @@
 .muted {
   opacity: 0.7;
 }
+
+.searchInput {
+  min-width: 180px;
+}
+
+.amountInput {
+  width: 110px;
+}

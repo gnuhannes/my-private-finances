@@ -48,8 +48,12 @@ async def test_create_transaction_with_typo_field_returns_422(
 
 
 @pytest.mark.asyncio
-async def test_list_transactions_without_account_id_returns_422(
+async def test_list_transactions_without_account_id_returns_all(
     test_app: AsyncClient,
 ) -> None:
+    # account_id is now optional — omitting it returns all transactions (all accounts)
     res = await test_app.get("/api/transactions")
-    assert res.status_code == 422, res.text
+    assert res.status_code == 200, res.text
+    body = res.json()
+    assert "items" in body
+    assert "total" in body

@@ -20,26 +20,31 @@ export type TransactionListResponse = {
 };
 
 export type TransactionParams = {
-  accountId: number;
+  accountId: number | "all";
   limit?: number;
   offset?: number;
   dateFrom?: string;
   dateTo?: string;
   categoryFilter?: string;
+  q?: string;
+  amountMin?: string;
+  amountMax?: string;
 };
 
 export function getTransactions(params: TransactionParams): Promise<TransactionListResponse> {
-  const q = new URLSearchParams({
-    account_id: String(params.accountId),
-  });
+  const qs = new URLSearchParams();
 
-  if (params.limit !== undefined) q.set("limit", String(params.limit));
-  if (params.offset !== undefined) q.set("offset", String(params.offset));
-  if (params.dateFrom) q.set("date_from", params.dateFrom);
-  if (params.dateTo) q.set("date_to", params.dateTo);
-  if (params.categoryFilter) q.set("category_filter", params.categoryFilter);
+  if (params.accountId !== "all") qs.set("account_id", String(params.accountId));
+  if (params.limit !== undefined) qs.set("limit", String(params.limit));
+  if (params.offset !== undefined) qs.set("offset", String(params.offset));
+  if (params.dateFrom) qs.set("date_from", params.dateFrom);
+  if (params.dateTo) qs.set("date_to", params.dateTo);
+  if (params.categoryFilter) qs.set("category_filter", params.categoryFilter);
+  if (params.q) qs.set("q", params.q);
+  if (params.amountMin) qs.set("amount_min", params.amountMin);
+  if (params.amountMax) qs.set("amount_max", params.amountMax);
 
-  return apiGet<TransactionListResponse>(`/api/transactions?${q.toString()}`);
+  return apiGet<TransactionListResponse>(`/api/transactions?${qs.toString()}`);
 }
 
 export function updateTransactionCategory(
