@@ -1,5 +1,6 @@
 import csv
 import hashlib
+import logging
 from dataclasses import dataclass
 from datetime import date, datetime
 from decimal import Decimal, InvalidOperation
@@ -16,6 +17,8 @@ from my_private_finances.services.categorization import (
     match_transaction,
 )
 from my_private_finances.services.transaction_hash import compute_import_hash, HashInput
+
+logger = logging.getLogger(__name__)
 
 IMPORT_SOURCE = "csv"
 
@@ -93,6 +96,12 @@ async def import_transactions_from_csv_path(
         raise ValueError(f"Account {account_id} not found")
 
     rules = await load_rules_ordered(session)
+    logger.info(
+        "CSV import started: account_id=%d, file=%s, rules=%d",
+        account_id,
+        csv_path.name,
+        len(rules),
+    )
 
     total_rows = 0
     created = 0
@@ -180,18 +189,32 @@ async def import_transactions_from_csv_path(
                 except IntegrityError:
                     await session.rollback()
                     duplicates += 1
+                    logger.debug("Row %d: duplicate, skipped", idx)
                     continue
 
                 created += 1
 
             except KeyError as e:
                 failed += 1
+                msg = f"Line {idx}: missing column {e}"
+                logger.warning(msg)
                 if len(errors) < max_errors:
-                    errors.append(f"Line {idx}: missing column {e}")
+                    errors.append(msg)
             except (ValueError, InvalidOperation) as e:
                 failed += 1
+                msg = f"Line {idx}: {e!s}"
+                logger.warning(msg)
                 if len(errors) < max_errors:
-                    errors.append(f"Line {idx}: {e!s}")
+                    errors.append(msg)
+
+    logger.info(
+        "CSV import complete: account_id=%d, total=%d, created=%d, duplicates=%d, failed=%d",
+        account_id,
+        total_rows,
+        created,
+        duplicates,
+        failed,
+    )
 
     return ImportResult(
         total_rows=total_rows,

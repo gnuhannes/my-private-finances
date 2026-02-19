@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 from dataclasses import dataclass
 from datetime import date
 from decimal import Decimal
@@ -11,6 +12,8 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from my_private_finances.models import RecurringPattern, Transaction
+
+logger = logging.getLogger(__name__)
 
 # Frequency definitions: (label, target_days, min_days, max_days)
 FREQUENCIES: list[tuple[str, int, int, int]] = [
@@ -183,8 +186,18 @@ async def run_detection(
 ) -> list[RecurringPattern]:
     """Run recurring detection and upsert patterns into DB."""
     groups = await fetch_transaction_groups(session, account_id)
+    logger.info(
+        "Recurring detection for account_id=%d: %d payee groups to analyse",
+        account_id,
+        len(groups),
+    )
     detected = detect_patterns_from_transactions(
         groups, min_occurrences, min_confidence
+    )
+    logger.info(
+        "Recurring detection for account_id=%d: %d patterns detected",
+        account_id,
+        len(detected),
     )
 
     # Load existing patterns for this account to preserve user overrides
@@ -233,9 +246,17 @@ async def run_detection(
     for key, existing in existing_map.items():
         if key not in seen_keys and not existing.user_confirmed:
             existing.is_active = False
+            logger.debug(
+                "Stale pattern marked inactive: payee=%r, frequency=%s", key[0], key[1]
+            )
 
     await session.commit()
     for p in result:
         await session.refresh(p)
 
+    logger.info(
+        "Recurring detection for account_id=%d: %d patterns upserted",
+        account_id,
+        len(result),
+    )
     return result

@@ -10,6 +10,7 @@ where:
 
 from __future__ import annotations
 
+import logging
 from datetime import timedelta
 from decimal import Decimal
 from typing import Any, cast
@@ -19,6 +20,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from my_private_finances.models import Account, Transaction
 from my_private_finances.models.transfer_candidate import TransferCandidate
+
+logger = logging.getLogger(__name__)
 
 
 async def detect_transfer_candidates(
@@ -46,6 +49,11 @@ async def detect_transfer_candidates(
         .order_by(tx.c.booking_date, tx.c.amount)
     )
     rows = (await session.execute(stmt)).all()
+    logger.info(
+        "Transfer detection started: window_days=%d, transactions=%d",
+        window_days,
+        len(rows),
+    )
 
     # Split into negative (outgoing) and positive (incoming) buckets
     outgoing = [r for r in rows if r.amount < 0]
@@ -100,6 +108,9 @@ async def detect_transfer_candidates(
             existing_pairs.add(pair)  # prevent duplicate within same run
 
     await session.flush()
+    logger.info(
+        "Transfer detection complete: %d new candidates found", len(new_candidates)
+    )
     return new_candidates
 
 
@@ -116,9 +127,21 @@ async def confirm_transfer(session: AsyncSession, candidate: TransferCandidate) 
         to_tx.is_transfer = True
 
     await session.flush()
+    logger.info(
+        "Transfer confirmed: candidate_id=%s (tx %s → %s)",
+        candidate.id,
+        candidate.from_transaction_id,
+        candidate.to_transaction_id,
+    )
 
 
 async def dismiss_transfer(session: AsyncSession, candidate: TransferCandidate) -> None:
     """Mark candidate as dismissed so it won't be re-suggested."""
     candidate.status = "dismissed"
     await session.flush()
+    logger.info(
+        "Transfer dismissed: candidate_id=%s (tx %s → %s)",
+        candidate.id,
+        candidate.from_transaction_id,
+        candidate.to_transaction_id,
+    )

@@ -1,11 +1,14 @@
 from __future__ import annotations
 
+import logging
 from decimal import Decimal, InvalidOperation
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
 
 from my_private_finances.models import CategorizationRule, Transaction
+
+logger = logging.getLogger(__name__)
 
 
 def match_transaction(tx: Transaction, rules: list[CategorizationRule]) -> int | None:
@@ -99,4 +102,9 @@ async def apply_rules_to_uncategorized(session: AsyncSession) -> int:
     if categorized > 0:
         await session.commit()
 
+    logger.info(
+        "apply_rules_to_uncategorized: categorized %d of %d uncategorised transactions",
+        categorized,
+        len(transactions),
+    )
     return categorized
