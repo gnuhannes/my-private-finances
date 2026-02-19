@@ -15,6 +15,7 @@ from my_private_finances.api.routes.transactions import router as transactions_r
 from my_private_finances.api.routes.transfers import router as transfers_router
 from my_private_finances.api.routes.net_worth import router as net_worth_router
 from my_private_finances.api.routes.trends import router as trends_router
+from my_private_finances.api.routes.annual import router as annual_router
 
 api_router = APIRouter()
 api_router.include_router(accounts_router)
@@ -28,3 +29,4 @@ api_router.include_router(imports_router)
 api_router.include_router(transfers_router)
 api_router.include_router(net_worth_router)
 api_router.include_router(trends_router)
+api_router.include_router(annual_router)

@@ -29,3 +29,6 @@ export type { NetWorthReport, NetWorthPoint, AccountNetWorthSummary } from "./ap
 
 export { getSpendingTrend } from "./api/trends";
 export type { SpendingTrendReport, CategoryTrendItem } from "./api/trends";
+
+export { getAnnualReport } from "./api/annual";
+export type { AnnualReport, MonthSummary } from "./api/annual";

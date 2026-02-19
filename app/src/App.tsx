@@ -9,6 +9,7 @@ import Recurring from "./pages/Recurring";
 import Transfers from "./pages/Transfers";
 import NetWorth from "./pages/NetWorth";
 import SpendingTrends from "./pages/SpendingTrends";
+import AnnualOverview from "./pages/AnnualOverview";
 import Import from "./pages/Import";
 import "./App.css";
 
@@ -25,6 +26,7 @@ export default function App() {
         <Route path="/transfers" element={<Transfers />} />
         <Route path="/net-worth" element={<NetWorth />} />
         <Route path="/spending-trends" element={<SpendingTrends />} />
+        <Route path="/annual" element={<AnnualOverview />} />
         <Route path="/rules" element={<CategorizationRules />} />
         <Route path="/import" element={<Import />} />
       </Routes>
