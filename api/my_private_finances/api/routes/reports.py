@@ -4,12 +4,12 @@ from datetime import date
 from decimal import Decimal
 from typing import Annotated, Any, Optional, cast
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, HTTPException
 from fastapi.params import Query
 from sqlalchemy import func, literal, select, case
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from my_private_finances.deps import get_session
+from my_private_finances.deps import SessionDep
 from my_private_finances.models import Account, Budget, Category, Transaction
 from my_private_finances.schemas import (
     BudgetComparison,
@@ -22,8 +22,6 @@ from my_private_finances.schemas import (
 )
 
 router = APIRouter(prefix="/reports", tags=["reports"])
-
-SessionDep = Annotated[AsyncSession, Depends(get_session)]
 
 
 def _parse_month(value: str) -> tuple[date, date]:

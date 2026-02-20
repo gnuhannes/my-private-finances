@@ -4,18 +4,15 @@ from datetime import date
 from decimal import Decimal
 from typing import Annotated, Any, Optional, cast
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Query
 from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from my_private_finances.api.routes.reports import _resolve_currency
-from my_private_finances.deps import get_session
+from my_private_finances.deps import SessionDep
 from my_private_finances.models import Transaction
 from my_private_finances.schemas import AnnualReport, MonthSummary
 
 router = APIRouter(prefix="/reports", tags=["reports"])
-
-SessionDep = Annotated[AsyncSession, Depends(get_session)]
 
 _ZERO = Decimal("0")
 _HUNDRED = Decimal("100")

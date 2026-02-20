@@ -2,12 +2,12 @@ from __future__ import annotations
 
 from typing import Annotated, Any, cast
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, HTTPException
 from fastapi.params import Query
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from my_private_finances.deps import get_session
+from my_private_finances.deps import SessionDep
 from my_private_finances.models import Account, Transaction
 from my_private_finances.models.transfer_candidate import TransferCandidate
 from my_private_finances.schemas import TransferCandidateRead, TransferLeg
@@ -18,8 +18,6 @@ from my_private_finances.services.transfer_detection import (
 )
 
 router = APIRouter(prefix="/transfers", tags=["transfers"])
-
-SessionDep = Annotated[AsyncSession, Depends(get_session)]
 
 
 async def _candidate_to_read(

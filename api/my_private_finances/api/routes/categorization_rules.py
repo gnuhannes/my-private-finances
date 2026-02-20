@@ -2,11 +2,10 @@ from __future__ import annotations
 
 from typing import Annotated
 
-from fastapi import APIRouter, Body, Depends, HTTPException
-from sqlalchemy.ext.asyncio import AsyncSession
+from fastapi import APIRouter, Body, HTTPException
 from sqlmodel import func, select
 
-from my_private_finances.deps import get_session
+from my_private_finances.deps import SessionDep
 from my_private_finances.models import CategorizationRule, Category
 from my_private_finances.schemas import (
     ApplyResult,
@@ -18,8 +17,6 @@ from my_private_finances.schemas import (
 from my_private_finances.services.categorization import apply_rules_to_uncategorized
 
 router = APIRouter(prefix="/categorization-rules", tags=["categorization-rules"])
-
-SessionDep = Annotated[AsyncSession, Depends(get_session)]
 
 
 def _to_read(rule: CategorizationRule) -> RuleRead:

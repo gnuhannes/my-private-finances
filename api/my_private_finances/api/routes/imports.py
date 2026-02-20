@@ -5,18 +5,15 @@ import tempfile
 from pathlib import Path
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile
-from sqlalchemy.ext.asyncio import AsyncSession
+from fastapi import APIRouter, HTTPException, Query, UploadFile
 
-from my_private_finances.deps import get_session
+from my_private_finances.deps import SessionDep
 from my_private_finances.schemas import ImportResultResponse
 from my_private_finances.services.csv_import import import_transactions_from_csv_path
 
 router = APIRouter(prefix="/imports", tags=["imports"])
 
 logger = logging.getLogger(__name__)
-
-SessionDep = Annotated[AsyncSession, Depends(get_session)]
 
 
 @router.post("/csv", response_model=ImportResultResponse)

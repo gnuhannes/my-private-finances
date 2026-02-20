@@ -2,18 +2,16 @@ from __future__ import annotations
 
 from typing import Annotated
 
-from fastapi import APIRouter, Body, Depends, HTTPException
+from fastapi import APIRouter, Body, HTTPException
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
 
-from my_private_finances.deps import get_session
+from my_private_finances.deps import SessionDep
 from my_private_finances.models import Budget, Category
 from my_private_finances.schemas import BudgetCreate, BudgetRead, BudgetUpdate
 
 router = APIRouter(prefix="/budgets", tags=["budgets"])
-
-SessionDep = Annotated[AsyncSession, Depends(get_session)]
 
 
 async def _to_read(session: AsyncSession, budget: Budget) -> BudgetRead:

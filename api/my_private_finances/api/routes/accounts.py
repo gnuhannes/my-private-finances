@@ -2,17 +2,14 @@ from __future__ import annotations
 
 from typing import Annotated
 
-from fastapi import APIRouter, Body, Depends, HTTPException
-from sqlalchemy.ext.asyncio import AsyncSession
+from fastapi import APIRouter, Body, HTTPException
 from sqlmodel import select
 
-from my_private_finances.deps import get_session
+from my_private_finances.deps import SessionDep
 from my_private_finances.models import Account
 from my_private_finances.schemas import AccountCreate, AccountRead, AccountUpdate
 
 router = APIRouter(prefix="/accounts", tags=["accounts"])
-
-SessionDep = Annotated[AsyncSession, Depends(get_session)]
 
 
 def _to_read(a: Account) -> AccountRead:

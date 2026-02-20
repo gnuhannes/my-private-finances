@@ -1,12 +1,11 @@
 from datetime import date
 from decimal import Decimal
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, HTTPException
 from fastapi.params import Query
 from typing import Annotated, Any, Optional
 from sqlalchemy import func, or_, select
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from my_private_finances.models import Transaction, Account, Category
 from my_private_finances.schemas import (
@@ -16,7 +15,7 @@ from my_private_finances.schemas import (
     TransactionUpdate,
 )
 
-from my_private_finances.deps import get_session
+from my_private_finances.deps import SessionDep
 from my_private_finances.services.transaction_hash import compute_import_hash, HashInput
 
 router = APIRouter(prefix="/transactions", tags=["transactions"])
@@ -25,7 +24,7 @@ router = APIRouter(prefix="/transactions", tags=["transactions"])
 @router.post("", response_model=TransactionRead, status_code=201)
 async def create_transaction(
     tx: TransactionCreate,
-    session: AsyncSession = Depends(get_session),
+    session: SessionDep,
 ) -> TransactionRead:
     res = await session.execute(
         select(Account).where(Account.id == tx.account_id)  # type: ignore[arg-type]
@@ -94,7 +93,7 @@ async def create_transaction(
 async def update_transaction(
     transaction_id: int,
     payload: TransactionUpdate,
-    session: AsyncSession = Depends(get_session),
+    session: SessionDep,
 ) -> TransactionRead:
     db_obj = await session.get(Transaction, transaction_id)
     if db_obj is None:
@@ -128,6 +127,7 @@ async def update_transaction(
 
 @router.get("", response_model=TransactionListResponse)
 async def list_transactions(
+    session: SessionDep,
     limit: Annotated[int, Query(ge=1, le=500)] = 50,
     offset: Annotated[int, Query(ge=0)] = 0,
     account_id: Annotated[Optional[int], Query(ge=1)] = None,
@@ -137,7 +137,6 @@ async def list_transactions(
     q: str | None = None,
     amount_min: Decimal | None = None,
     amount_max: Decimal | None = None,
-    session: AsyncSession = Depends(get_session),
 ) -> TransactionListResponse:
     filters: list[Any] = []
     if account_id is not None:

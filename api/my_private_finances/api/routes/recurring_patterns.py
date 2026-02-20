@@ -3,12 +3,12 @@ from __future__ import annotations
 from decimal import Decimal
 from typing import Annotated, Any, cast
 
-from fastapi import APIRouter, Body, Depends, HTTPException
+from fastapi import APIRouter, Body, HTTPException
 from fastapi.params import Query
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from my_private_finances.deps import get_session
+from my_private_finances.deps import SessionDep
 from my_private_finances.models import Account, Category, RecurringPattern
 from my_private_finances.schemas import (
     FrequencyTotal,
@@ -19,8 +19,6 @@ from my_private_finances.schemas import (
 from my_private_finances.services.recurring_detection import run_detection
 
 router = APIRouter(prefix="/recurring-patterns", tags=["recurring-patterns"])
-
-SessionDep = Annotated[AsyncSession, Depends(get_session)]
 
 # Monthly normalization factors for different frequencies
 _MONTHLY_FACTOR: dict[str, Decimal] = {
