@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useLocalStorage } from "../hooks/useLocalStorage";
 import { useSpendingTrend } from "../hooks/useTrends";
 import { TrendBarChart } from "../components/TrendBarChart";
 import { formatCurrency, formatMoneyString } from "../utils/money";
@@ -32,7 +32,7 @@ function TrendBadge({ trend }: { trend: TrendIndicator }) {
 }
 
 export default function SpendingTrends() {
-  const [lookback, setLookback] = useState<3 | 6 | 12>(3);
+  const [lookback, setLookback] = useLocalStorage<3 | 6 | 12>("pref.spendingTrends.lookback", 3);
   const month = currentMonthStr();
 
   const { data: report, isLoading, isError } = useSpendingTrend(lookback, "all", month);

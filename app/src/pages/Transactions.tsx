@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useLocalStorage } from "../hooks/useLocalStorage";
 import { useAccounts } from "../hooks/useAccounts";
 import { useCategories } from "../hooks/useCategories";
 import { useTransactions } from "../hooks/useTransactions";
@@ -13,7 +14,10 @@ export default function Transactions() {
   const { data: accounts, isLoading, error } = useAccounts();
   const { data: categories } = useCategories();
 
-  const [accountId, setAccountId] = useState<number | "all">("all");
+  const [accountId, setAccountId] = useLocalStorage<number | "all">(
+    "pref.transactions.accountId",
+    "all",
+  );
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
   const [offset, setOffset] = useState(0);

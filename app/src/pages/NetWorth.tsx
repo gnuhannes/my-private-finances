@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useLocalStorage } from "../hooks/useLocalStorage";
 import { useAccounts } from "../hooks/useAccounts";
 import { useNetWorth, useUpdateAccount, useCreateAccount } from "../hooks/useNetWorth";
 import { NetWorthAreaChart } from "../components/NetWorthAreaChart";
@@ -94,7 +95,7 @@ function AccountRow({
 
 export default function NetWorth() {
   const { data: accounts, isLoading: accountsLoading } = useAccounts();
-  const [months, setMonths] = useState<6 | 12 | 24>(12);
+  const [months, setMonths] = useLocalStorage<6 | 12 | 24>("pref.netWorth.months", 12);
   const [addingAccount, setAddingAccount] = useState(false);
   const [newName, setNewName] = useState("");
   const [newCurrency, setNewCurrency] = useState("EUR");

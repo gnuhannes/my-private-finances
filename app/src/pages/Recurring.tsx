@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useLocalStorage } from "../hooks/useLocalStorage";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAccounts } from "../hooks/useAccounts";
 import { useRecurringPatterns, useRecurringSummary } from "../hooks/useRecurringPatterns";
@@ -10,8 +10,14 @@ import styles from "./Recurring.module.css";
 export default function Recurring() {
   const queryClient = useQueryClient();
   const { data: accounts, isLoading: accountsLoading } = useAccounts();
-  const [accountId, setAccountId] = useState<number | null>(null);
-  const [showInactive, setShowInactive] = useState(false);
+  const [accountId, setAccountId] = useLocalStorage<number | null>(
+    "pref.recurring.accountId",
+    null,
+  );
+  const [showInactive, setShowInactive] = useLocalStorage<boolean>(
+    "pref.recurring.showInactive",
+    false,
+  );
 
   const selectedAccountId = accountId ?? (accounts && accounts.length > 0 ? accounts[0].id : null);
   const currency = accounts?.find((a) => a.id === selectedAccountId)?.currency ?? "EUR";

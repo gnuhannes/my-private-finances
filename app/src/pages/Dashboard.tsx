@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { useLocalStorage } from "../hooks/useLocalStorage";
 import { useAccounts } from "../hooks/useAccounts";
 import { useMonthlyReport } from "../hooks/useMonthlyReport";
 import { useBudgetVsActual } from "../hooks/useBudgetVsActual";
@@ -29,34 +30,29 @@ function lastNMonths(n: number): string[] {
   return out;
 }
 
-/** "all" = aggregate all accounts; number = specific account; null = loading */
-type AccountFilter = "all" | number | null;
-
 export default function Dashboard() {
   const { data: accounts, isLoading, error } = useAccounts();
 
   const months = useMemo(() => lastNMonths(24), []);
-  const [accountId, setAccountId] = useState<AccountFilter>(null);
+  const [accountId, setAccountId] = useLocalStorage<"all" | number>(
+    "pref.dashboard.accountId",
+    "all",
+  );
   const [month, setMonth] = useState<string>(months[0]);
 
-  // Default to "all" once accounts are loaded (null = not yet decided)
-  const selectedAccountId: AccountFilter =
-    accountId !== null ? accountId : accounts && accounts.length > 0 ? "all" : null;
-
-  const isAllAccounts = selectedAccountId === "all";
+  const isAllAccounts = accountId === "all";
 
   // Currency: use selected account's currency, or EUR when aggregating
   const currency =
-    typeof selectedAccountId === "number"
-      ? (accounts?.find((a) => a.id === selectedAccountId)?.currency ?? "EUR")
+    typeof accountId === "number"
+      ? (accounts?.find((a) => a.id === accountId)?.currency ?? "EUR")
       : "EUR";
 
-  const report = useMonthlyReport(selectedAccountId, month);
-  const budgetReport = useBudgetVsActual(selectedAccountId, month);
-  const fixedVsVariable = useFixedVsVariable(selectedAccountId, month);
+  const report = useMonthlyReport(accountId, month);
+  const budgetReport = useBudgetVsActual(accountId, month);
+  const fixedVsVariable = useFixedVsVariable(accountId, month);
   // Recurring summary is per-account only — disabled in "All Accounts" mode
-  const recurringSummaryAccountId =
-    typeof selectedAccountId === "number" ? selectedAccountId : null;
+  const recurringSummaryAccountId = typeof accountId === "number" ? accountId : null;
   const recurringSummary = useRecurringSummary(recurringSummaryAccountId);
 
   if (isLoading) return <div>Loading accounts…</div>;
@@ -72,11 +68,10 @@ export default function Dashboard() {
         <label className={styles.control}>
           <span>Account</span>
           <select
-            value={selectedAccountId === "all" ? "all" : (selectedAccountId ?? "")}
+            value={accountId}
             onChange={(e) => {
               const v = e.target.value;
-              if (v === "all") setAccountId("all");
-              else setAccountId(v === "" ? null : Number(v));
+              setAccountId(v === "all" ? "all" : Number(v));
             }}
           >
             <option value="all">All Accounts</option>
