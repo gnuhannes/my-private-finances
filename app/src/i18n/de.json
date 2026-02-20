@@ -10,7 +10,8 @@
     "trends": "Trends",
     "annual": "Jahresübersicht",
     "rules": "Regeln",
-    "import": "Importieren"
+    "import": "Importieren",
+    "settings": "Einstellungen"
   },
   "common": {
     "loading": "Lädt…",
@@ -383,5 +384,27 @@
     "tableActions": "Aktionen",
     "confirm": "Bestätigen",
     "dismiss": "Ablehnen"
+  },
+  "settings": {
+    "title": "Einstellungen",
+    "backupTitle": "Backup & Wiederherstellung",
+    "backupSubtitle": "Laden Sie eine Kopie aller Ihrer Daten als Backup herunter.",
+    "downloadSqlite": "SQLite herunterladen",
+    "downloadJson": "JSON herunterladen",
+    "restoreTitle": "Aus Backup wiederherstellen",
+    "restoreWarning": "Dies ersetzt ALLE aktuellen Daten dauerhaft durch das Backup.",
+    "restorePlaceholder": ".sqlite-Backup-Datei hier ablegen oder klicken zum Durchsuchen",
+    "restoreBtn": "Wiederherstellen",
+    "restoring": "Wird wiederhergestellt…",
+    "restoreSuccess": "Daten erfolgreich wiederhergestellt. Bitte die Seite neu laden.",
+    "restoreError": "Wiederherstellung fehlgeschlagen: {{error}}",
+    "languageTitle": "Sprache",
+    "dangerTitle": "Gefahrenzone",
+    "deleteTransactions": "Alle Transaktionen löschen",
+    "deleteTransactionsDesc": "Alle Transaktionen, wiederkehrende Muster und Überweisungsverknüpfungen entfernen. Konten und Kategorien bleiben erhalten.",
+    "deleteTransactionsConfirm": "ALLE Transaktionen löschen? Dies kann nicht rückgängig gemacht werden.",
+    "wipeAll": "Alle Daten löschen",
+    "wipeAllDesc": "Alles löschen: Konten, Transaktionen, Kategorien, Budgets, Regeln und Profile.",
+    "wipeAllConfirm": "ALLES löschen? Dies kann nicht rückgängig gemacht werden."
   }
 }

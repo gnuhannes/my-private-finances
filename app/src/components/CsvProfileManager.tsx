@@ -194,7 +194,7 @@ export function CsvProfileManager({ onClose }: Props) {
               <label key={field} className={styles.field}>
                 <span>
                   {t(
-                    `csvProfiles.col${field.replace(/_([a-z])/g, (_, c: string) => c.toUpperCase()) as string}` as Parameters<
+                    `csvProfiles.col${(field.charAt(0).toUpperCase() + field.slice(1)).replace(/_([a-z])/g, (_, c: string) => c.toUpperCase())}` as Parameters<
                       typeof t
                     >[0],
                   )}

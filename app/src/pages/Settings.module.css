@@ -1,0 +1,125 @@
+.page {
+  padding: 24px;
+  max-width: 640px;
+}
+
+.title {
+  margin: 0 0 24px;
+}
+
+.section {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  margin-bottom: 16px;
+  display: grid;
+  gap: 12px;
+}
+
+.dangerSection {
+  border: 1px solid var(--danger);
+  border-radius: var(--radius);
+  padding: 20px;
+  display: grid;
+  gap: 12px;
+}
+
+.sectionTitle {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.sectionSubtitle {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.subTitle {
+  margin: 4px 0 0;
+  font-size: 0.95rem;
+}
+
+.downloadRow {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.downloadBtn {
+  display: inline-block;
+  padding: 6px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-subtle, var(--bg));
+  color: var(--text);
+  text-decoration: none;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.downloadBtn:hover {
+  background: var(--bg-hover, var(--border));
+}
+
+.warning {
+  margin: 0;
+  color: var(--danger);
+  font-size: 0.85rem;
+}
+
+.success {
+  margin: 0;
+  color: var(--success, green);
+  font-size: 0.9rem;
+}
+
+.error {
+  margin: 0;
+  color: var(--danger);
+  font-size: 0.85rem;
+}
+
+.restoreActions {
+  display: flex;
+  gap: 8px;
+}
+
+.dangerRow {
+  display: grid;
+  gap: 8px;
+}
+
+.dangerItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.dangerLabel {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+.dangerBtn {
+  background: none;
+  border: 1px solid var(--danger);
+  border-radius: var(--radius);
+  color: var(--danger);
+  padding: 5px 12px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.dangerBtn:hover {
+  background: var(--danger);
+  color: #fff;
+}
+
+.dangerBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

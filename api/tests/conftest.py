@@ -23,6 +23,7 @@ async def test_app() -> AsyncGenerator[AsyncClient, None]:
         session_factory = create_session_factory(engine)
         app.state.engine = engine
         app.state.session_factory = session_factory
+        app.state.db_path = db_path
 
         async with engine.connect() as conn:
             async with conn.begin():

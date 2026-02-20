@@ -11,6 +11,7 @@ import NetWorth from "./pages/NetWorth";
 import SpendingTrends from "./pages/SpendingTrends";
 import AnnualOverview from "./pages/AnnualOverview";
 import Import from "./pages/Import";
+import Settings from "./pages/Settings";
 import "./App.css";
 
 export default function App() {
@@ -29,6 +30,7 @@ export default function App() {
         <Route path="/annual" element={<AnnualOverview />} />
         <Route path="/rules" element={<CategorizationRules />} />
         <Route path="/import" element={<Import />} />
+        <Route path="/settings" element={<Settings />} />
       </Routes>
     </>
   );

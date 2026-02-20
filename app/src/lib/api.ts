@@ -40,3 +40,5 @@ export type { SpendingTrendReport, CategoryTrendItem } from "./api/trends";
 
 export { getAnnualReport } from "./api/annual";
 export type { AnnualReport, MonthSummary } from "./api/annual";
+
+export { restoreSqlite, deleteTransactions, wipeAllData } from "./api/settings";

@@ -10,7 +10,8 @@
     "trends": "Trends",
     "annual": "Annual",
     "rules": "Rules",
-    "import": "Import"
+    "import": "Import",
+    "settings": "Settings"
   },
   "common": {
     "loading": "Loading…",
@@ -383,5 +384,27 @@
     "tableActions": "Actions",
     "confirm": "Confirm",
     "dismiss": "Dismiss"
+  },
+  "settings": {
+    "title": "Settings",
+    "backupTitle": "Backup & Restore",
+    "backupSubtitle": "Download a copy of all your data to keep as a backup.",
+    "downloadSqlite": "Download SQLite",
+    "downloadJson": "Download JSON",
+    "restoreTitle": "Restore from backup",
+    "restoreWarning": "This will permanently replace ALL current data with the backup.",
+    "restorePlaceholder": "Drop a .sqlite backup file here or click to browse",
+    "restoreBtn": "Restore",
+    "restoring": "Restoring…",
+    "restoreSuccess": "Data restored successfully. Please refresh the page.",
+    "restoreError": "Restore failed: {{error}}",
+    "languageTitle": "Language",
+    "dangerTitle": "Danger Zone",
+    "deleteTransactions": "Delete all transactions",
+    "deleteTransactionsDesc": "Remove all transactions, recurring patterns, and transfer links. Accounts and categories are kept.",
+    "deleteTransactionsConfirm": "Delete ALL transactions? This cannot be undone.",
+    "wipeAll": "Wipe all data",
+    "wipeAllDesc": "Delete everything: accounts, transactions, categories, budgets, rules, and profiles.",
+    "wipeAllConfirm": "Delete EVERYTHING? This cannot be undone."
   }
 }
