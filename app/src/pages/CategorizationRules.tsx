@@ -98,11 +98,9 @@ export default function CategorizationRules() {
   const categoryName = (catId: number): string =>
     categories?.find((c) => c.id === catId)?.name ?? `#${catId}`;
 
-  const fieldLabel = (f: string): string =>
-    t(`rules.fields.${f}`, { defaultValue: f });
+  const fieldLabel = (f: string): string => t(`rules.fields.${f}`, { defaultValue: f });
 
-  const operatorLabel = (op: string): string =>
-    t(`rules.operators.${op}`, { defaultValue: op });
+  const operatorLabel = (op: string): string => t(`rules.operators.${op}`, { defaultValue: op });
 
   if (isLoading) return <div className={styles.status}>{t("rules.loading")}</div>;
   if (error) return <div className={styles.error}>{t("rules.failed")}</div>;
@@ -182,9 +180,7 @@ export default function CategorizationRules() {
         </button>
       </form>
 
-      {rules && rules.length === 0 && (
-        <p className={styles.empty}>{t("rules.noRules")}</p>
-      )}
+      {rules && rules.length === 0 && <p className={styles.empty}>{t("rules.noRules")}</p>}
 
       {rules && rules.length > 0 && (
         <table className={styles.table}>

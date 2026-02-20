@@ -103,12 +103,8 @@ export default function Recurring() {
         </div>
       )}
 
-      {patterns.isLoading && (
-        <div className={styles.status}>{t("recurring.loadingPatterns")}</div>
-      )}
-      {patterns.isError && (
-        <div className={styles.error}>{t("recurring.failedPatterns")}</div>
-      )}
+      {patterns.isLoading && <div className={styles.status}>{t("recurring.loadingPatterns")}</div>}
+      {patterns.isError && <div className={styles.error}>{t("recurring.failedPatterns")}</div>}
 
       {patterns.data && patterns.data.length === 0 && (
         <p className={styles.empty}>{t("recurring.noPatterns")}</p>

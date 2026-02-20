@@ -41,9 +41,7 @@ export function RecurringPatternsTable({
             <th>{t("recurringTable.tableConfidence")}</th>
             <th>{t("recurringTable.tableLastSeen")}</th>
             <th>{t("recurringTable.tableCount")}</th>
-            {(onToggleActive || onToggleConfirmed) && (
-              <th>{t("recurringTable.tableActions")}</th>
-            )}
+            {(onToggleActive || onToggleConfirmed) && <th>{t("recurringTable.tableActions")}</th>}
           </tr>
         </thead>
         <tbody>

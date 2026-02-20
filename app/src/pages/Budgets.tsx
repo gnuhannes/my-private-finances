@@ -113,9 +113,7 @@ export default function Budgets() {
         </button>
       </form>
 
-      {budgets && budgets.length === 0 && (
-        <p className={styles.empty}>{t("budgets.noBudgets")}</p>
-      )}
+      {budgets && budgets.length === 0 && <p className={styles.empty}>{t("budgets.noBudgets")}</p>}
 
       {budgets && budgets.length > 0 && (
         <table className={styles.table}>

@@ -7,6 +7,7 @@ type Props = {
   onFile: (file: File) => void;
   accept?: string;
   file: File | null;
+  placeholder?: string;
 };
 
 function formatSize(bytes: number): string {
@@ -14,7 +15,7 @@ function formatSize(bytes: number): string {
   return `${(bytes / 1024).toFixed(1)} KB`;
 }
 
-export function FileDropZone({ onFile, accept = ".csv", file }: Props) {
+export function FileDropZone({ onFile, accept = ".csv", file, placeholder }: Props) {
   const { t } = useTranslation();
   const [dragging, setDragging] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -70,7 +71,7 @@ export function FileDropZone({ onFile, accept = ".csv", file }: Props) {
           {file.name} ({formatSize(file.size)})
         </span>
       ) : (
-        <span className={styles.placeholder}>{t("fileDropZone.placeholder")}</span>
+        <span className={styles.placeholder}>{placeholder ?? t("fileDropZone.placeholder")}</span>
       )}
     </div>
   );

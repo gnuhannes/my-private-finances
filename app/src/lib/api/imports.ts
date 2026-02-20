@@ -38,3 +38,28 @@ export async function importCsv(params: ImportCsvParams): Promise<ImportResult> 
 
   return body as ImportResult;
 }
+
+export type ImportPdfParams = {
+  file: File;
+  accountId: number;
+};
+
+export async function importPdf(params: ImportPdfParams): Promise<ImportResult> {
+  const formData = new FormData();
+  formData.append("file", params.file);
+
+  const query = new URLSearchParams({ account_id: String(params.accountId) });
+
+  const res = await fetch(`/api/imports/pdf?${query}`, {
+    method: "POST",
+    body: formData,
+  });
+
+  const body = await res.json().catch(() => null);
+
+  if (!res.ok) {
+    throw new ApiError(res.status, body);
+  }
+
+  return body as ImportResult;
+}

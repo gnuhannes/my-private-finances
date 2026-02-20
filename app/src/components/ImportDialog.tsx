@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useAccounts } from "../hooks/useAccounts";
 import { useImportCsv } from "../hooks/useImportCsv";
+import { useImportPdf } from "../hooks/useImportPdf";
 import { FileDropZone } from "./FileDropZone";
 import { ImportResult } from "./ImportResult";
 import styles from "./ImportDialog.module.css";
@@ -11,17 +12,23 @@ type Props = {
   onClose: () => void;
 };
 
+type Mode = "csv" | "pdf";
+
 export function ImportDialog({ open, onClose }: Props) {
   const { t } = useTranslation();
   const dialogRef = useRef<HTMLDialogElement>(null);
   const { data: accounts } = useAccounts();
-  const mutation = useImportCsv();
+  const csvMutation = useImportCsv();
+  const pdfMutation = useImportPdf();
 
+  const [mode, setMode] = useState<Mode>("csv");
   const [accountId, setAccountId] = useState<number | "">("");
   const [delimiter, setDelimiter] = useState(",");
   const [dateFormat, setDateFormat] = useState("iso");
   const [decimalComma, setDecimalComma] = useState(false);
   const [file, setFile] = useState<File | null>(null);
+
+  const mutation = mode === "csv" ? csvMutation : pdfMutation;
 
   useEffect(() => {
     const dialog = dialogRef.current;
@@ -49,7 +56,8 @@ export function ImportDialog({ open, onClose }: Props) {
     setDateFormat("iso");
     setDecimalComma(false);
     setFile(null);
-    mutation.reset();
+    csvMutation.reset();
+    pdfMutation.reset();
   };
 
   const handleClose = () => {
@@ -62,17 +70,27 @@ export function ImportDialog({ open, onClose }: Props) {
     mutation.reset();
   };
 
+  const handleModeChange = (next: Mode) => {
+    setMode(next);
+    setFile(null);
+    mutation.reset();
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!file || accountId === "") return;
 
-    mutation.mutate({
-      file,
-      accountId: Number(accountId),
-      delimiter,
-      dateFormat,
-      decimalComma,
-    });
+    if (mode === "csv") {
+      csvMutation.mutate({
+        file,
+        accountId: Number(accountId),
+        delimiter,
+        dateFormat,
+        decimalComma,
+      });
+    } else {
+      pdfMutation.mutate({ file, accountId: Number(accountId) });
+    }
   };
 
   const canSubmit = file !== null && accountId !== "" && !mutation.isPending;
@@ -100,6 +118,24 @@ export function ImportDialog({ open, onClose }: Props) {
         </div>
       ) : (
         <form onSubmit={handleSubmit} className={styles.body}>
+          {/* Tab bar */}
+          <div className={styles.tabBar}>
+            <button
+              type="button"
+              className={`${styles.tab} ${mode === "csv" ? styles.tabActive : ""}`}
+              onClick={() => handleModeChange("csv")}
+            >
+              {t("importDialog.tabCsv")}
+            </button>
+            <button
+              type="button"
+              className={`${styles.tab} ${mode === "pdf" ? styles.tabActive : ""}`}
+              onClick={() => handleModeChange("pdf")}
+            >
+              {t("importDialog.tabPdf")}
+            </button>
+          </div>
+
           <label className={styles.field}>
             <span>{t("importDialog.account")}</span>
             <select
@@ -115,35 +151,42 @@ export function ImportDialog({ open, onClose }: Props) {
             </select>
           </label>
 
-          <div className={styles.optionsRow}>
-            <label className={styles.field}>
-              <span>{t("importDialog.delimiter")}</span>
-              <select value={delimiter} onChange={(e) => setDelimiter(e.target.value)}>
-                <option value=",">,</option>
-                <option value=";">;</option>
-                <option value="&#9;">{t("importDialog.delimiterTab")}</option>
-              </select>
-            </label>
+          {mode === "csv" && (
+            <div className={styles.optionsRow}>
+              <label className={styles.field}>
+                <span>{t("importDialog.delimiter")}</span>
+                <select value={delimiter} onChange={(e) => setDelimiter(e.target.value)}>
+                  <option value=",">,</option>
+                  <option value=";">;</option>
+                  <option value="&#9;">{t("importDialog.delimiterTab")}</option>
+                </select>
+              </label>
 
-            <label className={styles.field}>
-              <span>{t("importDialog.dateFormat")}</span>
-              <select value={dateFormat} onChange={(e) => setDateFormat(e.target.value)}>
-                <option value="iso">{t("importDialog.dateFormatIso")}</option>
-                <option value="dmy">{t("importDialog.dateFormatDmy")}</option>
-              </select>
-            </label>
+              <label className={styles.field}>
+                <span>{t("importDialog.dateFormat")}</span>
+                <select value={dateFormat} onChange={(e) => setDateFormat(e.target.value)}>
+                  <option value="iso">{t("importDialog.dateFormatIso")}</option>
+                  <option value="dmy">{t("importDialog.dateFormatDmy")}</option>
+                </select>
+              </label>
 
-            <label className={styles.field}>
-              <span>{t("importDialog.decimalComma")}</span>
-              <input
-                type="checkbox"
-                checked={decimalComma}
-                onChange={(e) => setDecimalComma(e.target.checked)}
-              />
-            </label>
-          </div>
+              <label className={styles.field}>
+                <span>{t("importDialog.decimalComma")}</span>
+                <input
+                  type="checkbox"
+                  checked={decimalComma}
+                  onChange={(e) => setDecimalComma(e.target.checked)}
+                />
+              </label>
+            </div>
+          )}
 
-          <FileDropZone onFile={setFile} file={file} />
+          <FileDropZone
+            onFile={setFile}
+            file={file}
+            accept={mode === "csv" ? ".csv" : ".pdf"}
+            placeholder={mode === "pdf" ? t("fileDropZone.placeholderPdf") : undefined}
+          />
 
           {mutation.isError && (
             <div className={styles.error}>

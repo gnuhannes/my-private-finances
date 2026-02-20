@@ -257,7 +257,9 @@
     "next": "Next"
   },
   "importDialog": {
-    "title": "Import CSV",
+    "title": "Import",
+    "tabCsv": "CSV",
+    "tabPdf": "PDF (Trade Republic)",
     "account": "Account",
     "selectAccount": "Select account...",
     "delimiter": "Delimiter",
@@ -274,7 +276,8 @@
     "close": "Close"
   },
   "fileDropZone": {
-    "placeholder": "Drop a CSV file here or click to browse"
+    "placeholder": "Drop a CSV file here or click to browse",
+    "placeholderPdf": "Drop a PDF file here or click to browse"
   },
   "importResult": {
     "totalRows": "Total rows",
