@@ -1,5 +1,6 @@
 import { useCallback, useRef, useState } from "react";
 import type { DragEvent } from "react";
+import { useTranslation } from "react-i18next";
 import styles from "./FileDropZone.module.css";
 
 type Props = {
@@ -14,6 +15,7 @@ function formatSize(bytes: number): string {
 }
 
 export function FileDropZone({ onFile, accept = ".csv", file }: Props) {
+  const { t } = useTranslation();
   const [dragging, setDragging] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -68,7 +70,7 @@ export function FileDropZone({ onFile, accept = ".csv", file }: Props) {
           {file.name} ({formatSize(file.size)})
         </span>
       ) : (
-        <span className={styles.placeholder}>Drop a CSV file here or click to browse</span>
+        <span className={styles.placeholder}>{t("fileDropZone.placeholder")}</span>
       )}
     </div>
   );

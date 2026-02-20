@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import type { TransactionItem } from "../lib/api";
 import type { Category } from "../lib/api/categories";
 import { formatMoneyString } from "../utils/money";
@@ -11,19 +12,21 @@ type Props = {
 };
 
 export function TransactionTable({ items, currency, categories, onCategoryChange }: Props) {
+  const { t } = useTranslation();
+
   if (items.length === 0) {
-    return <p className={styles.empty}>No transactions found.</p>;
+    return <p className={styles.empty}>{t("transactionTable.noTransactions")}</p>;
   }
 
   return (
     <table className={styles.table}>
       <thead>
         <tr>
-          <th>Date</th>
-          <th>Payee</th>
-          <th>Purpose</th>
-          <th>Category</th>
-          <th className={styles.amount}>Amount</th>
+          <th>{t("transactionTable.tableDate")}</th>
+          <th>{t("transactionTable.tablePayee")}</th>
+          <th>{t("transactionTable.tablePurpose")}</th>
+          <th>{t("transactionTable.tableCategory")}</th>
+          <th className={styles.amount}>{t("transactionTable.tableAmount")}</th>
         </tr>
       </thead>
       <tbody>

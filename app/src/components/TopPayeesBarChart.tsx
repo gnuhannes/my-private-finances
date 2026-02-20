@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 import styles from "./TopPayeesBarChart.module.css";
 
@@ -12,9 +13,10 @@ type Props = {
 };
 
 export function TopPayeesBarChart({ data, formatValue }: Props) {
+  const { t } = useTranslation();
   return (
     <div className={styles.card}>
-      <div className={styles.title}>Top Payees</div>
+      <div className={styles.title}>{t("topPayees.title")}</div>
 
       <div className={styles.chartWrap}>
         <ResponsiveContainer>

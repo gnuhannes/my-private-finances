@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useLocalStorage } from "../hooks/useLocalStorage";
 import { useAccounts } from "../hooks/useAccounts";
 import { useNetWorth, useUpdateAccount, useCreateAccount } from "../hooks/useNetWorth";
@@ -25,6 +26,7 @@ function AccountRow({
   onSave: (id: number, data: { opening_balance: string; opening_balance_date: string }) => void;
   currency: string;
 }) {
+  const { t } = useTranslation();
   const [editing, setEditing] = useState(false);
   const [form, setForm] = useState<EditState>({
     opening_balance: account.opening_balance ?? "",
@@ -61,10 +63,10 @@ function AccountRow({
               onChange={(e) => setForm((f) => ({ ...f, opening_balance_date: e.target.value }))}
             />
             <button type="button" className={styles.saveBtn} onClick={handleSave}>
-              Save
+              {t("common.save")}
             </button>
             <button type="button" className={styles.cancelBtn} onClick={() => setEditing(false)}>
-              Cancel
+              {t("common.cancel")}
             </button>
           </div>
         ) : hasSetup ? (
@@ -72,12 +74,12 @@ function AccountRow({
             {formatMoneyString(account.opening_balance!, currency)} as of{" "}
             {account.opening_balance_date}
             <button type="button" className={styles.editBtn} onClick={() => setEditing(true)}>
-              Edit
+              {t("common.edit")}
             </button>
           </span>
         ) : (
           <button type="button" className={styles.setupBtn} onClick={() => setEditing(true)}>
-            Set up opening balance
+            {t("netWorth.setupOpening")}
           </button>
         )}
       </td>
@@ -94,6 +96,7 @@ function AccountRow({
 }
 
 export default function NetWorth() {
+  const { t } = useTranslation();
   const { data: accounts, isLoading: accountsLoading } = useAccounts();
   const [months, setMonths] = useLocalStorage<6 | 12 | 24>("pref.netWorth.months", 12);
   const [addingAccount, setAddingAccount] = useState(false);
@@ -104,8 +107,8 @@ export default function NetWorth() {
   const updateAccount = useUpdateAccount();
   const createAccount = useCreateAccount();
 
-  if (accountsLoading) return <div className={styles.status}>Loading…</div>;
-  if (!accounts) return <div className={styles.status}>Failed to load accounts.</div>;
+  if (accountsLoading) return <div className={styles.status}>{t("common.loading")}</div>;
+  if (!accounts) return <div className={styles.status}>{t("common.failedAccounts")}</div>;
 
   const currency = report?.currency ?? accounts[0]?.currency ?? "EUR";
 
@@ -129,22 +132,20 @@ export default function NetWorth() {
 
   return (
     <div className={styles.page}>
-      <h1 className={styles.title}>Net Worth</h1>
-      <p className={styles.subtitle}>
-        Computed as opening balance + all non-transfer transactions since that date.
-      </p>
+      <h1 className={styles.title}>{t("netWorth.title")}</h1>
+      <p className={styles.subtitle}>{t("netWorth.subtitle")}</p>
 
       {/* KPI row */}
       <div className={styles.kpiRow}>
         <div className={styles.kpiCard}>
-          <p className={styles.kpiLabel}>Total Net Worth</p>
+          <p className={styles.kpiLabel}>{t("netWorth.totalNetWorth")}</p>
           <p className={styles.kpiValue}>
             {report ? formatMoneyString(report.current_total, currency) : "—"}
           </p>
         </div>
         {totalChange !== null && (
           <div className={styles.kpiCard}>
-            <p className={styles.kpiLabel}>Month-over-month</p>
+            <p className={styles.kpiLabel}>{t("netWorth.monthOverMonth")}</p>
             <p
               className={`${styles.kpiValue} ${totalChange >= 0 ? styles.positive : styles.negative}`}
             >
@@ -158,7 +159,7 @@ export default function NetWorth() {
       {/* Chart */}
       <div className={styles.chartSection}>
         <div className={styles.chartHeader}>
-          <span className={styles.chartTitle}>Net Worth Over Time</span>
+          <span className={styles.chartTitle}>{t("netWorth.chartTitle")}</span>
           <div className={styles.monthToggle}>
             {MONTH_OPTIONS.map((m) => (
               <button
@@ -172,8 +173,8 @@ export default function NetWorth() {
             ))}
           </div>
         </div>
-        {reportLoading && <div className={styles.status}>Loading chart…</div>}
-        {isError && <div className={styles.error}>Failed to load net worth data.</div>}
+        {reportLoading && <div className={styles.status}>{t("netWorth.loadingChart")}</div>}
+        {isError && <div className={styles.error}>{t("netWorth.failedData")}</div>}
         {report && report.history.length > 0 && (
           <NetWorthAreaChart
             history={report.history}
@@ -181,35 +182,35 @@ export default function NetWorth() {
           />
         )}
         {report && report.history.length === 0 && (
-          <p className={styles.empty}>No data yet. Set an opening balance below to get started.</p>
+          <p className={styles.empty}>{t("netWorth.noData")}</p>
         )}
       </div>
 
       {/* Per-account table */}
       <div className={styles.tableSection}>
         <div className={styles.tableTitleRow}>
-          <h2 className={styles.tableTitle}>Accounts</h2>
+          <h2 className={styles.tableTitle}>{t("netWorth.accounts")}</h2>
           {!addingAccount && (
             <button
               type="button"
               className={styles.setupBtn}
               onClick={() => setAddingAccount(true)}
             >
-              + New Account
+              {t("netWorth.newAccount")}
             </button>
           )}
         </div>
         {accounts.length === 0 ? (
-          <p className={styles.empty}>No accounts yet. Create one below to get started.</p>
+          <p className={styles.empty}>{t("netWorth.noAccounts")}</p>
         ) : (
           <div className={styles.tableCard}>
             <table className={styles.table}>
               <thead>
                 <tr>
-                  <th>Account</th>
-                  <th>Opening Balance</th>
-                  <th className={styles.right}>Current Balance</th>
-                  <th className={styles.right}>MoM Change</th>
+                  <th>{t("netWorth.tableAccount")}</th>
+                  <th>{t("netWorth.tableOpeningBalance")}</th>
+                  <th className={styles.right}>{t("netWorth.tableCurrentBalance")}</th>
+                  <th className={styles.right}>{t("netWorth.tableMomChange")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -230,7 +231,7 @@ export default function NetWorth() {
           <form className={styles.newAccountForm} onSubmit={handleCreate}>
             <input
               type="text"
-              placeholder="Account name"
+              placeholder={t("netWorth.accountNamePlaceholder")}
               value={newName}
               className={styles.input}
               maxLength={120}
@@ -240,21 +241,21 @@ export default function NetWorth() {
             />
             <input
               type="text"
-              placeholder="EUR"
+              placeholder={t("netWorth.currencyPlaceholder")}
               value={newCurrency}
               className={styles.currencyInput}
               maxLength={3}
               onChange={(e) => setNewCurrency(e.target.value)}
             />
             {createAccount.isError && (
-              <span className={styles.createError}>Failed to create account.</span>
+              <span className={styles.createError}>{t("netWorth.failedCreate")}</span>
             )}
             <button
               type="submit"
               className={styles.saveBtn}
               disabled={!newName.trim() || createAccount.isPending}
             >
-              {createAccount.isPending ? "Creating…" : "Create"}
+              {createAccount.isPending ? t("netWorth.creating") : t("netWorth.create")}
             </button>
             <button
               type="button"
@@ -266,7 +267,7 @@ export default function NetWorth() {
                 createAccount.reset();
               }}
             >
-              Cancel
+              {t("common.cancel")}
             </button>
           </form>
         )}

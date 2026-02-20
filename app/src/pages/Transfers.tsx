@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import {
   useConfirmTransfer,
   useDetectTransfers,
@@ -8,6 +9,7 @@ import { TransferCandidatesTable } from "../components/TransferCandidatesTable";
 import styles from "./Transfers.module.css";
 
 export default function Transfers() {
+  const { t } = useTranslation();
   const pending = useTransferCandidates("pending");
   const confirmed = useTransferCandidates("confirmed");
 
@@ -20,11 +22,8 @@ export default function Transfers() {
 
   return (
     <div className={styles.page}>
-      <h1 className={styles.title}>Inter-Account Transfers</h1>
-      <p className={styles.subtitle}>
-        Identify transfers between your accounts so they are excluded from spending reports.
-        Confirmed transfers are hidden from expense totals and category breakdowns.
-      </p>
+      <h1 className={styles.title}>{t("transfers.title")}</h1>
+      <p className={styles.subtitle}>{t("transfers.subtitle")}</p>
 
       <div className={styles.controls}>
         <button
@@ -33,33 +32,29 @@ export default function Transfers() {
           onClick={() => detectMutation.mutate()}
           disabled={detectMutation.isPending}
         >
-          {detectMutation.isPending ? "Detecting..." : "Detect Transfers"}
+          {detectMutation.isPending ? t("transfers.detecting") : t("transfers.detectTransfers")}
         </button>
         {detectMutation.isSuccess && detectMutation.data.length === 0 && (
-          <span className={styles.statusMsg}>No new transfer candidates found.</span>
+          <span className={styles.statusMsg}>{t("transfers.noNewCandidates")}</span>
         )}
         {detectMutation.isSuccess && detectMutation.data.length > 0 && (
           <span className={styles.statusMsg}>
-            Found {detectMutation.data.length} new candidate
-            {detectMutation.data.length !== 1 ? "s" : ""}.
+            {t("transfers.foundCandidates", { count: detectMutation.data.length })}
           </span>
         )}
       </div>
 
       <section className={styles.section}>
         <h2 className={styles.sectionTitle}>
-          Pending Review
+          {t("transfers.pendingReview")}
           {pendingCount > 0 && <span className={styles.badge}>{pendingCount}</span>}
         </h2>
 
-        {pending.isLoading && <p className={styles.status}>Loading...</p>}
-        {pending.isError && <p className={styles.error}>Failed to load candidates.</p>}
+        {pending.isLoading && <p className={styles.status}>{t("transfers.loading")}</p>}
+        {pending.isError && <p className={styles.error}>{t("transfers.failed")}</p>}
 
         {pending.data && pending.data.length === 0 && (
-          <p className={styles.empty}>
-            No pending transfer candidates. Click &quot;Detect Transfers&quot; to scan your
-            transactions.
-          </p>
+          <p className={styles.empty}>{t("transfers.noPending")}</p>
         )}
 
         {pending.data && pending.data.length > 0 && (
@@ -74,7 +69,7 @@ export default function Transfers() {
       {confirmedCount > 0 && (
         <section className={styles.section}>
           <h2 className={styles.sectionTitle}>
-            Confirmed Transfers
+            {t("transfers.confirmedTransfers")}
             <span className={styles.badge}>{confirmedCount}</span>
           </h2>
           <TransferCandidatesTable items={confirmed.data ?? []} />

@@ -1,0 +1,28 @@
+.switcher {
+  display: flex;
+  gap: 4px;
+  margin-left: auto;
+  align-items: center;
+}
+
+.btn {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 2px 7px;
+  line-height: 1.5;
+}
+
+.btn:hover {
+  color: var(--text);
+  border-color: var(--text-muted);
+}
+
+.active {
+  color: var(--text);
+  border-color: var(--text);
+}

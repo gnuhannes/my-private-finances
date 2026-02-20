@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import {
   BarChart,
   Bar,
@@ -17,9 +18,9 @@ type ChartRow = {
   actual: number;
 };
 
-function toChartData(categories: CategoryTrendItem[]): ChartRow[] {
+function toChartData(categories: CategoryTrendItem[], uncategorizedLabel: string): ChartRow[] {
   return categories.slice(0, 15).map((c) => ({
-    name: c.category_name ?? "Uncategorized",
+    name: c.category_name ?? uncategorizedLabel,
     avg: parseFloat(c.avg_monthly),
     actual: parseFloat(c.current_month),
   }));
@@ -27,15 +28,17 @@ function toChartData(categories: CategoryTrendItem[]): ChartRow[] {
 
 type Props = {
   categories: CategoryTrendItem[];
+  lookback: number;
   formatValue?: (v: number) => string;
 };
 
-export function TrendBarChart({ categories, formatValue }: Props) {
-  const data = toChartData(categories);
+export function TrendBarChart({ categories, lookback, formatValue }: Props) {
+  const { t } = useTranslation();
+  const data = toChartData(categories, t("common.uncategorized"));
   const fmt = formatValue ?? String;
 
   if (data.length === 0) {
-    return <p className={styles.empty}>No spending data for this period.</p>;
+    return <p className={styles.empty}>{t("trendChart.noData")}</p>;
   }
 
   return (
@@ -53,13 +56,13 @@ export function TrendBarChart({ categories, formatValue }: Props) {
           <Legend />
           <Bar
             dataKey="avg"
-            name="Avg (lookback)"
+            name={t("trendChart.avgLabel", { lookback })}
             fill="var(--color-text-muted, #aaa)"
             radius={[0, 2, 2, 0]}
           />
           <Bar
             dataKey="actual"
-            name="This month"
+            name={t("trendChart.thisMonth")}
             fill="var(--color-accent, #0070f3)"
             radius={[0, 2, 2, 0]}
           />

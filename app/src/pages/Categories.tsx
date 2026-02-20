@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useCategories } from "../hooks/useCategories";
 import {
@@ -11,6 +12,7 @@ import {
 import styles from "./Categories.module.css";
 
 export default function Categories() {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const { data: categories, isLoading, error } = useCategories();
 
@@ -95,37 +97,37 @@ export default function Categories() {
   };
 
   const costTypeLabel = (ct: CostType | null): string => {
-    if (ct === "fixed") return "Fixed";
-    if (ct === "variable") return "Variable";
+    if (ct === "fixed") return t("categories.fixed");
+    if (ct === "variable") return t("categories.variable");
     return "";
   };
 
-  if (isLoading) return <div className={styles.status}>Loading categories...</div>;
-  if (error) return <div className={styles.error}>Failed to load categories.</div>;
+  if (isLoading) return <div className={styles.status}>{t("categories.loading")}</div>;
+  if (error) return <div className={styles.error}>{t("categories.failed")}</div>;
 
   return (
     <div className={styles.page}>
-      <h1 className={styles.title}>Categories</h1>
-      <p className={styles.subtitle}>Manage transaction categories.</p>
+      <h1 className={styles.title}>{t("categories.title")}</h1>
+      <p className={styles.subtitle}>{t("categories.subtitle")}</p>
 
       <form className={styles.addForm} onSubmit={handleAdd}>
         <div className={styles.field}>
-          <label>Name</label>
+          <label>{t("common.name")}</label>
           <input
             type="text"
             value={newName}
             onChange={(e) => setNewName(e.target.value)}
-            placeholder="Category name"
+            placeholder={t("categories.categoryNamePlaceholder")}
             required
           />
         </div>
         <div className={styles.field}>
-          <label>Parent</label>
+          <label>{t("categories.parent")}</label>
           <select
             value={newParentId ?? ""}
             onChange={(e) => setNewParentId(e.target.value === "" ? null : Number(e.target.value))}
           >
-            <option value="">None</option>
+            <option value="">{t("categories.none")}</option>
             {categories?.map((c) => (
               <option key={c.id} value={c.id}>
                 {c.name}
@@ -134,35 +136,35 @@ export default function Categories() {
           </select>
         </div>
         <div className={styles.field}>
-          <label>Cost Type</label>
+          <label>{t("categories.costType")}</label>
           <select
             value={newCostType ?? ""}
             onChange={(e) =>
               setNewCostType(e.target.value === "" ? null : (e.target.value as CostType))
             }
           >
-            <option value="">Unclassified</option>
-            <option value="fixed">Fixed</option>
-            <option value="variable">Variable</option>
+            <option value="">{t("categories.unclassified")}</option>
+            <option value="fixed">{t("categories.fixed")}</option>
+            <option value="variable">{t("categories.variable")}</option>
           </select>
         </div>
         <button type="submit" disabled={addMutation.isPending}>
-          Add
+          {t("common.add")}
         </button>
       </form>
 
       {categories && categories.length === 0 && (
-        <p className={styles.empty}>No categories yet. Create one above.</p>
+        <p className={styles.empty}>{t("categories.noCategories")}</p>
       )}
 
       {categories && categories.length > 0 && (
         <table className={styles.table}>
           <thead>
             <tr>
-              <th>Name</th>
-              <th>Parent</th>
-              <th>Cost Type</th>
-              <th>Actions</th>
+              <th>{t("common.name")}</th>
+              <th>{t("categories.tableParent")}</th>
+              <th>{t("categories.tableCostType")}</th>
+              <th>{t("common.actions")}</th>
             </tr>
           </thead>
           <tbody>
@@ -190,9 +192,9 @@ export default function Categories() {
                         setEditCostType(e.target.value === "" ? null : (e.target.value as CostType))
                       }
                     >
-                      <option value="">Unclassified</option>
-                      <option value="fixed">Fixed</option>
-                      <option value="variable">Variable</option>
+                      <option value="">{t("categories.unclassified")}</option>
+                      <option value="fixed">{t("categories.fixed")}</option>
+                      <option value="variable">{t("categories.variable")}</option>
                     </select>
                   ) : (
                     costTypeLabel(cat.cost_type)
@@ -203,19 +205,19 @@ export default function Categories() {
                     {editingId === cat.id ? (
                       <>
                         <button type="button" onClick={() => handleEditSave(cat.id)}>
-                          Save
+                          {t("common.save")}
                         </button>
                         <button type="button" onClick={() => setEditingId(null)}>
-                          Cancel
+                          {t("common.cancel")}
                         </button>
                       </>
                     ) : (
                       <>
                         <button type="button" onClick={() => startEdit(cat)}>
-                          Edit
+                          {t("common.edit")}
                         </button>
                         <button type="button" onClick={() => handleDelete(cat)}>
-                          Delete
+                          {t("common.delete")}
                         </button>
                       </>
                     )}

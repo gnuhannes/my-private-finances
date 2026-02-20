@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { useLocalStorage } from "../hooks/useLocalStorage";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAccounts } from "../hooks/useAccounts";
@@ -8,6 +9,7 @@ import { RecurringPatternsTable } from "../components/RecurringPatternsTable";
 import styles from "./Recurring.module.css";
 
 export default function Recurring() {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const { data: accounts, isLoading: accountsLoading } = useAccounts();
   const [accountId, setAccountId] = useLocalStorage<number | null>(
@@ -45,18 +47,18 @@ export default function Recurring() {
     onSuccess: invalidate,
   });
 
-  if (accountsLoading) return <div className={styles.status}>Loading...</div>;
+  if (accountsLoading) return <div className={styles.status}>{t("recurring.loading")}</div>;
   if (!accounts || accounts.length === 0)
-    return <div className={styles.status}>No accounts yet.</div>;
+    return <div className={styles.status}>{t("common.noAccountsYet")}</div>;
 
   return (
     <div className={styles.page}>
-      <h1 className={styles.title}>Recurring Transactions</h1>
-      <p className={styles.subtitle}>Detect and manage recurring payments and subscriptions.</p>
+      <h1 className={styles.title}>{t("recurring.title")}</h1>
+      <p className={styles.subtitle}>{t("recurring.subtitle")}</p>
 
       <div className={styles.controls}>
         <div className={styles.field}>
-          <label>Account</label>
+          <label>{t("common.account")}</label>
           <select
             value={selectedAccountId ?? ""}
             onChange={(e) => setAccountId(e.target.value === "" ? null : Number(e.target.value))}
@@ -74,7 +76,7 @@ export default function Recurring() {
           onClick={() => detectMutation.mutate()}
           disabled={!selectedAccountId || detectMutation.isPending}
         >
-          {detectMutation.isPending ? "Detecting..." : "Detect Patterns"}
+          {detectMutation.isPending ? t("recurring.detecting") : t("recurring.detectPatterns")}
         </button>
         <label>
           <input
@@ -82,33 +84,34 @@ export default function Recurring() {
             checked={showInactive}
             onChange={(e) => setShowInactive(e.target.checked)}
           />{" "}
-          Show inactive
+          {t("recurring.showInactive")}
         </label>
       </div>
 
       {summary.data && (
         <div className={styles.summaryRow}>
           <div className={styles.summaryCard}>
-            <p className={styles.summaryLabel}>Monthly Recurring</p>
+            <p className={styles.summaryLabel}>{t("recurring.monthlyRecurring")}</p>
             <p className={styles.summaryValue}>
               {formatMoneyString(summary.data.total_monthly_recurring, currency)}
             </p>
           </div>
           <div className={styles.summaryCard}>
-            <p className={styles.summaryLabel}>Patterns Found</p>
+            <p className={styles.summaryLabel}>{t("recurring.patternsFound")}</p>
             <p className={styles.summaryValue}>{summary.data.pattern_count}</p>
           </div>
         </div>
       )}
 
-      {patterns.isLoading && <div className={styles.status}>Loading patterns...</div>}
-      {patterns.isError && <div className={styles.error}>Failed to load patterns.</div>}
+      {patterns.isLoading && (
+        <div className={styles.status}>{t("recurring.loadingPatterns")}</div>
+      )}
+      {patterns.isError && (
+        <div className={styles.error}>{t("recurring.failedPatterns")}</div>
+      )}
 
       {patterns.data && patterns.data.length === 0 && (
-        <p className={styles.empty}>
-          No recurring patterns detected yet. Click &quot;Detect Patterns&quot; to analyze your
-          transactions.
-        </p>
+        <p className={styles.empty}>{t("recurring.noPatterns")}</p>
       )}
 
       {patterns.data && patterns.data.length > 0 && (

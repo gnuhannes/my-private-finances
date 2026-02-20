@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import type { TransferCandidate } from "../lib/api/transfers";
 import { formatMoneyString } from "../utils/money";
 import styles from "./TransferCandidatesTable.module.css";
@@ -23,19 +24,20 @@ function confidenceLabel(confidence: string): string {
 }
 
 export function TransferCandidatesTable({ items, onConfirm, onDismiss, currency = "EUR" }: Props) {
+  const { t } = useTranslation();
   return (
     <div className={styles.card}>
       <table className={styles.table}>
         <thead>
           <tr>
-            <th>From Account</th>
-            <th>Date</th>
-            <th>Payee</th>
-            <th className={styles.right}>Amount</th>
-            <th>To Account</th>
-            <th>Date</th>
-            <th>Confidence</th>
-            {(onConfirm || onDismiss) && <th>Actions</th>}
+            <th>{t("transferTable.tableFromAccount")}</th>
+            <th>{t("transferTable.tableDate")}</th>
+            <th>{t("transferTable.tablePayee")}</th>
+            <th className={styles.right}>{t("transferTable.tableAmount")}</th>
+            <th>{t("transferTable.tableToAccount")}</th>
+            <th>{t("transferTable.tableDate")}</th>
+            <th>{t("transferTable.tableConfidence")}</th>
+            {(onConfirm || onDismiss) && <th>{t("transferTable.tableActions")}</th>}
           </tr>
         </thead>
         <tbody>
@@ -63,7 +65,7 @@ export function TransferCandidatesTable({ items, onConfirm, onDismiss, currency 
                         className={styles.confirmBtn}
                         onClick={() => onConfirm(c.id)}
                       >
-                        Confirm
+                        {t("transferTable.confirm")}
                       </button>
                     )}
                     {onDismiss && (
@@ -72,7 +74,7 @@ export function TransferCandidatesTable({ items, onConfirm, onDismiss, currency 
                         className={styles.dismissBtn}
                         onClick={() => onDismiss(c.id)}
                       >
-                        Dismiss
+                        {t("transferTable.dismiss")}
                       </button>
                     )}
                   </div>

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useCategorizationRules } from "../hooks/useCategorizationRules";
 import { useCategories } from "../hooks/useCategories";
@@ -12,32 +13,16 @@ import {
 } from "../lib/api/categorization-rules";
 import styles from "./CategorizationRules.module.css";
 
-const TEXT_OPERATORS = [
-  { value: "contains", label: "contains" },
-  { value: "exact", label: "exact" },
-  { value: "starts_with", label: "starts with" },
-  { value: "ends_with", label: "ends with" },
-];
+const TEXT_OPERATOR_VALUES = ["contains", "exact", "starts_with", "ends_with"] as const;
+const AMOUNT_OPERATOR_VALUES = ["gt", "gte", "lt", "lte", "eq"] as const;
+const FIELD_VALUES = ["payee", "purpose", "amount"] as const;
 
-const AMOUNT_OPERATORS = [
-  { value: "gt", label: ">" },
-  { value: "gte", label: ">=" },
-  { value: "lt", label: "<" },
-  { value: "lte", label: "<=" },
-  { value: "eq", label: "=" },
-];
-
-const FIELDS = [
-  { value: "payee", label: "Payee" },
-  { value: "purpose", label: "Purpose" },
-  { value: "amount", label: "Amount" },
-];
-
-function operatorsForField(field: string) {
-  return field === "amount" ? AMOUNT_OPERATORS : TEXT_OPERATORS;
+function operatorsForField(field: string): readonly string[] {
+  return field === "amount" ? AMOUNT_OPERATOR_VALUES : TEXT_OPERATOR_VALUES;
 }
 
 export default function CategorizationRules() {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const { data: rules, isLoading, error } = useCategorizationRules();
   const { data: categories } = useCategories();
@@ -79,7 +64,7 @@ export default function CategorizationRules() {
   const handleFieldChange = (newField: string) => {
     setField(newField);
     const ops = operatorsForField(newField);
-    setOperator(ops[0].value);
+    setOperator(ops[0]);
   };
 
   const handleAdd = (e: React.FormEvent) => {
@@ -113,21 +98,19 @@ export default function CategorizationRules() {
   const categoryName = (catId: number): string =>
     categories?.find((c) => c.id === catId)?.name ?? `#${catId}`;
 
-  const operatorLabel = (op: string): string => {
-    const all = [...TEXT_OPERATORS, ...AMOUNT_OPERATORS];
-    return all.find((o) => o.value === op)?.label ?? op;
-  };
+  const fieldLabel = (f: string): string =>
+    t(`rules.fields.${f}`, { defaultValue: f });
 
-  if (isLoading) return <div className={styles.status}>Loading rules...</div>;
-  if (error) return <div className={styles.error}>Failed to load rules.</div>;
+  const operatorLabel = (op: string): string =>
+    t(`rules.operators.${op}`, { defaultValue: op });
+
+  if (isLoading) return <div className={styles.status}>{t("rules.loading")}</div>;
+  if (error) return <div className={styles.error}>{t("rules.failed")}</div>;
 
   return (
     <div className={styles.page}>
-      <h1 className={styles.title}>Categorization Rules</h1>
-      <p className={styles.subtitle}>
-        Define rules to auto-categorize transactions. Rules are applied in priority order (first
-        match wins).
-      </p>
+      <h1 className={styles.title}>{t("rules.title")}</h1>
+      <p className={styles.subtitle}>{t("rules.subtitle")}</p>
 
       <div className={styles.toolbar}>
         <button
@@ -135,55 +118,58 @@ export default function CategorizationRules() {
           onClick={() => applyMutation.mutate()}
           disabled={applyMutation.isPending}
         >
-          {applyMutation.isPending ? "Applying..." : "Apply to uncategorized"}
+          {applyMutation.isPending ? t("rules.applying") : t("rules.applyToUncategorized")}
         </button>
         {applyResult !== null && (
           <span className={styles.applyResult}>
-            {applyResult.categorized} transaction
-            {applyResult.categorized !== 1 ? "s" : ""} categorized.
+            {t("rules.categorized", { count: applyResult.categorized })}
           </span>
         )}
       </div>
 
       <form className={styles.addForm} onSubmit={handleAdd}>
         <div className={styles.field}>
-          <label>Field</label>
+          <label>{t("rules.fieldLabel")}</label>
           <select value={field} onChange={(e) => handleFieldChange(e.target.value)}>
-            {FIELDS.map((f) => (
-              <option key={f.value} value={f.value}>
-                {f.label}
+            {FIELD_VALUES.map((f) => (
+              <option key={f} value={f}>
+                {fieldLabel(f)}
               </option>
             ))}
           </select>
         </div>
         <div className={styles.field}>
-          <label>Operator</label>
+          <label>{t("rules.operatorLabel")}</label>
           <select value={operator} onChange={(e) => setOperator(e.target.value)}>
             {operatorsForField(field).map((op) => (
-              <option key={op.value} value={op.value}>
-                {op.label}
+              <option key={op} value={op}>
+                {operatorLabel(op)}
               </option>
             ))}
           </select>
         </div>
         <div className={styles.field}>
-          <label>Value</label>
+          <label>{t("rules.valueLabel")}</label>
           <input
             type="text"
             value={value}
             onChange={(e) => setValue(e.target.value)}
-            placeholder={field === "amount" ? "e.g. 100.00" : "e.g. REWE"}
+            placeholder={
+              field === "amount"
+                ? t("rules.valuePlaceholderAmount")
+                : t("rules.valuePlaceholderText")
+            }
             required
           />
         </div>
         <div className={styles.field}>
-          <label>Category</label>
+          <label>{t("common.category")}</label>
           <select
             value={categoryId ?? ""}
             onChange={(e) => setCategoryId(e.target.value === "" ? null : Number(e.target.value))}
             required
           >
-            <option value="">Select...</option>
+            <option value="">{t("rules.selectCategory")}</option>
             {categories?.map((c) => (
               <option key={c.id} value={c.id}>
                 {c.name}
@@ -192,31 +178,31 @@ export default function CategorizationRules() {
           </select>
         </div>
         <button type="submit" disabled={addMutation.isPending}>
-          Add Rule
+          {t("rules.addRule")}
         </button>
       </form>
 
       {rules && rules.length === 0 && (
-        <p className={styles.empty}>No rules yet. Create one above.</p>
+        <p className={styles.empty}>{t("rules.noRules")}</p>
       )}
 
       {rules && rules.length > 0 && (
         <table className={styles.table}>
           <thead>
             <tr>
-              <th className={styles.positionCol}>#</th>
-              <th>Field</th>
-              <th>Operator</th>
-              <th>Value</th>
-              <th>Category</th>
-              <th>Actions</th>
+              <th className={styles.positionCol}>{t("rules.tablePosition")}</th>
+              <th>{t("rules.tableField")}</th>
+              <th>{t("rules.tableOperator")}</th>
+              <th>{t("rules.tableValue")}</th>
+              <th>{t("rules.tableCategory")}</th>
+              <th>{t("common.actions")}</th>
             </tr>
           </thead>
           <tbody>
             {rules.map((rule, index) => (
               <tr key={rule.id}>
                 <td className={styles.positionCol}>{rule.position}</td>
-                <td>{FIELDS.find((f) => f.value === rule.field)?.label ?? rule.field}</td>
+                <td>{fieldLabel(rule.field)}</td>
                 <td>{operatorLabel(rule.operator)}</td>
                 <td>{rule.value}</td>
                 <td>{categoryName(rule.category_id)}</td>
@@ -227,7 +213,7 @@ export default function CategorizationRules() {
                       className={styles.moveBtn}
                       onClick={() => handleMove(index, -1)}
                       disabled={index === 0}
-                      title="Move up"
+                      title={t("rules.moveUp")}
                     >
                       &#9650;
                     </button>
@@ -236,12 +222,12 @@ export default function CategorizationRules() {
                       className={styles.moveBtn}
                       onClick={() => handleMove(index, 1)}
                       disabled={index === rules.length - 1}
-                      title="Move down"
+                      title={t("rules.moveDown")}
                     >
                       &#9660;
                     </button>
                     <button type="button" onClick={() => handleDelete(rule.id)}>
-                      Delete
+                      {t("common.delete")}
                     </button>
                   </div>
                 </td>

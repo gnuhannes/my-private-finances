@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useLocalStorage } from "../hooks/useLocalStorage";
 import { useAccounts } from "../hooks/useAccounts";
 import { useCategories } from "../hooks/useCategories";
@@ -11,6 +12,7 @@ import styles from "./Transactions.module.css";
 const PAGE_SIZE = 50;
 
 export default function Transactions() {
+  const { t } = useTranslation();
   const { data: accounts, isLoading, error } = useAccounts();
   const { data: categories } = useCategories();
 
@@ -49,18 +51,18 @@ export default function Transactions() {
       ? (accounts?.[0]?.currency ?? "EUR")
       : (accounts?.find((a) => a.id === accountId)?.currency ?? "EUR");
 
-  if (isLoading) return <div className={styles.status}>Loading accounts…</div>;
-  if (error) return <div className={styles.error}>Failed to load accounts.</div>;
-  if (!accounts || accounts.length === 0) return <div>No accounts yet.</div>;
+  if (isLoading) return <div className={styles.status}>{t("common.loadingAccounts")}</div>;
+  if (error) return <div className={styles.error}>{t("common.failedAccounts")}</div>;
+  if (!accounts || accounts.length === 0) return <div>{t("common.noAccountsYet")}</div>;
 
   return (
     <div className={styles.page}>
-      <h1 className={styles.title}>Transactions</h1>
-      <p className={styles.subtitle}>Search and filter transactions across all accounts.</p>
+      <h1 className={styles.title}>{t("transactions.title")}</h1>
+      <p className={styles.subtitle}>{t("transactions.subtitle")}</p>
 
       <div className={styles.controlsRow}>
         <label className={styles.control}>
-          <span>Account</span>
+          <span>{t("common.account")}</span>
           <select
             value={accountId}
             onChange={(e) => {
@@ -68,7 +70,7 @@ export default function Transactions() {
               setOffset(0);
             }}
           >
-            <option value="all">All Accounts</option>
+            <option value="all">{t("common.allAccounts")}</option>
             {accounts.map((a) => (
               <option key={a.id} value={a.id}>
                 #{a.id} — {a.name} ({a.currency})
@@ -78,10 +80,10 @@ export default function Transactions() {
         </label>
 
         <label className={styles.control}>
-          <span>Search</span>
+          <span>{t("transactions.search")}</span>
           <input
             type="search"
-            placeholder="Payee or purpose…"
+            placeholder={t("transactions.payeeOrPurpose")}
             value={searchQ}
             className={styles.searchInput}
             onChange={(e) => {
@@ -92,7 +94,7 @@ export default function Transactions() {
         </label>
 
         <label className={styles.control}>
-          <span>From</span>
+          <span>{t("common.from")}</span>
           <input
             type="date"
             value={dateFrom}
@@ -104,7 +106,7 @@ export default function Transactions() {
         </label>
 
         <label className={styles.control}>
-          <span>To</span>
+          <span>{t("common.to")}</span>
           <input
             type="date"
             value={dateTo}
@@ -116,7 +118,7 @@ export default function Transactions() {
         </label>
 
         <label className={styles.control}>
-          <span>Min amount</span>
+          <span>{t("transactions.minAmount")}</span>
           <input
             type="number"
             step="0.01"
@@ -131,7 +133,7 @@ export default function Transactions() {
         </label>
 
         <label className={styles.control}>
-          <span>Max amount</span>
+          <span>{t("transactions.maxAmount")}</span>
           <input
             type="number"
             step="0.01"
@@ -154,15 +156,17 @@ export default function Transactions() {
               setOffset(0);
             }}
           />
-          <span>Uncategorized only</span>
+          <span>{t("transactions.uncategorizedOnly")}</span>
         </label>
       </div>
 
-      {txQuery.isLoading && <div className={styles.status}>Loading transactions…</div>}
+      {txQuery.isLoading && (
+        <div className={styles.status}>{t("transactions.loadingTransactions")}</div>
+      )}
 
       {txQuery.isError && (
         <div className={styles.error}>
-          Failed to load transactions: {(txQuery.error as Error).message}
+          {t("transactions.failedTransactions", { error: (txQuery.error as Error).message })}
         </div>
       )}
 

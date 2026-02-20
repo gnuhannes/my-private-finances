@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import type { RecurringPattern } from "../lib/api/recurringPatterns";
 import styles from "./RecurringPatternsTable.module.css";
 
@@ -8,36 +9,41 @@ type Props = {
   onToggleConfirmed?: (id: number, confirmed: boolean) => void;
 };
 
-function confidenceLabel(confidence: string): string {
-  const v = parseFloat(confidence);
-  if (v >= 0.85) return "High";
-  if (v >= 0.7) return "Medium";
-  return "Low";
-}
-
-function frequencyLabel(f: string): string {
-  return f.charAt(0).toUpperCase() + f.slice(1);
-}
-
 export function RecurringPatternsTable({
   items,
   formatAmount,
   onToggleActive,
   onToggleConfirmed,
 }: Props) {
+  const { t } = useTranslation();
+
+  function confidenceLabel(confidence: string): string {
+    const v = parseFloat(confidence);
+    if (v >= 0.85) return t("recurringTable.confidenceHigh");
+    if (v >= 0.7) return t("recurringTable.confidenceMedium");
+    return t("recurringTable.confidenceLow");
+  }
+
+  function frequencyLabel(f: string): string {
+    const key = `recurringTable.frequencies.${f}` as const;
+    return t(key, { defaultValue: f.charAt(0).toUpperCase() + f.slice(1) });
+  }
+
   return (
     <div className={styles.card}>
-      <h2 className={styles.heading}>Recurring Transactions</h2>
+      <h2 className={styles.heading}>{t("recurringTable.title")}</h2>
       <table className={styles.table}>
         <thead>
           <tr>
-            <th>Payee</th>
-            <th className={styles.right}>Amount</th>
-            <th>Frequency</th>
-            <th>Confidence</th>
-            <th>Last Seen</th>
-            <th>Count</th>
-            {(onToggleActive || onToggleConfirmed) && <th>Actions</th>}
+            <th>{t("recurringTable.tablePayee")}</th>
+            <th className={styles.right}>{t("recurringTable.tableAmount")}</th>
+            <th>{t("recurringTable.tableFrequency")}</th>
+            <th>{t("recurringTable.tableConfidence")}</th>
+            <th>{t("recurringTable.tableLastSeen")}</th>
+            <th>{t("recurringTable.tableCount")}</th>
+            {(onToggleActive || onToggleConfirmed) && (
+              <th>{t("recurringTable.tableActions")}</th>
+            )}
           </tr>
         </thead>
         <tbody>
@@ -66,15 +72,17 @@ export function RecurringPatternsTable({
                   <div className={styles.actions}>
                     {onToggleActive && (
                       <button type="button" onClick={() => onToggleActive(p.id, !p.is_active)}>
-                        {p.is_active ? "Dismiss" : "Restore"}
+                        {p.is_active ? t("recurringTable.dismiss") : t("recurringTable.restore")}
                       </button>
                     )}
                     {onToggleConfirmed && !p.user_confirmed && (
                       <button type="button" onClick={() => onToggleConfirmed(p.id, true)}>
-                        Confirm
+                        {t("recurringTable.confirm")}
                       </button>
                     )}
-                    {p.user_confirmed && <span className={styles.confirmed}>Confirmed</span>}
+                    {p.user_confirmed && (
+                      <span className={styles.confirmed}>{t("recurringTable.confirmed")}</span>
+                    )}
                   </div>
                 </td>
               )}

@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { useLocalStorage } from "../hooks/useLocalStorage";
 import { useSpendingTrend } from "../hooks/useTrends";
 import { TrendBarChart } from "../components/TrendBarChart";
@@ -27,11 +28,18 @@ function getTrend(item: CategoryTrendItem): TrendIndicator {
 }
 
 function TrendBadge({ trend }: { trend: TrendIndicator }) {
-  const label = trend === "over" ? "over budget" : trend === "under" ? "under budget" : "on track";
+  const { t } = useTranslation();
+  const label =
+    trend === "over"
+      ? t("trends.overBudget")
+      : trend === "under"
+        ? t("trends.underBudget")
+        : t("trends.onTrack");
   return <span className={`${styles.badge} ${styles[trend]}`}>{label}</span>;
 }
 
 export default function SpendingTrends() {
+  const { t } = useTranslation();
   const [lookback, setLookback] = useLocalStorage<3 | 6 | 12>("pref.spendingTrends.lookback", 3);
   const month = currentMonthStr();
 
@@ -41,12 +49,12 @@ export default function SpendingTrends() {
 
   return (
     <div className={styles.page}>
-      <h1 className={styles.title}>Spending Trends</h1>
-      <p className={styles.subtitle}>Rolling average vs. current month spend per category.</p>
+      <h1 className={styles.title}>{t("trends.title")}</h1>
+      <p className={styles.subtitle}>{t("trends.subtitle")}</p>
 
       {/* Lookback toggle */}
       <div className={styles.toggleRow}>
-        <span className={styles.toggleLabel}>Lookback:</span>
+        <span className={styles.toggleLabel}>{t("trends.lookback")}</span>
         <div className={styles.monthToggle}>
           {LOOKBACK_OPTIONS.map((m) => (
             <button
@@ -64,19 +72,19 @@ export default function SpendingTrends() {
       {/* KPI row */}
       <div className={styles.kpiRow}>
         <div className={styles.kpiCard}>
-          <p className={styles.kpiLabel}>Avg Monthly</p>
+          <p className={styles.kpiLabel}>{t("trends.avgMonthly")}</p>
           <p className={styles.kpiValue}>
             {report ? formatMoneyString(report.total_avg_monthly, currency) : "—"}
           </p>
         </div>
         <div className={styles.kpiCard}>
-          <p className={styles.kpiLabel}>This Month</p>
+          <p className={styles.kpiLabel}>{t("trends.thisMonth")}</p>
           <p className={styles.kpiValue}>
             {report ? formatMoneyString(report.total_current_month, currency) : "—"}
           </p>
         </div>
         <div className={styles.kpiCard}>
-          <p className={styles.kpiLabel}>Projected</p>
+          <p className={styles.kpiLabel}>{t("trends.projected")}</p>
           <p className={styles.kpiValue}>
             {report ? formatMoneyString(report.total_projected, currency) : "—"}
           </p>
@@ -85,12 +93,13 @@ export default function SpendingTrends() {
 
       {/* Chart */}
       <div className={styles.chartSection}>
-        <span className={styles.chartTitle}>Top Categories — Avg vs. Actual</span>
-        {isLoading && <div className={styles.status}>Loading…</div>}
-        {isError && <div className={styles.error}>Failed to load trend data.</div>}
+        <span className={styles.chartTitle}>{t("trends.chartTitle")}</span>
+        {isLoading && <div className={styles.status}>{t("trends.loading")}</div>}
+        {isError && <div className={styles.error}>{t("trends.failed")}</div>}
         {report && (
           <TrendBarChart
             categories={report.categories}
+            lookback={lookback}
             formatValue={(v) => formatCurrency(v, currency)}
           />
         )}
@@ -103,11 +112,11 @@ export default function SpendingTrends() {
             <table className={styles.table}>
               <thead>
                 <tr>
-                  <th>Category</th>
-                  <th className={styles.right}>Avg / Month</th>
-                  <th className={styles.right}>This Month</th>
-                  <th className={styles.right}>Projected</th>
-                  <th>Trend</th>
+                  <th>{t("trends.tableCategory")}</th>
+                  <th className={styles.right}>{t("trends.tableAvgMonth")}</th>
+                  <th className={styles.right}>{t("trends.tableThisMonth")}</th>
+                  <th className={styles.right}>{t("trends.tableProjected")}</th>
+                  <th>{t("trends.tableTrend")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -115,7 +124,9 @@ export default function SpendingTrends() {
                   const trend = getTrend(item);
                   return (
                     <tr key={i}>
-                      <td className={styles.catName}>{item.category_name ?? "Uncategorized"}</td>
+                      <td className={styles.catName}>
+                        {item.category_name ?? t("common.uncategorized")}
+                      </td>
                       <td className={styles.right}>
                         {formatMoneyString(item.avg_monthly, currency)}
                       </td>
@@ -138,7 +149,7 @@ export default function SpendingTrends() {
       )}
 
       {report && report.categories.length === 0 && (
-        <p className={styles.empty}>No spending data found. Import transactions to see trends.</p>
+        <p className={styles.empty}>{t("trends.noData")}</p>
       )}
     </div>
   );

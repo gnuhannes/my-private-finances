@@ -1,29 +1,15 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useAnnualReport } from "../hooks/useAnnual";
 import { AnnualBarChart } from "../components/AnnualBarChart";
 import { formatCurrency, formatMoneyString } from "../utils/money";
 import type { MonthSummary } from "../lib/api/annual";
 import styles from "./AnnualOverview.module.css";
 
-const MONTH_LABELS = [
-  "January",
-  "February",
-  "March",
-  "April",
-  "May",
-  "June",
-  "July",
-  "August",
-  "September",
-  "October",
-  "November",
-  "December",
-];
-
 const CURRENT_YEAR = new Date().getFullYear();
 const MIN_YEAR = CURRENT_YEAR - 5;
 
-function savingsRateClass(rate: number): string {
+function savingsRateClass(rate: number, styles: Record<string, string>): string {
   if (rate >= 20) return styles.positive;
   if (rate < 0) return styles.negative;
   return "";
@@ -31,22 +17,22 @@ function savingsRateClass(rate: number): string {
 
 function SavingsRateCell({ rate }: { rate: string }) {
   const n = parseFloat(rate);
-  return <td className={`${styles.right} ${savingsRateClass(n)}`}>{n.toFixed(1)}%</td>;
+  return <td className={`${styles.right} ${savingsRateClass(n, styles)}`}>{n.toFixed(1)}%</td>;
 }
 
 function MonthRow({
   summary,
   currency,
-  index,
+  monthLabel,
 }: {
   summary: MonthSummary;
   currency: string;
-  index: number;
+  monthLabel: string;
 }) {
   const net = parseFloat(summary.net);
   return (
     <tr>
-      <td>{MONTH_LABELS[index]}</td>
+      <td>{monthLabel}</td>
       <td className={styles.right}>{formatMoneyString(summary.income, currency)}</td>
       <td className={styles.right}>{formatMoneyString(summary.expenses, currency)}</td>
       <td className={`${styles.right} ${net >= 0 ? styles.positive : styles.negative}`}>
@@ -59,11 +45,27 @@ function MonthRow({
 }
 
 export default function AnnualOverview() {
+  const { t } = useTranslation();
   const [year, setYear] = useState(CURRENT_YEAR);
 
   const { data: report, isLoading, isError } = useAnnualReport(year, "all");
 
   const currency = report?.currency ?? "EUR";
+
+  const monthLabels = [
+    t("annual.months.january"),
+    t("annual.months.february"),
+    t("annual.months.march"),
+    t("annual.months.april"),
+    t("annual.months.may"),
+    t("annual.months.june"),
+    t("annual.months.july"),
+    t("annual.months.august"),
+    t("annual.months.september"),
+    t("annual.months.october"),
+    t("annual.months.november"),
+    t("annual.months.december"),
+  ];
 
   function prevYear() {
     setYear((y) => Math.max(y - 1, MIN_YEAR));
@@ -74,8 +76,8 @@ export default function AnnualOverview() {
 
   return (
     <div className={styles.page}>
-      <h1 className={styles.title}>Annual Overview</h1>
-      <p className={styles.subtitle}>Income vs expenses across all 12 months.</p>
+      <h1 className={styles.title}>{t("annual.title")}</h1>
+      <p className={styles.subtitle}>{t("annual.subtitle")}</p>
 
       {/* Year selector */}
       <div className={styles.yearSelector}>
@@ -101,19 +103,19 @@ export default function AnnualOverview() {
       {/* KPI row */}
       <div className={styles.kpiRow}>
         <div className={styles.kpiCard}>
-          <p className={styles.kpiLabel}>Total Income</p>
+          <p className={styles.kpiLabel}>{t("annual.totalIncome")}</p>
           <p className={`${styles.kpiValue} ${styles.positive}`}>
             {report ? formatMoneyString(report.total_income, currency) : "—"}
           </p>
         </div>
         <div className={styles.kpiCard}>
-          <p className={styles.kpiLabel}>Total Expenses</p>
+          <p className={styles.kpiLabel}>{t("annual.totalExpenses")}</p>
           <p className={`${styles.kpiValue} ${styles.negative}`}>
             {report ? formatMoneyString(report.total_expenses, currency) : "—"}
           </p>
         </div>
         <div className={styles.kpiCard}>
-          <p className={styles.kpiLabel}>Net Savings</p>
+          <p className={styles.kpiLabel}>{t("annual.netSavings")}</p>
           <p
             className={`${styles.kpiValue} ${report && parseFloat(report.total_net) >= 0 ? styles.positive : styles.negative}`}
           >
@@ -124,9 +126,9 @@ export default function AnnualOverview() {
           </p>
         </div>
         <div className={styles.kpiCard}>
-          <p className={styles.kpiLabel}>Avg Savings Rate</p>
+          <p className={styles.kpiLabel}>{t("annual.avgSavingsRate")}</p>
           <p
-            className={`${styles.kpiValue} ${report ? savingsRateClass(parseFloat(report.avg_savings_rate)) : ""}`}
+            className={`${styles.kpiValue} ${report ? savingsRateClass(parseFloat(report.avg_savings_rate), styles) : ""}`}
           >
             {report ? `${parseFloat(report.avg_savings_rate).toFixed(1)}%` : "—"}
           </p>
@@ -135,9 +137,9 @@ export default function AnnualOverview() {
 
       {/* Chart */}
       <div className={styles.chartSection}>
-        <span className={styles.chartTitle}>Income vs Expenses by Month</span>
-        {isLoading && <div className={styles.status}>Loading…</div>}
-        {isError && <div className={styles.error}>Failed to load annual data.</div>}
+        <span className={styles.chartTitle}>{t("annual.chartTitle")}</span>
+        {isLoading && <div className={styles.status}>{t("annual.loading")}</div>}
+        {isError && <div className={styles.error}>{t("annual.failed")}</div>}
         {report && (
           <AnnualBarChart months={report.months} formatValue={(v) => formatCurrency(v, currency)} />
         )}
@@ -150,16 +152,21 @@ export default function AnnualOverview() {
             <table className={styles.table}>
               <thead>
                 <tr>
-                  <th>Month</th>
-                  <th className={styles.right}>Income</th>
-                  <th className={styles.right}>Expenses</th>
-                  <th className={styles.right}>Net</th>
-                  <th className={styles.right}>Savings %</th>
+                  <th>{t("annual.tableMonth")}</th>
+                  <th className={styles.right}>{t("annual.tableIncome")}</th>
+                  <th className={styles.right}>{t("annual.tableExpenses")}</th>
+                  <th className={styles.right}>{t("annual.tableNet")}</th>
+                  <th className={styles.right}>{t("annual.tableSavingsPct")}</th>
                 </tr>
               </thead>
               <tbody>
                 {report.months.map((m, i) => (
-                  <MonthRow key={m.month} summary={m} currency={currency} index={i} />
+                  <MonthRow
+                    key={m.month}
+                    summary={m}
+                    currency={currency}
+                    monthLabel={monthLabels[i] ?? m.month}
+                  />
                 ))}
               </tbody>
             </table>

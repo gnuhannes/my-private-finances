@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useAccounts } from "../hooks/useAccounts";
 import { useImportCsv } from "../hooks/useImportCsv";
 import { FileDropZone } from "./FileDropZone";
@@ -11,6 +12,7 @@ type Props = {
 };
 
 export function ImportDialog({ open, onClose }: Props) {
+  const { t } = useTranslation();
   const dialogRef = useRef<HTMLDialogElement>(null);
   const { data: accounts } = useAccounts();
   const mutation = useImportCsv();
@@ -78,7 +80,7 @@ export function ImportDialog({ open, onClose }: Props) {
   return (
     <dialog ref={dialogRef} className={styles.dialog}>
       <div className={styles.header}>
-        <h2 className={styles.heading}>Import CSV</h2>
+        <h2 className={styles.heading}>{t("importDialog.title")}</h2>
         <button type="button" className={styles.closeBtn} onClick={handleClose}>
           &times;
         </button>
@@ -89,22 +91,22 @@ export function ImportDialog({ open, onClose }: Props) {
           <ImportResult result={mutation.data} />
           <div className={styles.actions}>
             <button type="button" onClick={handleImportAnother}>
-              Import Another
+              {t("importDialog.importAnother")}
             </button>
             <button type="button" onClick={handleClose}>
-              Close
+              {t("importDialog.close")}
             </button>
           </div>
         </div>
       ) : (
         <form onSubmit={handleSubmit} className={styles.body}>
           <label className={styles.field}>
-            <span>Account</span>
+            <span>{t("importDialog.account")}</span>
             <select
               value={accountId}
               onChange={(e) => setAccountId(e.target.value === "" ? "" : Number(e.target.value))}
             >
-              <option value="">Select account...</option>
+              <option value="">{t("importDialog.selectAccount")}</option>
               {accounts?.map((a) => (
                 <option key={a.id} value={a.id}>
                   #{a.id} — {a.name} ({a.currency})
@@ -115,24 +117,24 @@ export function ImportDialog({ open, onClose }: Props) {
 
           <div className={styles.optionsRow}>
             <label className={styles.field}>
-              <span>Delimiter</span>
+              <span>{t("importDialog.delimiter")}</span>
               <select value={delimiter} onChange={(e) => setDelimiter(e.target.value)}>
                 <option value=",">,</option>
                 <option value=";">;</option>
-                <option value="&#9;">Tab</option>
+                <option value="&#9;">{t("importDialog.delimiterTab")}</option>
               </select>
             </label>
 
             <label className={styles.field}>
-              <span>Date format</span>
+              <span>{t("importDialog.dateFormat")}</span>
               <select value={dateFormat} onChange={(e) => setDateFormat(e.target.value)}>
-                <option value="iso">ISO (YYYY-MM-DD)</option>
-                <option value="dmy">DMY (DD.MM.YYYY)</option>
+                <option value="iso">{t("importDialog.dateFormatIso")}</option>
+                <option value="dmy">{t("importDialog.dateFormatDmy")}</option>
               </select>
             </label>
 
             <label className={styles.field}>
-              <span>Decimal comma</span>
+              <span>{t("importDialog.decimalComma")}</span>
               <input
                 type="checkbox"
                 checked={decimalComma}
@@ -144,15 +146,17 @@ export function ImportDialog({ open, onClose }: Props) {
           <FileDropZone onFile={setFile} file={file} />
 
           {mutation.isError && (
-            <div className={styles.error}>Import failed: {(mutation.error as Error).message}</div>
+            <div className={styles.error}>
+              {t("importDialog.failedImport", { error: (mutation.error as Error).message })}
+            </div>
           )}
 
           <div className={styles.actions}>
             <button type="button" onClick={handleClose}>
-              Cancel
+              {t("importDialog.cancel")}
             </button>
             <button type="submit" disabled={!canSubmit}>
-              {mutation.isPending ? "Importing..." : "Import"}
+              {mutation.isPending ? t("importDialog.importing") : t("importDialog.import")}
             </button>
           </div>
         </form>

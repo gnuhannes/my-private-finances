@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import type { TopSpending } from "../lib/api/reports";
 import styles from "./TopSpendingsTable.module.css";
 
@@ -7,19 +8,20 @@ type Props = {
 };
 
 export function TopSpendingsTable({ items, formatAmount }: Props) {
+  const { t } = useTranslation();
   return (
     <div className={styles.card}>
-      <div className={styles.title}>Top Spendings</div>
+      <div className={styles.title}>{t("topSpendings.title")}</div>
 
       <table className={styles.table}>
         <thead>
           <tr>
-            <th className={styles.rank}>#</th>
-            <th>Date</th>
-            <th>Payee</th>
-            <th>Purpose</th>
-            <th>Category</th>
-            <th className={styles.amount}>Amount</th>
+            <th className={styles.rank}>{t("topSpendings.tableRank")}</th>
+            <th>{t("topSpendings.tableDate")}</th>
+            <th>{t("topSpendings.tablePayee")}</th>
+            <th>{t("topSpendings.tablePurpose")}</th>
+            <th>{t("topSpendings.tableCategory")}</th>
+            <th className={styles.amount}>{t("topSpendings.tableAmount")}</th>
           </tr>
         </thead>
         <tbody>

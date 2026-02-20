@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useLocalStorage } from "../hooks/useLocalStorage";
 import { useAccounts } from "../hooks/useAccounts";
 import { useMonthlyReport } from "../hooks/useMonthlyReport";
@@ -31,6 +32,7 @@ function lastNMonths(n: number): string[] {
 }
 
 export default function Dashboard() {
+  const { t } = useTranslation();
   const { data: accounts, isLoading, error } = useAccounts();
 
   const months = useMemo(() => lastNMonths(24), []);
@@ -55,18 +57,18 @@ export default function Dashboard() {
   const recurringSummaryAccountId = typeof accountId === "number" ? accountId : null;
   const recurringSummary = useRecurringSummary(recurringSummaryAccountId);
 
-  if (isLoading) return <div>Loading accounts…</div>;
-  if (error) return <div>Failed to load accounts.</div>;
-  if (!accounts || accounts.length === 0) return <div>No accounts yet.</div>;
+  if (isLoading) return <div>{t("common.loadingAccounts")}</div>;
+  if (error) return <div>{t("common.failedAccounts")}</div>;
+  if (!accounts || accounts.length === 0) return <div>{t("common.noAccountsYet")}</div>;
 
   return (
     <div className={styles.page}>
-      <h1 className={styles.title}>My Private Finances</h1>
-      <p className={styles.subtitle}>Local-first dashboard.</p>
+      <h1 className={styles.title}>{t("dashboard.title")}</h1>
+      <p className={styles.subtitle}>{t("dashboard.subtitle")}</p>
 
       <div className={styles.controlsRow}>
         <label className={styles.control}>
-          <span>Account</span>
+          <span>{t("common.account")}</span>
           <select
             value={accountId}
             onChange={(e) => {
@@ -74,7 +76,7 @@ export default function Dashboard() {
               setAccountId(v === "all" ? "all" : Number(v));
             }}
           >
-            <option value="all">All Accounts</option>
+            <option value="all">{t("common.allAccounts")}</option>
             {accounts.map((a) => (
               <option key={a.id} value={a.id}>
                 #{a.id} — {a.name} ({a.currency})
@@ -84,7 +86,7 @@ export default function Dashboard() {
         </label>
 
         <label className={styles.control}>
-          <span>Month</span>
+          <span>{t("dashboard.month")}</span>
           <select value={month} onChange={(e) => setMonth(e.target.value)}>
             {months.map((m) => (
               <option key={m} value={m}>
@@ -95,44 +97,46 @@ export default function Dashboard() {
         </label>
       </div>
 
-      {report.isLoading && <div className={styles.status}>Loading report…</div>}
+      {report.isLoading && <div className={styles.status}>{t("dashboard.loadingReport")}</div>}
 
       {report.isError && (
-        <div className={styles.error}>Failed to load report: {(report.error as Error).message}</div>
+        <div className={styles.error}>
+          {t("dashboard.failedReport", { error: (report.error as Error).message })}
+        </div>
       )}
 
       {report.data && (
         <div className={styles.section}>
           <div className={styles.kpiGrid}>
             <KpiCard
-              label="Income"
+              label={t("common.income")}
               value={formatMoneyString(report.data.income_total, currency)}
               loading={report.isLoading}
             />
             <KpiCard
-              label={isAllAccounts ? "Expenses (excl. transfers)" : "Expenses"}
+              label={isAllAccounts ? t("dashboard.expensesExclTransfers") : t("common.expenses")}
               value={formatMoneyString(report.data.expense_total, currency)}
               loading={report.isLoading}
             />
             <KpiCard
-              label="Net"
+              label={t("dashboard.net")}
               value={formatMoneyString(report.data.net_total, currency)}
               loading={report.isLoading}
             />
             <KpiCard
-              label="Transactions"
+              label={t("dashboard.transactions")}
               value={String(report.data.transactions_count)}
               loading={report.isLoading}
             />
             {fixedVsVariable.data && (
               <>
                 <KpiCard
-                  label="Fixed Costs"
+                  label={t("dashboard.fixedCosts")}
                   value={formatMoneyString(fixedVsVariable.data.fixed_total, currency)}
                   loading={fixedVsVariable.isLoading}
                 />
                 <KpiCard
-                  label="Variable Costs"
+                  label={t("dashboard.variableCosts")}
                   value={formatMoneyString(fixedVsVariable.data.variable_total, currency)}
                   loading={fixedVsVariable.isLoading}
                 />
@@ -140,7 +144,7 @@ export default function Dashboard() {
             )}
             {recurringSummary.data && (
               <KpiCard
-                label="Monthly Recurring"
+                label={t("dashboard.monthlyRecurring")}
                 value={formatMoneyString(recurringSummary.data.total_monthly_recurring, currency)}
                 loading={recurringSummary.isLoading}
               />
@@ -154,7 +158,7 @@ export default function Dashboard() {
                 formatValue={(v) => formatCurrency(v, currency)}
               />
             ) : (
-              <div className={styles.muted}>No top payees for this month.</div>
+              <div className={styles.muted}>{t("dashboard.noTopPayees")}</div>
             )}
 
             {report.data.category_breakdown.length > 0 ? (
@@ -163,7 +167,7 @@ export default function Dashboard() {
                 formatValue={(v) => formatCurrency(v, currency)}
               />
             ) : (
-              <div className={styles.muted}>No category breakdown for this month.</div>
+              <div className={styles.muted}>{t("dashboard.noCategoryBreakdown")}</div>
             )}
           </div>
 
@@ -173,7 +177,7 @@ export default function Dashboard() {
               formatAmount={(v) => formatMoneyString(v, currency)}
             />
           ) : (
-            <div className={styles.muted}>No spendings for this month.</div>
+            <div className={styles.muted}>{t("dashboard.noSpendings")}</div>
           )}
 
           {budgetReport.data && budgetReport.data.length > 0 && (

@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import type { BudgetComparison } from "../lib/api/reports";
 import styles from "./BudgetVsActualTable.module.css";
 
@@ -7,17 +8,18 @@ type Props = {
 };
 
 export function BudgetVsActualTable({ items, formatAmount }: Props) {
+  const { t } = useTranslation();
   return (
     <div className={styles.card}>
-      <div className={styles.title}>Budget vs Actual</div>
+      <div className={styles.title}>{t("budgetVsActual.title")}</div>
 
       <table className={styles.table}>
         <thead>
           <tr>
-            <th>Category</th>
-            <th className={styles.amount}>Budgeted</th>
-            <th className={styles.amount}>Actual</th>
-            <th className={styles.amount}>Remaining</th>
+            <th>{t("budgetVsActual.tableCategory")}</th>
+            <th className={styles.amount}>{t("budgetVsActual.tableBudgeted")}</th>
+            <th className={styles.amount}>{t("budgetVsActual.tableActual")}</th>
+            <th className={styles.amount}>{t("budgetVsActual.tableRemaining")}</th>
           </tr>
         </thead>
         <tbody>

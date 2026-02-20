@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useBudgets } from "../hooks/useBudgets";
 import { useCategories } from "../hooks/useCategories";
@@ -6,6 +7,7 @@ import { createBudget, updateBudget, deleteBudget, type Budget } from "../lib/ap
 import styles from "./Budgets.module.css";
 
 export default function Budgets() {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const { data: budgets, isLoading, error } = useBudgets();
   const { data: categories } = useCategories();
@@ -68,17 +70,17 @@ export default function Budgets() {
   const usedCategoryIds = new Set(budgets?.map((b) => b.category_id) ?? []);
   const availableCategories = categories?.filter((c) => !usedCategoryIds.has(c.id)) ?? [];
 
-  if (isLoading) return <div className={styles.status}>Loading budgets...</div>;
-  if (error) return <div className={styles.error}>Failed to load budgets.</div>;
+  if (isLoading) return <div className={styles.status}>{t("budgets.loading")}</div>;
+  if (error) return <div className={styles.error}>{t("budgets.failed")}</div>;
 
   return (
     <div className={styles.page}>
-      <h1 className={styles.title}>Budgets</h1>
-      <p className={styles.subtitle}>Set monthly spending limits per category.</p>
+      <h1 className={styles.title}>{t("budgets.title")}</h1>
+      <p className={styles.subtitle}>{t("budgets.subtitle")}</p>
 
       <form className={styles.addForm} onSubmit={handleAdd}>
         <div className={styles.field}>
-          <label>Category</label>
+          <label>{t("common.category")}</label>
           <select
             value={newCategoryId ?? ""}
             onChange={(e) =>
@@ -86,7 +88,7 @@ export default function Budgets() {
             }
             required
           >
-            <option value="">Select category…</option>
+            <option value="">{t("budgets.selectCategory")}</option>
             {availableCategories.map((c) => (
               <option key={c.id} value={c.id}>
                 {c.name}
@@ -95,33 +97,33 @@ export default function Budgets() {
           </select>
         </div>
         <div className={styles.field}>
-          <label>Monthly limit</label>
+          <label>{t("budgets.monthlyLimit")}</label>
           <input
             type="number"
             step="0.01"
             min="0.01"
             value={newAmount}
             onChange={(e) => setNewAmount(e.target.value)}
-            placeholder="300.00"
+            placeholder={t("budgets.limitPlaceholder")}
             required
           />
         </div>
         <button type="submit" disabled={addMutation.isPending}>
-          Add
+          {t("common.add")}
         </button>
       </form>
 
       {budgets && budgets.length === 0 && (
-        <p className={styles.empty}>No budgets yet. Create one above.</p>
+        <p className={styles.empty}>{t("budgets.noBudgets")}</p>
       )}
 
       {budgets && budgets.length > 0 && (
         <table className={styles.table}>
           <thead>
             <tr>
-              <th>Category</th>
-              <th className={styles.amount}>Monthly Limit</th>
-              <th>Actions</th>
+              <th>{t("budgets.tableCategory")}</th>
+              <th className={styles.amount}>{t("budgets.tableMonthlyLimit")}</th>
+              <th>{t("common.actions")}</th>
             </tr>
           </thead>
           <tbody>
@@ -148,10 +150,10 @@ export default function Budgets() {
                 <td>
                   <div className={styles.actions}>
                     <button type="button" onClick={() => startEdit(budget)}>
-                      Edit
+                      {t("common.edit")}
                     </button>
                     <button type="button" onClick={() => handleDelete(budget)}>
-                      Delete
+                      {t("common.delete")}
                     </button>
                   </div>
                 </td>
