@@ -27,6 +27,7 @@
   --primary: #3b5bdb;
   --primary-hover: #2f4fda;
   --primary-subtle: rgba(59, 91, 219, 0.07);
+  --nav-bg: rgba(255, 255, 255, 0.88);
 
   --danger: #c92a2a;
 
@@ -65,6 +66,7 @@
     --primary: #8aa2ff;
     --primary-hover: #a6b7ff;
     --primary-subtle: rgba(138, 162, 255, 0.1);
+    --nav-bg: rgba(14, 15, 18, 0.88);
 
     --danger: #ff6b6b;
 
