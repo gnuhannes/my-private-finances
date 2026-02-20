@@ -7,7 +7,7 @@
 
 .title {
   font-size: 13px;
-  opacity: 0.75;
+  color: var(--text-muted);
   margin-bottom: 10px;
 }
 

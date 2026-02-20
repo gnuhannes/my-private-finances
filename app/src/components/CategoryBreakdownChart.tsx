@@ -1,6 +1,15 @@
 import { useTranslation } from "react-i18next";
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
+import { BarChart, Bar, Cell, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 import styles from "./CategoryBreakdownChart.module.css";
+
+const COLORS = [
+  "var(--chart-1)",
+  "var(--chart-2)",
+  "var(--chart-3)",
+  "var(--chart-4)",
+  "var(--chart-5)",
+  "var(--chart-6)",
+];
 
 export type CategoryBreakdownItem = {
   category: string;
@@ -34,7 +43,11 @@ export function CategoryBreakdownChart({ data, formatValue }: Props) {
               tickFormatter={(v) => (formatValue ? formatValue(Number(v)) : String(v))}
             />
             <Tooltip formatter={(v) => (formatValue ? formatValue(Number(v)) : String(v))} />
-            <Bar dataKey="amount" />
+            <Bar dataKey="amount" radius={[2, 2, 0, 0]}>
+              {data.map((_, i) => (
+                <Cell key={i} fill={COLORS[i % COLORS.length]} />
+              ))}
+            </Bar>
           </BarChart>
         </ResponsiveContainer>
       </div>

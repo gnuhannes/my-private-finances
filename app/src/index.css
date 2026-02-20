@@ -19,13 +19,14 @@
   --bg: #ffffff;
   --surface: #ffffff;
   --text: #111111;
-  --text-muted: rgba(0, 0, 0, 0.7);
+  --text-muted: rgba(0, 0, 0, 0.58);
 
   --border: rgba(0, 0, 0, 0.15);
   --border-strong: rgba(0, 0, 0, 0.25);
 
   --primary: #3b5bdb;
   --primary-hover: #2f4fda;
+  --primary-subtle: rgba(59, 91, 219, 0.07);
 
   --danger: #c92a2a;
 
@@ -35,6 +36,20 @@
   --shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
 
   --focus: 2px solid rgba(59, 91, 219, 0.9);
+
+  /* Chart & semantic color aliases */
+  --color-accent: #3b5bdb;
+  --color-success: #2f9e44;
+  --color-danger: #c92a2a;
+  --color-border: rgba(0, 0, 0, 0.1);
+
+  /* Categorical chart palette */
+  --chart-1: #4c6ef5;
+  --chart-2: #2f9e44;
+  --chart-3: #f59f00;
+  --chart-4: #ae3ec9;
+  --chart-5: #f76707;
+  --chart-6: #0ca678;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -42,17 +57,32 @@
     --bg: #0e0f12;
     --surface: #12141a;
     --text: rgba(255, 255, 255, 0.92);
-    --text-muted: rgba(255, 255, 255, 0.72);
+    --text-muted: rgba(255, 255, 255, 0.62);
 
     --border: rgba(255, 255, 255, 0.14);
     --border-strong: rgba(255, 255, 255, 0.22);
 
     --primary: #8aa2ff;
     --primary-hover: #a6b7ff;
+    --primary-subtle: rgba(138, 162, 255, 0.1);
 
     --danger: #ff6b6b;
 
     --shadow: 0 10px 24px rgba(0, 0, 0, 0.4);
+
+    /* Chart & semantic color aliases (dark) */
+    --color-accent: #8aa2ff;
+    --color-success: #51cf66;
+    --color-danger: #ff6b6b;
+    --color-border: rgba(255, 255, 255, 0.1);
+
+    /* Categorical chart palette (dark — lighter, more vivid) */
+    --chart-1: #748ffc;
+    --chart-2: #51cf66;
+    --chart-3: #ffd43b;
+    --chart-4: #cc5de8;
+    --chart-5: #ff922b;
+    --chart-6: #20c997;
   }
 }
 
@@ -96,7 +126,8 @@ button {
 }
 
 button:hover {
-  border-color: var(--border-strong);
+  border-color: var(--primary);
+  background: var(--primary-subtle);
 }
 
 button:focus-visible,
@@ -112,4 +143,15 @@ select {
   border: 1px solid var(--border);
   background: var(--surface);
   padding: 8px 10px;
+  transition: border-color 0.15s ease-in-out;
+}
+
+input:hover,
+select:hover {
+  border-color: var(--border-strong);
+}
+
+input:focus-visible,
+select:focus-visible {
+  border-color: var(--primary);
 }

@@ -16,6 +16,6 @@
 }
 
 .active {
-  color: var(--text) !important;
-  border-bottom: 2px solid var(--text);
+  color: var(--primary) !important;
+  border-bottom: 2px solid var(--primary);
 }
