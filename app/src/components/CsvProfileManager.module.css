@@ -1,0 +1,149 @@
+.manager {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-secondary, var(--bg));
+  padding: 16px;
+  display: grid;
+  gap: 12px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.title {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.closeBtn {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+  color: var(--text-muted);
+  padding: 0 4px;
+}
+
+.closeBtn:hover {
+  color: var(--text);
+}
+
+.empty {
+  color: var(--text-muted);
+  font-size: 0.875rem;
+  margin: 0;
+}
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg);
+}
+
+.itemName {
+  font-weight: 500;
+  flex: 1;
+}
+
+.itemMeta {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.itemActions {
+  display: flex;
+  gap: 4px;
+}
+
+.itemActions button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  padding: 2px 6px;
+}
+
+.itemActions button:hover {
+  color: var(--text);
+}
+
+.addBtn {
+  font-size: 0.875rem;
+  background: none;
+  border: 1px dashed var(--border);
+  border-radius: var(--radius);
+  padding: 6px 12px;
+  cursor: pointer;
+  color: var(--text-muted);
+  width: 100%;
+}
+
+.addBtn:hover {
+  color: var(--text);
+  border-color: var(--text-muted);
+}
+
+.form {
+  display: grid;
+  gap: 12px;
+}
+
+.formTitle {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.875rem;
+}
+
+.field span {
+  color: var(--text-muted);
+}
+
+.colMapSection {
+  font-size: 0.875rem;
+}
+
+.colMapSection summary {
+  cursor: pointer;
+  font-weight: 500;
+  margin-bottom: 8px;
+}
+
+.colMapHint {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin: 0 0 10px;
+}
+
+.formActions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}

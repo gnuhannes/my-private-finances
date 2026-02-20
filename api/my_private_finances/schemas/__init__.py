@@ -31,9 +31,13 @@ from .net_worth import (
     NetWorthReport,
 )
 from .report_trend import CategoryTrendItem, SpendingTrendReport
+from .csv_profile import CsvProfileCreate, CsvProfileRead, CsvProfileUpdate
 from .report_annual import MonthSummary, AnnualReport
 
 __all__ = [
+    "CsvProfileCreate",
+    "CsvProfileRead",
+    "CsvProfileUpdate",
     "AccountCreate",
     "AccountRead",
     "AccountUpdate",

@@ -14,6 +14,7 @@ export type ImportCsvParams = {
   delimiter?: string;
   dateFormat?: string;
   decimalComma?: boolean;
+  profileId?: number;
 };
 
 export async function importCsv(params: ImportCsvParams): Promise<ImportResult> {
@@ -21,9 +22,11 @@ export async function importCsv(params: ImportCsvParams): Promise<ImportResult> 
   formData.append("file", params.file);
 
   const query = new URLSearchParams({ account_id: String(params.accountId) });
-  if (params.delimiter) query.set("delimiter", params.delimiter);
-  if (params.dateFormat) query.set("date_format", params.dateFormat);
-  if (params.decimalComma) query.set("decimal_comma", "true");
+  // Only send format params when they're explicitly overriding (backend treats absent = use profile default)
+  if (params.delimiter !== undefined) query.set("delimiter", params.delimiter);
+  if (params.dateFormat !== undefined) query.set("date_format", params.dateFormat);
+  if (params.decimalComma !== undefined) query.set("decimal_comma", String(params.decimalComma));
+  if (params.profileId !== undefined) query.set("profile_id", String(params.profileId));
 
   const res = await fetch(`/api/imports/csv?${query}`, {
     method: "POST",

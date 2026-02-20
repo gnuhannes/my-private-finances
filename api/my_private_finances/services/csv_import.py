@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from datetime import date, datetime
 from decimal import Decimal, InvalidOperation
 from pathlib import Path
-from typing import Any
+from typing import Any, TypedDict
 
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
@@ -21,6 +21,30 @@ from my_private_finances.services.transaction_hash import compute_import_hash, H
 logger = logging.getLogger(__name__)
 
 IMPORT_SOURCE = "csv"
+
+
+class ColumnMap(TypedDict, total=False):
+    booking_date: list[str]
+    amount: list[str]
+    currency: list[str]
+    payee: list[str]
+    purpose: list[str]
+    external_id: list[str]
+
+
+DEFAULT_COLUMN_MAP: ColumnMap = {
+    "booking_date": ["booking_date", "Buchungstag", "Valutadatum"],
+    "amount": ["amount", "Betrag"],
+    "currency": ["currency", "Waehrung"],
+    "payee": ["payee", "Beguenstigter/Zahlungspflichtiger"],
+    "purpose": ["purpose", "Verwendungszweck"],
+    "external_id": [
+        "external_id",
+        "Kundenreferenz (End-to-End)",
+        "Sammlerreferenz",
+        "Mandatsreferenz",
+    ],
+}
 
 
 @dataclass(slots=True)
@@ -90,7 +114,9 @@ async def import_transactions_from_csv_path(
     delimiter: str = ",",
     date_format: str = "iso",
     decimal_comma: bool = False,
+    column_map: ColumnMap | None = None,
 ) -> ImportResult:
+    col: ColumnMap = {**DEFAULT_COLUMN_MAP, **(column_map or {})}
     res = await session.execute(select(Account).where(Account.id == account_id))  # type: ignore[arg-type]
     if res.scalar_one_or_none() is None:
         raise ValueError(f"Account {account_id} not found")
@@ -118,37 +144,25 @@ async def import_transactions_from_csv_path(
             total_rows += 1
 
             try:
-                booking_date_raw = _first_present(
-                    row, ["booking_date", "Buchungstag", "Valutadatum"]
-                )
-                amount_raw = _first_present(row, ["amount", "Betrag"])
-                currency_raw = _first_present(row, ["currency", "Waehrung"])
+                booking_date_raw = _first_present(row, col["booking_date"])
+                amount_raw = _first_present(row, col["amount"])
+                currency_raw = _first_present(row, col["currency"])
 
                 if booking_date_raw is None:
-                    raise KeyError("booking_date/Buchungstag/Valutadatum")
+                    raise KeyError("/".join(col["booking_date"]))
                 if amount_raw is None:
-                    raise KeyError("amount/Betrag")
+                    raise KeyError("/".join(col["amount"]))
                 if currency_raw is None:
-                    raise KeyError("currency/Waehrung")
+                    raise KeyError("/".join(col["currency"]))
 
                 booking_date = _parse_date(booking_date_raw, date_format=date_format)
                 amount = _parse_decimal(amount_raw, decimal_comma=decimal_comma)
                 currency = _normalize_currency(currency_raw)
 
-                payee = _first_present(
-                    row, ["payee", "Beguenstigter/Zahlungspflichtiger"]
-                )
-                purpose = _first_present(row, ["purpose", "Verwendungszweck"])
+                payee = _first_present(row, col["payee"])
+                purpose = _first_present(row, col["purpose"])
 
-                external_id = _first_present(
-                    row,
-                    [
-                        "external_id",
-                        "Kundenreferenz (End-to-End)",
-                        "Sammlerreferenz",
-                        "Mandatsreferenz",
-                    ],
-                )
+                external_id = _first_present(row, col["external_id"])
                 if external_id is None:
                     external_id = _row_fingerprint(row)
 

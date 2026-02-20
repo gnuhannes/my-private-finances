@@ -5,7 +5,10 @@ from pathlib import Path
 import pytest
 from httpx import AsyncClient
 
-from my_private_finances.services.csv_import import import_transactions_from_csv_path
+from my_private_finances.services.csv_import import (
+    ColumnMap,
+    import_transactions_from_csv_path,
+)
 from tests.helpers import create_account
 
 
@@ -83,3 +86,50 @@ async def test_csv_import_creates_transactions_and_is_idempotent(
 
     finally:
         csv_file.unlink(missing_ok=True)
+
+
+@pytest.mark.asyncio
+async def test_csv_import_custom_column_map(
+    test_app: AsyncClient,
+    tmp_path: Path,
+) -> None:
+    """column_map overrides let non-standard headers be mapped to transaction fields."""
+    acc = await create_account(test_app)
+    account_id = acc["id"]
+
+    # CSV uses completely custom header names
+    csv_content = (
+        "Datum,Wert,Waehrung,Empfaenger,Info\n"
+        "2026-02-01,-25.00,EUR,Bäcker,Bread purchase\n"
+    )
+    csv_file = tmp_path / "custom.csv"
+    csv_file.write_text(csv_content, encoding="utf-8")
+
+    custom_map: ColumnMap = {
+        "booking_date": ["Datum"],
+        "amount": ["Wert"],
+        "currency": ["Waehrung"],
+        "payee": ["Empfaenger"],
+        "purpose": ["Info"],
+    }
+
+    session_factory = test_app._transport.app.state.session_factory  # type: ignore[attr-defined]
+    async with session_factory() as session:
+        result = await import_transactions_from_csv_path(
+            session=session,
+            account_id=account_id,
+            csv_path=csv_file,
+            column_map=custom_map,
+        )
+
+    assert result.created == 1, result
+    assert result.failed == 0, result
+
+    txn_resp = await test_app.get(
+        "/api/transactions", params={"account_id": account_id}
+    )
+    items = txn_resp.json()["items"]
+    assert len(items) == 1
+    assert items[0]["payee"] == "Bäcker"
+    assert items[0]["purpose"] == "Bread purchase"
+    assert items[0]["amount"] == "-25.00"

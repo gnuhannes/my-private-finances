@@ -3,8 +3,11 @@ import { useTranslation } from "react-i18next";
 import { useAccounts } from "../hooks/useAccounts";
 import { useImportCsv } from "../hooks/useImportCsv";
 import { useImportPdf } from "../hooks/useImportPdf";
+import { useCsvProfiles } from "../hooks/useCsvProfiles";
+import type { CsvProfile } from "../lib/api/csvProfiles";
 import { FileDropZone } from "./FileDropZone";
 import { ImportResult } from "./ImportResult";
+import { CsvProfileManager } from "./CsvProfileManager";
 import styles from "./ImportDialog.module.css";
 
 type Props = {
@@ -18,15 +21,18 @@ export function ImportDialog({ open, onClose }: Props) {
   const { t } = useTranslation();
   const dialogRef = useRef<HTMLDialogElement>(null);
   const { data: accounts } = useAccounts();
+  const { profiles } = useCsvProfiles();
   const csvMutation = useImportCsv();
   const pdfMutation = useImportPdf();
 
   const [mode, setMode] = useState<Mode>("csv");
   const [accountId, setAccountId] = useState<number | "">("");
+  const [selectedProfile, setSelectedProfile] = useState<CsvProfile | null>(null);
   const [delimiter, setDelimiter] = useState(",");
   const [dateFormat, setDateFormat] = useState("iso");
   const [decimalComma, setDecimalComma] = useState(false);
   const [file, setFile] = useState<File | null>(null);
+  const [showProfileManager, setShowProfileManager] = useState(false);
 
   const mutation = mode === "csv" ? csvMutation : pdfMutation;
 
@@ -50,12 +56,27 @@ export function ImportDialog({ open, onClose }: Props) {
     return () => dialog.removeEventListener("close", handleClose);
   }, [onClose]);
 
+  function applyProfile(profile: CsvProfile | null) {
+    setSelectedProfile(profile);
+    if (profile) {
+      setDelimiter(profile.delimiter);
+      setDateFormat(profile.date_format);
+      setDecimalComma(profile.decimal_comma);
+    } else {
+      setDelimiter(",");
+      setDateFormat("iso");
+      setDecimalComma(false);
+    }
+  }
+
   const resetForm = () => {
     setAccountId("");
+    setSelectedProfile(null);
     setDelimiter(",");
     setDateFormat("iso");
     setDecimalComma(false);
     setFile(null);
+    setShowProfileManager(false);
     csvMutation.reset();
     pdfMutation.reset();
   };
@@ -81,12 +102,25 @@ export function ImportDialog({ open, onClose }: Props) {
     if (!file || accountId === "") return;
 
     if (mode === "csv") {
+      // When a profile is selected, omit format params so the backend uses the profile.
+      // The UI shows auto-filled values, but we let the backend be the source of truth.
+      // If the user changed a format param from the profile's value, we send it explicitly.
+      const delimiterOverride =
+        selectedProfile && delimiter === selectedProfile.delimiter ? undefined : delimiter;
+      const dateFormatOverride =
+        selectedProfile && dateFormat === selectedProfile.date_format ? undefined : dateFormat;
+      const decimalCommaOverride =
+        selectedProfile && decimalComma === selectedProfile.decimal_comma
+          ? undefined
+          : decimalComma;
+
       csvMutation.mutate({
         file,
         accountId: Number(accountId),
-        delimiter,
-        dateFormat,
-        decimalComma,
+        delimiter: delimiterOverride,
+        dateFormat: dateFormatOverride,
+        decimalComma: decimalCommaOverride,
+        profileId: selectedProfile?.id,
       });
     } else {
       pdfMutation.mutate({ file, accountId: Number(accountId) });
@@ -135,6 +169,40 @@ export function ImportDialog({ open, onClose }: Props) {
               {t("importDialog.tabPdf")}
             </button>
           </div>
+
+          {/* Profile selector (CSV tab only) */}
+          {mode === "csv" && (
+            <div className={styles.profileRow}>
+              <label className={styles.field}>
+                <span>{t("importDialog.bankProfile")}</span>
+                <select
+                  value={selectedProfile?.id ?? ""}
+                  onChange={(e) => {
+                    const id = e.target.value === "" ? null : Number(e.target.value);
+                    applyProfile(profiles.data?.find((p) => p.id === id) ?? null);
+                  }}
+                >
+                  <option value="">{t("importDialog.bankProfileNone")}</option>
+                  {profiles.data?.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.name}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <button
+                type="button"
+                className={styles.manageProfilesBtn}
+                onClick={() => setShowProfileManager((v) => !v)}
+              >
+                {t("importDialog.manageBankProfiles")}
+              </button>
+            </div>
+          )}
+
+          {showProfileManager && mode === "csv" && (
+            <CsvProfileManager onClose={() => setShowProfileManager(false)} />
+          )}
 
           <label className={styles.field}>
             <span>{t("importDialog.account")}</span>

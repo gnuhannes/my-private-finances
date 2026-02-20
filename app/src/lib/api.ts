@@ -17,6 +17,14 @@ export { importCsv, importPdf } from "./api/imports";
 export type { ImportResult, ImportCsvParams, ImportPdfParams } from "./api/imports";
 
 export {
+  getCsvProfiles,
+  createCsvProfile,
+  updateCsvProfile,
+  deleteCsvProfile,
+} from "./api/csvProfiles";
+export type { CsvProfile, CsvProfileCreate, CsvProfileUpdate, ColumnMap } from "./api/csvProfiles";
+
+export {
   detectTransfers,
   getTransferCandidates,
   confirmTransfer,

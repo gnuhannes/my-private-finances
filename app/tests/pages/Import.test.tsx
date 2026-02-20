@@ -35,6 +35,15 @@ vi.mock("../../src/hooks/useImportPdf", () => ({
   }),
 }));
 
+vi.mock("../../src/hooks/useCsvProfiles", () => ({
+  useCsvProfiles: () => ({
+    profiles: { data: [], isLoading: false },
+    create: { mutate: vi.fn(), isPending: false },
+    update: { mutate: vi.fn(), isPending: false },
+    remove: { mutate: vi.fn(), isPending: false },
+  }),
+}));
+
 describe("Import", () => {
   it("renders page title and subtitle", () => {
     render(

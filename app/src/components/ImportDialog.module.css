@@ -73,6 +73,31 @@
   margin-bottom: -1px;
 }
 
+.profileRow {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+}
+
+.profileRow .field {
+  flex: 1;
+}
+
+.manageProfilesBtn {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  cursor: pointer;
+  padding: 0 0 4px;
+  white-space: nowrap;
+  text-decoration: underline;
+}
+
+.manageProfilesBtn:hover {
+  color: var(--text);
+}
+
 .field {
   display: flex;
   flex-direction: column;
