@@ -92,9 +92,38 @@
   margin-bottom: 2rem;
 }
 
+.tableTitleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+
 .tableTitle {
   font-size: 1.1rem;
-  margin: 0 0 0.75rem;
+  margin: 0;
+}
+
+.newAccountForm {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.currencyInput {
+  padding: 0.3rem 0.5rem;
+  border: 1px solid var(--color-border, #ddd);
+  border-radius: 4px;
+  font-size: 0.9rem;
+  width: 60px;
+  text-transform: uppercase;
+}
+
+.createError {
+  font-size: 0.85rem;
+  color: var(--color-danger, #dc3545);
 }
 
 .tableCard {

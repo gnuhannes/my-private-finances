@@ -1,4 +1,4 @@
-import { apiGet, apiPatch } from "./client";
+import { apiGet, apiPatch, apiPost } from "./client";
 
 export type Account = {
   id: number;
@@ -10,6 +10,15 @@ export type Account = {
 
 export function getAccounts(): Promise<Account[]> {
   return apiGet<Account[]>("/api/accounts");
+}
+
+export type AccountCreatePayload = {
+  name: string;
+  currency: string;
+};
+
+export function createAccount(data: AccountCreatePayload): Promise<Account> {
+  return apiPost<Account>("/api/accounts", data);
 }
 
 export type AccountUpdatePayload = {

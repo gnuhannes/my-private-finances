@@ -1,7 +1,7 @@
 export { ApiError, apiGet } from "./api/client";
 
-export { getAccounts, updateAccount } from "./api/accounts";
-export type { Account, AccountUpdatePayload } from "./api/accounts";
+export { getAccounts, createAccount, updateAccount } from "./api/accounts";
+export type { Account, AccountCreatePayload, AccountUpdatePayload } from "./api/accounts";
 
 export { getMonthlyReport } from "./api/reports";
 export type { CategoryTotal, MonthlyReport, PayeeTotal, TopSpending } from "./api/reports";

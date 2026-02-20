@@ -1,6 +1,6 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { useAccounts } from "../hooks/useAccounts";
-import { useNetWorth, useUpdateAccount } from "../hooks/useNetWorth";
+import { useNetWorth, useUpdateAccount, useCreateAccount } from "../hooks/useNetWorth";
 import { NetWorthAreaChart } from "../components/NetWorthAreaChart";
 import { formatCurrency, formatMoneyString } from "../utils/money";
 import type { Account } from "../lib/api/accounts";
@@ -95,15 +95,33 @@ function AccountRow({
 export default function NetWorth() {
   const { data: accounts, isLoading: accountsLoading } = useAccounts();
   const [months, setMonths] = useState<6 | 12 | 24>(12);
+  const [addingAccount, setAddingAccount] = useState(false);
+  const [newName, setNewName] = useState("");
+  const [newCurrency, setNewCurrency] = useState("EUR");
 
   const { data: report, isLoading: reportLoading, isError } = useNetWorth(months);
   const updateAccount = useUpdateAccount();
+  const createAccount = useCreateAccount();
 
   if (accountsLoading) return <div className={styles.status}>Loading…</div>;
-  if (!accounts || accounts.length === 0)
-    return <div className={styles.status}>No accounts yet.</div>;
+  if (!accounts) return <div className={styles.status}>Failed to load accounts.</div>;
 
   const currency = report?.currency ?? accounts[0]?.currency ?? "EUR";
+
+  function handleCreate(e: React.FormEvent) {
+    e.preventDefault();
+    if (!newName.trim()) return;
+    createAccount.mutate(
+      { name: newName.trim(), currency: newCurrency.toUpperCase() || "EUR" },
+      {
+        onSuccess: () => {
+          setAddingAccount(false);
+          setNewName("");
+          setNewCurrency("EUR");
+        },
+      },
+    );
+  }
   const summaryMap = Object.fromEntries((report?.accounts ?? []).map((s) => [s.account_id, s]));
 
   const totalChange = report ? parseFloat(report.month_over_month_change) : null;
@@ -168,30 +186,89 @@ export default function NetWorth() {
 
       {/* Per-account table */}
       <div className={styles.tableSection}>
-        <h2 className={styles.tableTitle}>Accounts</h2>
-        <div className={styles.tableCard}>
-          <table className={styles.table}>
-            <thead>
-              <tr>
-                <th>Account</th>
-                <th>Opening Balance</th>
-                <th className={styles.right}>Current Balance</th>
-                <th className={styles.right}>MoM Change</th>
-              </tr>
-            </thead>
-            <tbody>
-              {accounts.map((acc) => (
-                <AccountRow
-                  key={acc.id}
-                  account={acc}
-                  summary={summaryMap[acc.id] ?? null}
-                  currency={currency}
-                  onSave={(id, data) => updateAccount.mutate({ id, data })}
-                />
-              ))}
-            </tbody>
-          </table>
+        <div className={styles.tableTitleRow}>
+          <h2 className={styles.tableTitle}>Accounts</h2>
+          {!addingAccount && (
+            <button
+              type="button"
+              className={styles.setupBtn}
+              onClick={() => setAddingAccount(true)}
+            >
+              + New Account
+            </button>
+          )}
         </div>
+        {accounts.length === 0 ? (
+          <p className={styles.empty}>No accounts yet. Create one below to get started.</p>
+        ) : (
+          <div className={styles.tableCard}>
+            <table className={styles.table}>
+              <thead>
+                <tr>
+                  <th>Account</th>
+                  <th>Opening Balance</th>
+                  <th className={styles.right}>Current Balance</th>
+                  <th className={styles.right}>MoM Change</th>
+                </tr>
+              </thead>
+              <tbody>
+                {accounts.map((acc) => (
+                  <AccountRow
+                    key={acc.id}
+                    account={acc}
+                    summary={summaryMap[acc.id] ?? null}
+                    currency={currency}
+                    onSave={(id, data) => updateAccount.mutate({ id, data })}
+                  />
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+        {addingAccount && (
+          <form className={styles.newAccountForm} onSubmit={handleCreate}>
+            <input
+              type="text"
+              placeholder="Account name"
+              value={newName}
+              className={styles.input}
+              maxLength={120}
+              required
+              autoFocus
+              onChange={(e) => setNewName(e.target.value)}
+            />
+            <input
+              type="text"
+              placeholder="EUR"
+              value={newCurrency}
+              className={styles.currencyInput}
+              maxLength={3}
+              onChange={(e) => setNewCurrency(e.target.value)}
+            />
+            {createAccount.isError && (
+              <span className={styles.createError}>Failed to create account.</span>
+            )}
+            <button
+              type="submit"
+              className={styles.saveBtn}
+              disabled={!newName.trim() || createAccount.isPending}
+            >
+              {createAccount.isPending ? "Creating…" : "Create"}
+            </button>
+            <button
+              type="button"
+              className={styles.cancelBtn}
+              onClick={() => {
+                setAddingAccount(false);
+                setNewName("");
+                setNewCurrency("EUR");
+                createAccount.reset();
+              }}
+            >
+              Cancel
+            </button>
+          </form>
+        )}
       </div>
     </div>
   );
