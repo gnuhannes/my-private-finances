@@ -2,23 +2,36 @@
   position: sticky;
   top: 0;
   z-index: 100;
-  display: flex;
-  align-items: center;
-  gap: 2px;
-  padding: 8px 16px;
   background: var(--nav-bg, var(--surface));
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
   border-bottom: 1px solid var(--border);
+}
+
+/* Desktop: hamburger bar hidden */
+.bar {
+  display: none;
+}
+
+/* Desktop: links in a horizontal pill row */
+.links {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 8px 16px;
   overflow-x: auto;
   scrollbar-width: none;
 }
 
-.nav::-webkit-scrollbar {
+.links::-webkit-scrollbar {
   display: none;
 }
 
-.nav a {
+.langWrap {
+  margin-left: auto;
+}
+
+.links a {
   text-decoration: none;
   color: var(--text-muted);
   font-size: 0.855rem;
@@ -32,7 +45,7 @@
   white-space: nowrap;
 }
 
-.nav a:hover {
+.links a:hover {
   color: var(--text);
   background: var(--primary-subtle);
 }
@@ -40,4 +53,55 @@
 .active {
   color: var(--primary) !important;
   background: var(--primary-subtle) !important;
+}
+
+/* ── Mobile ─────────────────────────────────────────────────────── */
+@media (max-width: 640px) {
+  /* Show hamburger bar */
+  .bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 16px;
+  }
+
+  .brand {
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: var(--text);
+  }
+
+  .hamburger {
+    background: none;
+    border: none;
+    font-size: 1.25rem;
+    padding: 4px 8px;
+    cursor: pointer;
+    color: var(--text);
+  }
+
+  /* Drawer: hidden by default */
+  .links {
+    display: none;
+    flex-direction: column;
+    gap: 0;
+    padding: 8px 12px 12px;
+    border-top: 1px solid var(--border);
+  }
+
+  .linksOpen {
+    display: flex;
+  }
+
+  .links a {
+    padding: 10px 12px;
+    border-radius: var(--radius-sm);
+    font-size: 0.95rem;
+    white-space: normal;
+  }
+
+  .langWrap {
+    margin-left: 0;
+    padding: 8px 4px 0;
+  }
 }

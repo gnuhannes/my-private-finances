@@ -1,3 +1,10 @@
 .chartWrap {
   width: 100%;
 }
+
+@media (max-width: 640px) {
+  .chartWrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}

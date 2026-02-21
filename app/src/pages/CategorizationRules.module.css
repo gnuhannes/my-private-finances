@@ -95,3 +95,9 @@
   margin-top: 16px;
   opacity: 0.7;
 }
+
+@media (max-width: 640px) {
+  .page {
+    padding: 16px 14px;
+  }
+}

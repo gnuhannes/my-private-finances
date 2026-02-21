@@ -19,6 +19,7 @@ export function TransactionTable({ items, currency, categories, onCategoryChange
   }
 
   return (
+    <div className={styles.tableScroll}>
     <table className={styles.table}>
       <thead>
         <tr>
@@ -57,5 +58,6 @@ export function TransactionTable({ items, currency, categories, onCategoryChange
         ))}
       </tbody>
     </table>
+    </div>
   );
 }

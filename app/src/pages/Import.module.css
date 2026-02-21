@@ -14,3 +14,9 @@
 .importBtn {
   margin-top: 16px;
 }
+
+@media (max-width: 640px) {
+  .page {
+    padding: 16px 14px;
+  }
+}

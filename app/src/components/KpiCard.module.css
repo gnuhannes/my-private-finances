@@ -17,3 +17,9 @@
   font-weight: 600;
   font-variant-numeric: tabular-nums;
 }
+
+@media (max-width: 640px) {
+  .card {
+    min-width: 0;
+  }
+}

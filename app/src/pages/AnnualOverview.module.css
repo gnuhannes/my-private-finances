@@ -137,3 +137,9 @@
   color: var(--color-danger, #dc3545);
   padding: 1rem 0;
 }
+
+@media (max-width: 640px) {
+  .page {
+    padding: 16px 14px;
+  }
+}

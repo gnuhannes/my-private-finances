@@ -246,3 +246,17 @@
   padding: 1.5rem 0;
   text-align: center;
 }
+
+@media (max-width: 640px) {
+  .page {
+    padding: 16px 14px;
+  }
+
+  .input[type="number"] {
+    width: 80px;
+  }
+
+  .input[type="date"] {
+    width: 120px;
+  }
+}

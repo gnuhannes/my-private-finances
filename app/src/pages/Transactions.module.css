@@ -58,3 +58,22 @@
 .amountInput {
   width: 110px;
 }
+
+@media (max-width: 640px) {
+  .page {
+    padding: 16px 14px;
+  }
+
+  .controlsRow {
+    flex-direction: column;
+  }
+
+  .searchInput {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .amountInput {
+    width: 100%;
+  }
+}

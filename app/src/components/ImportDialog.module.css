@@ -121,3 +121,17 @@
   justify-content: flex-end;
   padding-top: 4px;
 }
+
+@media (max-width: 640px) {
+  .dialog {
+    width: min(520px, 96vw);
+  }
+
+  .body {
+    padding: 14px;
+  }
+
+  .profileRow {
+    flex-wrap: wrap;
+  }
+}

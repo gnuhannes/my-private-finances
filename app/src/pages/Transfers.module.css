@@ -71,3 +71,9 @@
   color: var(--color-text-muted, #666);
   padding: 1.5rem 0;
 }
+
+@media (max-width: 640px) {
+  .page {
+    padding: 16px 14px;
+  }
+}

@@ -70,6 +70,13 @@
   cursor: pointer;
 }
 
+@media (max-width: 640px) {
+  .card {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
 .confirmed {
   font-size: 0.8rem;
   color: var(--color-success, #28a745);

@@ -123,3 +123,15 @@
   opacity: 0.5;
   cursor: not-allowed;
 }
+
+@media (max-width: 640px) {
+  .page {
+    padding: 16px 14px;
+  }
+
+  .dangerItem {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+}

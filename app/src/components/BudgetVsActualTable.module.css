@@ -41,3 +41,10 @@
 .under {
   color: var(--color-success);
 }
+
+@media (max-width: 640px) {
+  .card {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}

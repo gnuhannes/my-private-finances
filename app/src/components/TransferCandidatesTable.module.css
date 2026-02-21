@@ -108,3 +108,11 @@
 .dismissBtn:hover {
   background: #e9ecef;
 }
+
+@media (max-width: 640px) {
+  .card {
+    overflow: visible;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
