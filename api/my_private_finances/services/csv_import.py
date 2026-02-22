@@ -1,5 +1,6 @@
 import csv
 import hashlib
+import io
 import logging
 from dataclasses import dataclass
 from datetime import date, datetime
@@ -135,7 +136,25 @@ async def import_transactions_from_csv_path(
     failed = 0
     errors: list[str] = []
 
-    with csv_path.open("r", encoding="utf-8-sig", newline="") as f:
+    _ENCODINGS = ("utf-8-sig", "cp1252")
+    raw = csv_path.read_bytes()
+    text: str | None = None
+    used_encoding: str | None = None
+    for enc in _ENCODINGS:
+        try:
+            text = raw.decode(enc)
+            used_encoding = enc
+            break
+        except UnicodeDecodeError:
+            continue
+    if text is None:
+        raise ValueError(
+            f"Cannot decode CSV file — tried {', '.join(_ENCODINGS)}. "
+            "Please re-export with UTF-8 encoding."
+        )
+    logger.debug("CSV encoding detected: %s", used_encoding)
+
+    with io.StringIO(text) as f:
         reader = csv.DictReader(f, delimiter=delimiter)
         if reader.fieldnames is None:
             raise ValueError("CSV has no header row")
