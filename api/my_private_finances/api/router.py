@@ -21,6 +21,7 @@ from my_private_finances.api.routes.export import router as export_router
 from my_private_finances.api.routes.data_management import (
     router as data_management_router,
 )
+from my_private_finances.api.routes.ml import router as ml_router
 
 api_router = APIRouter()
 api_router.include_router(accounts_router)
@@ -38,3 +39,4 @@ api_router.include_router(annual_router)
 api_router.include_router(csv_profiles_router)
 api_router.include_router(export_router)
 api_router.include_router(data_management_router)
+api_router.include_router(ml_router)

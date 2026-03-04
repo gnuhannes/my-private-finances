@@ -42,3 +42,6 @@ export { getAnnualReport } from "./api/annual";
 export type { AnnualReport, MonthSummary } from "./api/annual";
 
 export { restoreSqlite, deleteTransactions, wipeAllData } from "./api/settings";
+
+export { trainModel, getSuggestions } from "./api/ml";
+export type { TrainResult, Suggestion } from "./api/ml";

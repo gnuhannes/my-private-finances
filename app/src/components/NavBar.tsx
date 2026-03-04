@@ -70,6 +70,9 @@ export function NavBar() {
         <NavLink to="/import" className={({ isActive }) => (isActive ? styles.active : "")}>
           {t("nav.import")}
         </NavLink>
+        <NavLink to="/suggestions" className={({ isActive }) => (isActive ? styles.active : "")}>
+          {t("nav.suggestions")}
+        </NavLink>
         <NavLink to="/settings" className={({ isActive }) => (isActive ? styles.active : "")}>
           {t("nav.settings")}
         </NavLink>

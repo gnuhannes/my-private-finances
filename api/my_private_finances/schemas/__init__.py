@@ -33,6 +33,7 @@ from .net_worth import (
 from .report_trend import CategoryTrendItem, SpendingTrendReport
 from .csv_profile import CsvProfileCreate, CsvProfileRead, CsvProfileUpdate
 from .report_annual import MonthSummary, AnnualReport
+from .ml import Suggestion, TrainResult
 
 __all__ = [
     "CsvProfileCreate",
@@ -79,4 +80,6 @@ __all__ = [
     "SpendingTrendReport",
     "MonthSummary",
     "AnnualReport",
+    "Suggestion",
+    "TrainResult",
 ]

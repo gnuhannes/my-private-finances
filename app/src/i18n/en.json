@@ -11,6 +11,7 @@
     "annual": "Annual",
     "rules": "Rules",
     "import": "Import",
+    "suggestions": "Suggestions",
     "settings": "Settings"
   },
   "common": {
@@ -384,6 +385,28 @@
     "tableActions": "Actions",
     "confirm": "Confirm",
     "dismiss": "Dismiss"
+  },
+  "suggestions": {
+    "title": "ML Category Suggestions",
+    "subtitle": "Review and accept ML-suggested categories for uncategorized transactions.",
+    "trainModel": "Train Model",
+    "training": "Training…",
+    "trainSuccess": "Model trained on {{samples}} transactions across {{categories}} categories.",
+    "trainFailed": "Training failed. Make sure you have at least 10 categorized transactions.",
+    "acceptAllHighConfidence": "Accept All High-Confidence (≥80%) — {{count}}",
+    "coldStartHint": "No suggestions available. Train the model first, or categorize at least 10 transactions manually or via rules.",
+    "noSuggestions": "No uncategorized transactions to suggest categories for."
+  },
+  "suggestionsTable": {
+    "tableDate": "Date",
+    "tablePayee": "Payee",
+    "tablePurpose": "Purpose",
+    "tableSuggestedCategory": "Suggested Category",
+    "tableConfidence": "Confidence",
+    "tableAmount": "Amount",
+    "tableActions": "Actions",
+    "accept": "Accept",
+    "skip": "Skip"
   },
   "settings": {
     "title": "Settings",

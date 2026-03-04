@@ -1,0 +1,127 @@
+.card {
+  border: 1px solid var(--color-border, #ddd);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th,
+.table td {
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid var(--color-border, #eee);
+  text-align: left;
+}
+
+.table th {
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: var(--color-text-muted, #666);
+  background: var(--color-surface-alt, #fafafa);
+}
+
+.table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.right {
+  text-align: right;
+}
+
+.date {
+  white-space: nowrap;
+  color: var(--color-text-muted, #666);
+  font-size: 0.9rem;
+}
+
+.payee {
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 500;
+}
+
+.purpose {
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--color-text-muted, #666);
+  font-size: 0.9rem;
+}
+
+.category {
+  font-weight: 500;
+}
+
+.amount {
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+}
+
+.badge {
+  display: inline-block;
+  padding: 0.15rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.badgeHigh {
+  background: #d4edda;
+  color: #155724;
+}
+
+.badgeMedium {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.badgeLow {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.actions button {
+  font-size: 0.8rem;
+  padding: 0.2rem 0.6rem;
+  border-radius: 4px;
+  cursor: pointer;
+  border: 1px solid transparent;
+}
+
+.acceptBtn {
+  background: #d4edda;
+  color: #155724;
+  border-color: #c3e6cb !important;
+}
+
+.acceptBtn:hover {
+  background: #c3e6cb;
+}
+
+.skipBtn {
+  background: #f8f9fa;
+  color: #495057;
+  border-color: #dee2e6 !important;
+}
+
+.skipBtn:hover {
+  background: #e9ecef;
+}
+
+@media (max-width: 640px) {
+  .card {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}

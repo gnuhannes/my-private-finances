@@ -11,6 +11,7 @@
     "annual": "Jahresübersicht",
     "rules": "Regeln",
     "import": "Importieren",
+    "suggestions": "Vorschläge",
     "settings": "Einstellungen"
   },
   "common": {
@@ -384,6 +385,28 @@
     "tableActions": "Aktionen",
     "confirm": "Bestätigen",
     "dismiss": "Ablehnen"
+  },
+  "suggestions": {
+    "title": "ML-Kategorievorschläge",
+    "subtitle": "ML-vorgeschlagene Kategorien für unkategorisierte Transaktionen prüfen und akzeptieren.",
+    "trainModel": "Modell trainieren",
+    "training": "Wird trainiert…",
+    "trainSuccess": "Modell auf {{samples}} Transaktionen in {{categories}} Kategorien trainiert.",
+    "trainFailed": "Training fehlgeschlagen. Stelle sicher, dass du mindestens 10 kategorisierte Transaktionen hast.",
+    "acceptAllHighConfidence": "Alle hochkonfidenten (≥80%) akzeptieren — {{count}}",
+    "coldStartHint": "Keine Vorschläge verfügbar. Trainiere zuerst das Modell oder kategorisiere mindestens 10 Transaktionen manuell oder per Regeln.",
+    "noSuggestions": "Keine unkategorisierten Transaktionen für Vorschläge."
+  },
+  "suggestionsTable": {
+    "tableDate": "Datum",
+    "tablePayee": "Empfänger",
+    "tablePurpose": "Verwendungszweck",
+    "tableSuggestedCategory": "Vorgeschlagene Kategorie",
+    "tableConfidence": "Konfidenz",
+    "tableAmount": "Betrag",
+    "tableActions": "Aktionen",
+    "accept": "Akzeptieren",
+    "skip": "Überspringen"
   },
   "settings": {
     "title": "Einstellungen",
