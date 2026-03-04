@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { FileDropZone } from "../components/FileDropZone";
 import { LanguageSwitcher } from "../components/LanguageSwitcher";
+import { WatchFolderPanel } from "../components/WatchFolderPanel";
 import { restoreSqlite, deleteTransactions, wipeAllData } from "../lib/api/settings";
 import styles from "./Settings.module.css";
 
@@ -109,6 +110,13 @@ export default function Settings() {
             )}
           </>
         )}
+      </section>
+
+      {/* Watch Folder */}
+      <section className={styles.section}>
+        <h2 className={styles.sectionTitle}>{t("settings.watchFolderTitle")}</h2>
+        <p className={styles.sectionSubtitle}>{t("settings.watchFolderSubtitle")}</p>
+        <WatchFolderPanel />
       </section>
 
       {/* Language */}

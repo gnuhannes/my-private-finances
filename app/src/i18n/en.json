@@ -424,6 +424,8 @@
     "restoring": "Restoring…",
     "restoreSuccess": "Data restored successfully. Please refresh the page.",
     "restoreError": "Restore failed: {{error}}",
+    "watchFolderTitle": "Watch Folder",
+    "watchFolderSubtitle": "Drop bank export files into subfolders and they get imported automatically.",
     "languageTitle": "Language",
     "dangerTitle": "Danger Zone",
     "deleteTransactions": "Delete all transactions",
@@ -432,5 +434,18 @@
     "wipeAll": "Wipe all data",
     "wipeAllDesc": "Delete everything: accounts, transactions, categories, budgets, rules, and profiles.",
     "wipeAllConfirm": "Delete EVERYTHING? This cannot be undone."
+  },
+  "watchFolder": {
+    "rootPath": "Watch path",
+    "subfolders": "Subfolder mappings",
+    "noConfigs": "No subfolders configured yet. Add one to start auto-importing.",
+    "selectAccount": "Select account…",
+    "noProfile": "No CSV profile (PDF only)",
+    "addSubfolder": "Add",
+    "subfolderPlaceholder": "folder-name",
+    "addError": "Could not add subfolder. Name may already be in use.",
+    "colSubfolder": "Subfolder",
+    "colAccount": "Account",
+    "colProfile": "CSV Profile"
   }
 }

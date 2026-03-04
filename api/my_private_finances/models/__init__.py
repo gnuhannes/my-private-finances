@@ -6,6 +6,7 @@ from .csv_profile import CsvProfile
 from .recurring_pattern import RecurringPattern
 from .transaction import Transaction
 from .transfer_candidate import TransferCandidate
+from .watch_folder_config import WatchFolderConfig, WatchSettings
 
 __all__ = [
     "Account",
@@ -16,4 +17,6 @@ __all__ = [
     "RecurringPattern",
     "Transaction",
     "TransferCandidate",
+    "WatchFolderConfig",
+    "WatchSettings",
 ]

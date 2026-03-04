@@ -424,6 +424,8 @@
     "restoring": "Wird wiederhergestellt…",
     "restoreSuccess": "Daten erfolgreich wiederhergestellt. Bitte die Seite neu laden.",
     "restoreError": "Wiederherstellung fehlgeschlagen: {{error}}",
+    "watchFolderTitle": "Beobachtungsordner",
+    "watchFolderSubtitle": "Bankexporte in Unterordner ablegen und sie werden automatisch importiert.",
     "languageTitle": "Sprache",
     "dangerTitle": "Gefahrenzone",
     "deleteTransactions": "Alle Transaktionen löschen",
@@ -432,5 +434,18 @@
     "wipeAll": "Alle Daten löschen",
     "wipeAllDesc": "Alles löschen: Konten, Transaktionen, Kategorien, Budgets, Regeln und Profile.",
     "wipeAllConfirm": "ALLES löschen? Dies kann nicht rückgängig gemacht werden."
+  },
+  "watchFolder": {
+    "rootPath": "Beobachtungspfad",
+    "subfolders": "Unterordner-Zuordnungen",
+    "noConfigs": "Noch keine Unterordner konfiguriert. Einen hinzufügen, um den Auto-Import zu starten.",
+    "selectAccount": "Konto auswählen…",
+    "noProfile": "Kein CSV-Profil (nur PDF)",
+    "addSubfolder": "Hinzufügen",
+    "subfolderPlaceholder": "ordner-name",
+    "addError": "Unterordner konnte nicht hinzugefügt werden. Name wird möglicherweise bereits verwendet.",
+    "colSubfolder": "Unterordner",
+    "colAccount": "Konto",
+    "colProfile": "CSV-Profil"
   }
 }

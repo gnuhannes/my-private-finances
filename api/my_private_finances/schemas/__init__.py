@@ -34,6 +34,13 @@ from .report_trend import CategoryTrendItem, SpendingTrendReport
 from .csv_profile import CsvProfileCreate, CsvProfileRead, CsvProfileUpdate
 from .report_annual import MonthSummary, AnnualReport
 from .ml import Suggestion, TrainResult
+from .watch_folder import (
+    WatchFolderConfigCreate,
+    WatchFolderConfigRead,
+    WatchFolderConfigUpdate,
+    WatchSettingsRead,
+    WatchSettingsUpdate,
+)
 
 __all__ = [
     "CsvProfileCreate",
@@ -82,4 +89,9 @@ __all__ = [
     "AnnualReport",
     "Suggestion",
     "TrainResult",
+    "WatchFolderConfigCreate",
+    "WatchFolderConfigRead",
+    "WatchFolderConfigUpdate",
+    "WatchSettingsRead",
+    "WatchSettingsUpdate",
 ]

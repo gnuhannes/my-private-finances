@@ -45,3 +45,18 @@ export { restoreSqlite, deleteTransactions, wipeAllData } from "./api/settings";
 
 export { trainModel, getSuggestions } from "./api/ml";
 export type { TrainResult, Suggestion } from "./api/ml";
+
+export {
+  getWatchSettings,
+  updateWatchSettings,
+  getWatchConfigs,
+  createWatchConfig,
+  updateWatchConfig,
+  deleteWatchConfig,
+} from "./api/watchFolder";
+export type {
+  WatchSettings,
+  WatchFolderConfig,
+  WatchFolderConfigCreate,
+  WatchFolderConfigUpdate,
+} from "./api/watchFolder";
