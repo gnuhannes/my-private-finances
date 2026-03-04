@@ -20,44 +20,44 @@ export function TransactionTable({ items, currency, categories, onCategoryChange
 
   return (
     <div className={styles.tableScroll}>
-    <table className={styles.table}>
-      <thead>
-        <tr>
-          <th>{t("transactionTable.tableDate")}</th>
-          <th>{t("transactionTable.tablePayee")}</th>
-          <th>{t("transactionTable.tablePurpose")}</th>
-          <th>{t("transactionTable.tableCategory")}</th>
-          <th className={styles.amount}>{t("transactionTable.tableAmount")}</th>
-        </tr>
-      </thead>
-      <tbody>
-        {items.map((tx) => (
-          <tr key={tx.id}>
-            <td>{tx.booking_date}</td>
-            <td>{tx.payee ?? ""}</td>
-            <td>{tx.purpose ?? ""}</td>
-            <td>
-              <select
-                className={styles.categorySelect}
-                value={tx.category_id ?? ""}
-                onChange={(e) => {
-                  const val = e.target.value;
-                  onCategoryChange(tx.id, val === "" ? null : Number(val));
-                }}
-              >
-                <option value="">—</option>
-                {categories.map((cat) => (
-                  <option key={cat.id} value={cat.id}>
-                    {cat.name}
-                  </option>
-                ))}
-              </select>
-            </td>
-            <td className={styles.amount}>{formatMoneyString(tx.amount, currency)}</td>
+      <table className={styles.table}>
+        <thead>
+          <tr>
+            <th>{t("transactionTable.tableDate")}</th>
+            <th>{t("transactionTable.tablePayee")}</th>
+            <th>{t("transactionTable.tablePurpose")}</th>
+            <th>{t("transactionTable.tableCategory")}</th>
+            <th className={styles.amount}>{t("transactionTable.tableAmount")}</th>
           </tr>
-        ))}
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          {items.map((tx) => (
+            <tr key={tx.id}>
+              <td>{tx.booking_date}</td>
+              <td>{tx.payee ?? ""}</td>
+              <td>{tx.purpose ?? ""}</td>
+              <td>
+                <select
+                  className={styles.categorySelect}
+                  value={tx.category_id ?? ""}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    onCategoryChange(tx.id, val === "" ? null : Number(val));
+                  }}
+                >
+                  <option value="">—</option>
+                  {categories.map((cat) => (
+                    <option key={cat.id} value={cat.id}>
+                      {cat.name}
+                    </option>
+                  ))}
+                </select>
+              </td>
+              <td className={styles.amount}>{formatMoneyString(tx.amount, currency)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 }

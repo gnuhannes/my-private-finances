@@ -55,7 +55,10 @@ export function NavBar() {
         <NavLink to="/net-worth" className={({ isActive }) => (isActive ? styles.active : "")}>
           {t("nav.netWorth")}
         </NavLink>
-        <NavLink to="/spending-trends" className={({ isActive }) => (isActive ? styles.active : "")}>
+        <NavLink
+          to="/spending-trends"
+          className={({ isActive }) => (isActive ? styles.active : "")}
+        >
           {t("nav.trends")}
         </NavLink>
         <NavLink to="/annual" className={({ isActive }) => (isActive ? styles.active : "")}>
