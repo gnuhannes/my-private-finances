@@ -15,6 +15,9 @@ class RecurringPatternRead(StrictSchema):
     frequency: str
     confidence: Decimal
     last_seen: date
+    next_due: date
+    is_overdue: bool
+    annual_amount: Decimal
     occurrence_count: int
     is_active: bool
     user_confirmed: bool

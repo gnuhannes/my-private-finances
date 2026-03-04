@@ -8,6 +8,9 @@ export type RecurringPattern = {
   frequency: string;
   confidence: string;
   last_seen: string;
+  next_due: string;
+  is_overdue: boolean;
+  annual_amount: string;
   occurrence_count: number;
   is_active: boolean;
   user_confirmed: boolean;

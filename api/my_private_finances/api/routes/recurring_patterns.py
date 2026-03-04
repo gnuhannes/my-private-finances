@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from datetime import date, timedelta
 from decimal import Decimal
 from typing import Annotated, Any, cast
 
@@ -28,6 +29,24 @@ _MONTHLY_FACTOR: dict[str, Decimal] = {
     "yearly": Decimal("0.083"),
 }
 
+# Days between occurrences per frequency
+_FREQUENCY_DAYS: dict[str, int] = {
+    "weekly": 7,
+    "monthly": 30,
+    "quarterly": 91,
+    "yearly": 365,
+}
+
+# Annual multipliers (occurrences per year)
+_ANNUAL_MULTIPLIER: dict[str, Decimal] = {
+    "weekly": Decimal("52"),
+    "monthly": Decimal("12"),
+    "quarterly": Decimal("4"),
+    "yearly": Decimal("1"),
+}
+
+_OVERDUE_GRACE_DAYS = 3
+
 
 async def _to_read(
     session: AsyncSession, pattern: RecurringPattern
@@ -37,6 +56,15 @@ async def _to_read(
     if pattern.category_id is not None:
         cat = await session.get(Category, pattern.category_id)
         category_name = cat.name if cat else None
+
+    freq_days = _FREQUENCY_DAYS.get(pattern.frequency, 30)
+    next_due = pattern.last_seen + timedelta(days=freq_days)
+    is_overdue = date.today() > next_due + timedelta(days=_OVERDUE_GRACE_DAYS)
+    annual_multiplier = _ANNUAL_MULTIPLIER.get(pattern.frequency, Decimal("1"))
+    annual_amount = (pattern.typical_amount * annual_multiplier).quantize(
+        Decimal("0.01")
+    )
+
     return RecurringPatternRead(
         id=pattern.id,
         account_id=pattern.account_id,
@@ -45,6 +73,9 @@ async def _to_read(
         frequency=pattern.frequency,
         confidence=pattern.confidence,
         last_seen=pattern.last_seen,
+        next_due=next_due,
+        is_overdue=is_overdue,
+        annual_amount=annual_amount,
         occurrence_count=pattern.occurrence_count,
         is_active=pattern.is_active,
         user_confirmed=pattern.user_confirmed,

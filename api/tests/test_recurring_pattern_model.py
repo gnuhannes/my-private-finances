@@ -38,6 +38,9 @@ def test_recurring_pattern_read_schema() -> None:
         frequency="monthly",
         confidence=Decimal("0.85"),
         last_seen=date(2026, 6, 5),
+        next_due=date(2026, 7, 5),
+        is_overdue=False,
+        annual_amount=Decimal("155.88"),
         occurrence_count=6,
         is_active=True,
         user_confirmed=False,
@@ -45,6 +48,8 @@ def test_recurring_pattern_read_schema() -> None:
     )
     assert r.payee == "Netflix"
     assert r.category_name == "Entertainment"
+    assert r.next_due == date(2026, 7, 5)
+    assert r.annual_amount == Decimal("155.88")
 
 
 def test_recurring_pattern_update_schema() -> None:

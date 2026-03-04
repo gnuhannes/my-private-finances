@@ -37,9 +37,10 @@ export function RecurringPatternsTable({
           <tr>
             <th>{t("recurringTable.tablePayee")}</th>
             <th className={styles.right}>{t("recurringTable.tableAmount")}</th>
+            <th className={styles.right}>{t("recurringTable.tableAnnual")}</th>
             <th>{t("recurringTable.tableFrequency")}</th>
             <th>{t("recurringTable.tableConfidence")}</th>
-            <th>{t("recurringTable.tableLastSeen")}</th>
+            <th>{t("recurringTable.tableNextDue")}</th>
             <th>{t("recurringTable.tableCount")}</th>
             {(onToggleActive || onToggleConfirmed) && <th>{t("recurringTable.tableActions")}</th>}
           </tr>
@@ -49,6 +50,9 @@ export function RecurringPatternsTable({
             <tr key={p.id} className={!p.is_active ? styles.inactive : undefined}>
               <td>{p.payee}</td>
               <td className={styles.right}>{formatAmount(p.typical_amount)}</td>
+              <td className={`${styles.right} ${styles.annualAmount}`}>
+                {formatAmount(p.annual_amount)}
+              </td>
               <td>{frequencyLabel(p.frequency)}</td>
               <td>
                 <span
@@ -63,7 +67,10 @@ export function RecurringPatternsTable({
                   {confidenceLabel(p.confidence)}
                 </span>
               </td>
-              <td>{p.last_seen}</td>
+              <td className={`${styles.nextDue} ${p.is_overdue ? styles.overdue : ""}`}>
+                {p.next_due}
+                {p.is_overdue && ` ${t("recurringTable.overdue")}`}
+              </td>
               <td>{p.occurrence_count}</td>
               {(onToggleActive || onToggleConfirmed) && (
                 <td>

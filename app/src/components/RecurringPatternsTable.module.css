@@ -82,3 +82,19 @@
   color: var(--color-success, #28a745);
   font-weight: 500;
 }
+
+.nextDue {
+  white-space: nowrap;
+  font-size: 0.9rem;
+}
+
+.overdue {
+  color: var(--color-danger, #dc3545);
+  font-weight: 600;
+}
+
+.annualAmount {
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-muted, #666);
+  font-size: 0.9rem;
+}

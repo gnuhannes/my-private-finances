@@ -14,6 +14,7 @@ from my_private_finances.services.csv_import import (
     import_transactions_from_csv_path,
 )
 from my_private_finances.services.pdf_import import import_transactions_from_pdf_path
+from my_private_finances.services.recurring_detection import run_detection
 
 router = APIRouter(prefix="/imports", tags=["imports"])
 
@@ -88,6 +89,16 @@ async def import_csv(
     finally:
         tmp_path.unlink(missing_ok=True)
 
+    if result.created > 0:
+        try:
+            await run_detection(session, account_id)
+        except Exception:
+            logger.warning(
+                "Auto recurring-detection failed after CSV import for account_id=%d",
+                account_id,
+                exc_info=True,
+            )
+
     return ImportResultResponse(
         total_rows=result.total_rows,
         created=result.created,
@@ -129,6 +140,16 @@ async def import_pdf(
         raise HTTPException(status_code=400, detail=msg) from e
     finally:
         tmp_path.unlink(missing_ok=True)
+
+    if result.created > 0:
+        try:
+            await run_detection(session, account_id)
+        except Exception:
+            logger.warning(
+                "Auto recurring-detection failed after PDF import for account_id=%d",
+                account_id,
+                exc_info=True,
+            )
 
     return ImportResultResponse(
         total_rows=result.total_rows,
