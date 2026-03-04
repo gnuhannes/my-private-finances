@@ -16,7 +16,7 @@ Iteration-by-iteration product specs for My Private Finances.
 | [070](070-transaction-search.md) | Transaction Search | ✅ Complete |
 | [080](080-ml-category-suggestions.md) | ML Category Suggestions | ✅ Complete |
 | [110](110-desktop-app.md) | Desktop App (Tauri + PyInstaller) | 🔜 Planned |
-| [120](120-watch-folder.md) | Watch Folder (Auto-Import) | 🔜 Planned |
+| [120](120-watch-folder.md) | Watch Folder (Auto-Import) | ✅ Complete |
 | [130](130-pwa-lan-access.md) | PWA + LAN Mobile Access | 💡 Mid-term |
 | [140](140-data-sync.md) | Data Sync (Syncthing) | 💡 Mid-term |
 | [150](150-android-app.md) | Android App (Capacitor) | 💡 Long-term |
