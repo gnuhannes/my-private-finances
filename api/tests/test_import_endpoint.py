@@ -128,6 +128,20 @@ async def test_import_csv_missing_account_id_returns_422(
 
 
 @pytest.mark.asyncio
+async def test_import_csv_nonexistent_profile_returns_404(
+    test_app: AsyncClient,
+) -> None:
+    acc = await create_account(test_app)
+
+    resp = await test_app.post(
+        f"{API_PREFIX}/imports/csv",
+        params={"account_id": acc["id"], "profile_id": 99999},
+        files={"file": ("import.csv", VALID_CSV, "text/csv")},
+    )
+    assert resp.status_code == 404, resp.text
+
+
+@pytest.mark.asyncio
 async def test_import_csv_missing_file_returns_422(test_app: AsyncClient) -> None:
     acc = await create_account(test_app)
     account_id = acc["id"]

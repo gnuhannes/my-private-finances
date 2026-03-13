@@ -8,7 +8,7 @@ from fpdf import FPDF
 from httpx import AsyncClient
 
 from my_private_finances.services.pdf_import import import_transactions_from_pdf_path
-from tests.helpers import create_account
+from tests.helpers import create_account, create_category, create_rule
 
 API_PREFIX = "/api"
 
@@ -234,3 +234,133 @@ async def test_pdf_import_endpoint_missing_account_id_returns_422(
         )
 
     assert resp.status_code == 422, resp.text
+
+
+# ---------------------------------------------------------------------------
+# Additional service-level edge-case tests
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_pdf_import_no_trade_republic_header_raises(
+    test_app: AsyncClient,
+    tmp_path: Path,
+) -> None:
+    """A PDF with no recognisable table header raises ValueError."""
+    acc = await create_account(test_app)
+
+    # Build a PDF with arbitrary content but no Trade Republic header row
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Helvetica", size=10)
+    pdf.cell(0, 10, "This is not a bank statement")
+    pdf_path = tmp_path / "no_header.pdf"
+    pdf.output(str(pdf_path))
+
+    session_factory = test_app._transport.app.state.session_factory  # type: ignore[attr-defined]
+    async with session_factory() as session:
+        with pytest.raises(ValueError, match="No Trade Republic table header"):
+            await import_transactions_from_pdf_path(
+                session=session,
+                account_id=acc["id"],
+                pdf_path=pdf_path,
+            )
+
+
+@pytest.mark.asyncio
+async def test_pdf_import_row_with_no_amount_counted_as_failed(
+    test_app: AsyncClient,
+    tmp_path: Path,
+) -> None:
+    """A row where both Zahlungseingang and Zahlungsausgang are empty counts as failed."""
+    acc = await create_account(test_app)
+
+    rows = [
+        ("25.01.2026", "Einlage", "Good row", "100,00", "", "100,00"),
+        (
+            "26.01.2026",
+            "Unbekannt",
+            "No amount",
+            "",
+            "",
+            "0,00",
+        ),  # both amount cols empty
+    ]
+    pdf_path = tmp_path / "no_amount.pdf"
+    _make_tr_pdf(rows, pdf_path)
+
+    session_factory = test_app._transport.app.state.session_factory  # type: ignore[attr-defined]
+    async with session_factory() as session:
+        result = await import_transactions_from_pdf_path(
+            session=session,
+            account_id=acc["id"],
+            pdf_path=pdf_path,
+        )
+
+    assert result.total_rows == 2
+    assert result.created == 1
+    assert result.failed == 1
+    assert len(result.errors) == 1
+
+
+@pytest.mark.asyncio
+async def test_pdf_import_empty_row_skipped(
+    test_app: AsyncClient,
+    tmp_path: Path,
+) -> None:
+    """Completely empty rows (e.g. page-break artifacts) are not counted."""
+    acc = await create_account(test_app)
+
+    rows = [
+        ("27.01.2026", "Einlage", "Real row", "50,00", "", "50,00"),
+        ("", "", "", "", "", ""),  # empty row — should be skipped
+    ]
+    pdf_path = tmp_path / "with_empty_row.pdf"
+    _make_tr_pdf(rows, pdf_path)
+
+    session_factory = test_app._transport.app.state.session_factory  # type: ignore[attr-defined]
+    async with session_factory() as session:
+        result = await import_transactions_from_pdf_path(
+            session=session,
+            account_id=acc["id"],
+            pdf_path=pdf_path,
+        )
+
+    assert result.total_rows == 1
+    assert result.created == 1
+    assert result.failed == 0
+
+
+@pytest.mark.asyncio
+async def test_pdf_import_applies_categorization_rule(
+    test_app: AsyncClient,
+    tmp_path: Path,
+) -> None:
+    """Transactions matching a rule get category_id set during PDF import."""
+    acc = await create_account(test_app)
+    cat = await create_category(test_app, name="Income")
+    await create_rule(
+        test_app,
+        field="payee",
+        operator="contains",
+        value="Einlage",
+        category_id=cat["id"],
+    )
+
+    rows = [("28.01.2026", "Einlage", "Salary", "2000,00", "", "2000,00")]
+    pdf_path = tmp_path / "with_rule.pdf"
+    _make_tr_pdf(rows, pdf_path)
+
+    session_factory = test_app._transport.app.state.session_factory  # type: ignore[attr-defined]
+    async with session_factory() as session:
+        result = await import_transactions_from_pdf_path(
+            session=session,
+            account_id=acc["id"],
+            pdf_path=pdf_path,
+        )
+
+    assert result.created == 1
+
+    txn_resp = await test_app.get("/api/transactions", params={"account_id": acc["id"]})
+    item = txn_resp.json()["items"][0]
+    assert item["category_id"] == cat["id"]
