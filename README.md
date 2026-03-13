@@ -23,39 +23,55 @@ All processing happens locally.
 ## Repository Structure:
 
 This repository is a monorepo:
-- api/ Python backend (FastAPI, Poetry, local SQLite)
-- app/ Frontend (React, Vite, pnpm)
-- docs/ Architecture decisions and develop
+- `api/` — Python backend (FastAPI, Poetry, local SQLite)
+- `app/` — Frontend (React, Vite, pnpm)
+- `docs/` — Architecture decisions and development documentation
 
 Each subproject is developed and run independently.
 
 ***
 
-## Quickstart
+## Prerequisites
 
-Backend (API):
+| Tool | Version | Purpose |
+|------|---------|---------|
+| Python | 3.11+ | Backend runtime |
+| [Poetry](https://python-poetry.org/) | latest | Backend dependency management |
+| Node.js | 20 LTS | Frontend runtime |
+| [pnpm](https://pnpm.io/) | latest | Frontend package manager |
+| make | any | Run project tasks |
 
-```bash
-cd api
-poetry install
-poetry run uvicorn my_private_finances.main:app --reload --port 5179
-```
-
-The API will be available at:
-http://127.0.0.1:5179
+A `.nvmrc` file is provided for [nvm](https://github.com/nvm-sh/nvm) users. Install pnpm via [Corepack](https://nodejs.org/api/corepack.html): `corepack enable && corepack prepare pnpm@latest --activate`.
 
 ***
 
-Frontend (UI):
+## Quickstart
+
+Install all dependencies:
 
 ```bash
-cd app
-pnpm install
-pnpm dev
+make sync
 ```
 
-The frontend will be available at:
-http://localhost:5173
+Apply database migrations:
+
+```bash
+make migrate
+```
+
+Start the backend (port 5179):
+
+```bash
+make -C api run
+```
+
+Start the frontend (port 5173, proxies `/api` to backend):
+
+```bash
+make -C app run
+```
+
+The UI will be available at http://localhost:5173 and the API at http://127.0.0.1:5179.
 
 ***
 
@@ -74,9 +90,8 @@ this behavior.
 
 ## Development Setup
 See the following documents for details:
-- [docs/dev-setup.md](docs/dev-setup.md)
-- [docs/adr/0001-python-environment-and-ide-setup.md](docs/adr/0001-python-environment-and-ide-setup.md)
-- [CONTRIBUTING.md](CONTRIBUTING.md)
+- [docs/adr/0001-python-environment-and-ide-setup.md](docs/adr/0001-python-environment-and-ide-setup.md) — IDE and virtualenv setup
+- [CONTRIBUTING.md](CONTRIBUTING.md) — full contributor guide with CI commands
 
 ***
 

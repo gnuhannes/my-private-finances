@@ -43,15 +43,24 @@ poetry install
 Run the API locally:
 
 ```bash
-poetry run uvicorn my_private_finances_api.main:app --reload
+poetry run uvicorn my_private_finances.main:app --reload --port 5179
 ```
 
 Run checks:
 
 ```bash
 poetry run ruff check .
-poetry run mypy my_private_finances_api
+poetry run mypy my_private_finances
 poetry run pytest
+```
+
+Or use the Makefile targets from the repo root:
+
+```bash
+make lint        # ruff
+make typecheck   # mypy
+make test        # pytest
+make ci          # all backend + frontend checks
 ```
 
 ***
