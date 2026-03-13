@@ -1,0 +1,171 @@
+.container {
+  position: relative;
+  display: inline-block;
+  width: 100%;
+}
+
+/* Trigger */
+.trigger {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  text-align: left;
+  padding: 8px 10px;
+}
+
+.sm .trigger {
+  padding: 4px 6px;
+  font-size: 0.85rem;
+}
+
+.trigger[aria-expanded="true"] {
+  border-color: var(--primary);
+}
+
+.valueText {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.placeholder {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text-muted);
+}
+
+.suggestionBadge {
+  flex-shrink: 0;
+  font-size: 0.72em;
+  font-weight: 600;
+  background: var(--primary-subtle);
+  color: var(--primary);
+  border-radius: 4px;
+  padding: 1px 5px;
+}
+
+.chevron {
+  flex-shrink: 0;
+  font-size: 0.7em;
+  color: var(--text-muted);
+}
+
+/* Dropdown panel */
+.dropdown {
+  position: absolute;
+  top: calc(100% + 3px);
+  left: 0;
+  width: 100%;
+  min-width: 200px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow);
+  z-index: 200;
+  display: flex;
+  flex-direction: column;
+  max-height: 300px;
+}
+
+.searchWrap {
+  padding: 7px 8px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.searchInput {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 5px 8px;
+  font-size: 0.88rem;
+}
+
+.list {
+  overflow-y: auto;
+  flex: 1;
+  padding: 3px 0;
+}
+
+.groupLabel {
+  padding: 5px 12px 2px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+}
+
+.divider {
+  height: 1px;
+  background: var(--border);
+  margin: 3px 0;
+}
+
+/* Option items */
+.item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 6px 12px;
+  border-radius: 0;
+  border: none;
+  background: none;
+  font-size: 0.9rem;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.item:hover {
+  background: var(--primary-subtle);
+  border-color: transparent;
+}
+
+.active {
+  background: var(--primary-subtle);
+  color: var(--primary);
+  font-weight: 500;
+}
+
+.focused {
+  background: var(--border);
+  outline: none;
+}
+
+.focused.active {
+  background: var(--primary-subtle);
+  outline: 2px solid var(--primary);
+  outline-offset: -2px;
+}
+
+.parent {
+  font-weight: 500;
+}
+
+/* Confidence badge inside suggested item */
+.confBadge {
+  float: right;
+  font-size: 0.72em;
+  font-weight: 600;
+  background: var(--primary-subtle);
+  color: var(--primary);
+  border-radius: 4px;
+  padding: 1px 5px;
+  margin-left: 6px;
+  margin-top: 1px;
+}
+
+.empty {
+  margin: 0;
+  padding: 8px 12px;
+  color: var(--text-muted);
+  font-size: 0.88rem;
+  text-align: center;
+}

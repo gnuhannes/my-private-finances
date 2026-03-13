@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useLocalStorage } from "../hooks/useLocalStorage";
 import { useAccounts } from "../hooks/useAccounts";
 import { useCategories } from "../hooks/useCategories";
 import { useTransactions } from "../hooks/useTransactions";
 import { useUpdateTransactionCategory } from "../hooks/useUpdateTransactionCategory";
+import { useSuggestions } from "../hooks/useMl";
 import { TransactionTable } from "../components/TransactionTable";
 import { Pagination } from "../components/Pagination";
 import styles from "./Transactions.module.css";
@@ -41,6 +42,15 @@ export default function Transactions() {
   });
 
   const updateCategory = useUpdateTransactionCategory();
+  const { data: suggestionsData } = useSuggestions();
+
+  const suggestions = useMemo(() => {
+    const map = new Map<number, { categoryId: number; confidence: number }>();
+    for (const s of suggestionsData ?? []) {
+      map.set(s.transaction_id, { categoryId: s.category_id, confidence: s.confidence });
+    }
+    return map;
+  }, [suggestionsData]);
 
   const total = txQuery.data?.total ?? 0;
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
@@ -179,6 +189,7 @@ export default function Transactions() {
             onCategoryChange={(transactionId, categoryId) => {
               updateCategory.mutate({ id: transactionId, categoryId });
             }}
+            suggestions={suggestions}
           />
           <Pagination
             page={page}

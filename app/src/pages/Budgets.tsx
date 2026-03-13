@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useBudgets } from "../hooks/useBudgets";
 import { useCategories } from "../hooks/useCategories";
+import { CategorySelect } from "../components/CategorySelect";
 import { createBudget, updateBudget, deleteBudget, type Budget } from "../lib/api/budgets";
 import styles from "./Budgets.module.css";
 
@@ -81,20 +82,12 @@ export default function Budgets() {
       <form className={styles.addForm} onSubmit={handleAdd}>
         <div className={styles.field}>
           <label>{t("common.category")}</label>
-          <select
-            value={newCategoryId ?? ""}
-            onChange={(e) =>
-              setNewCategoryId(e.target.value === "" ? null : Number(e.target.value))
-            }
-            required
-          >
-            <option value="">{t("budgets.selectCategory")}</option>
-            {availableCategories.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.name}
-              </option>
-            ))}
-          </select>
+          <CategorySelect
+            categories={availableCategories}
+            value={newCategoryId}
+            onChange={setNewCategoryId}
+            placeholder={t("budgets.selectCategory")}
+          />
         </div>
         <div className={styles.field}>
           <label>{t("budgets.monthlyLimit")}</label>

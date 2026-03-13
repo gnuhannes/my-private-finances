@@ -9,6 +9,7 @@ import {
   type Category,
   type CostType,
 } from "../lib/api/categories";
+import { CategorySelect } from "../components/CategorySelect";
 import styles from "./Categories.module.css";
 
 export default function Categories() {
@@ -123,17 +124,14 @@ export default function Categories() {
         </div>
         <div className={styles.field}>
           <label>{t("categories.parent")}</label>
-          <select
-            value={newParentId ?? ""}
-            onChange={(e) => setNewParentId(e.target.value === "" ? null : Number(e.target.value))}
-          >
-            <option value="">{t("categories.none")}</option>
-            {categories?.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.name}
-              </option>
-            ))}
-          </select>
+          <CategorySelect
+            categories={categories ?? []}
+            value={newParentId}
+            onChange={setNewParentId}
+            allowEmpty
+            emptyLabel={t("categories.none")}
+            placeholder={t("categories.none")}
+          />
         </div>
         <div className={styles.field}>
           <label>{t("categories.costType")}</label>

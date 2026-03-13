@@ -313,6 +313,12 @@
     "failed": "Failed",
     "errors": "Errors:"
   },
+  "categorySelect": {
+    "placeholder": "Select…",
+    "search": "Search…",
+    "noResults": "No results",
+    "suggested": "Suggested"
+  },
   "transactionTable": {
     "noTransactions": "No transactions found.",
     "tableDate": "Date",

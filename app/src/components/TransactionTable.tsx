@@ -1,6 +1,7 @@
 import { useTranslation } from "react-i18next";
 import type { TransactionItem } from "../lib/api";
 import type { Category } from "../lib/api/categories";
+import { CategorySelect, type CategorySuggestion } from "./CategorySelect";
 import { formatMoneyString } from "../utils/money";
 import styles from "./TransactionTable.module.css";
 
@@ -9,9 +10,16 @@ type Props = {
   currency: string;
   categories: Category[];
   onCategoryChange: (transactionId: number, categoryId: number | null) => void;
+  suggestions?: Map<number, CategorySuggestion>;
 };
 
-export function TransactionTable({ items, currency, categories, onCategoryChange }: Props) {
+export function TransactionTable({
+  items,
+  currency,
+  categories,
+  onCategoryChange,
+  suggestions,
+}: Props) {
   const { t } = useTranslation();
 
   if (items.length === 0) {
@@ -37,21 +45,14 @@ export function TransactionTable({ items, currency, categories, onCategoryChange
               <td>{tx.payee ?? ""}</td>
               <td>{tx.purpose ?? ""}</td>
               <td>
-                <select
-                  className={styles.categorySelect}
-                  value={tx.category_id ?? ""}
-                  onChange={(e) => {
-                    const val = e.target.value;
-                    onCategoryChange(tx.id, val === "" ? null : Number(val));
-                  }}
-                >
-                  <option value="">—</option>
-                  {categories.map((cat) => (
-                    <option key={cat.id} value={cat.id}>
-                      {cat.name}
-                    </option>
-                  ))}
-                </select>
+                <CategorySelect
+                  categories={categories}
+                  value={tx.category_id ?? null}
+                  onChange={(categoryId) => onCategoryChange(tx.id, categoryId)}
+                  allowEmpty
+                  suggestion={suggestions?.get(tx.id)}
+                  size="sm"
+                />
               </td>
               <td className={styles.amount}>{formatMoneyString(tx.amount, currency)}</td>
             </tr>

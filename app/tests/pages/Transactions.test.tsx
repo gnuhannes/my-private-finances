@@ -25,6 +25,10 @@ vi.mock("../../src/hooks/useUpdateTransactionCategory", () => ({
   }),
 }));
 
+vi.mock("../../src/hooks/useMl", () => ({
+  useSuggestions: () => ({ data: undefined }),
+}));
+
 vi.mock("../../src/hooks/useTransactions", () => ({
   useTransactions: () => ({
     isLoading: false,

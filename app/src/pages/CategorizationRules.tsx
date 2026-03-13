@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useCategorizationRules } from "../hooks/useCategorizationRules";
 import { useCategories } from "../hooks/useCategories";
+import { CategorySelect } from "../components/CategorySelect";
 import {
   createRule,
   deleteRule,
@@ -162,18 +163,12 @@ export default function CategorizationRules() {
         </div>
         <div className={styles.field}>
           <label>{t("common.category")}</label>
-          <select
-            value={categoryId ?? ""}
-            onChange={(e) => setCategoryId(e.target.value === "" ? null : Number(e.target.value))}
-            required
-          >
-            <option value="">{t("rules.selectCategory")}</option>
-            {categories?.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.name}
-              </option>
-            ))}
-          </select>
+          <CategorySelect
+            categories={categories ?? []}
+            value={categoryId}
+            onChange={setCategoryId}
+            placeholder={t("rules.selectCategory")}
+          />
         </div>
         <button type="submit" disabled={addMutation.isPending}>
           {t("rules.addRule")}

@@ -21,6 +21,40 @@
   font-size: 0.85rem;
   color: var(--color-text-muted, #666);
   background: var(--color-surface-alt, #fafafa);
+  padding: 0;
+}
+
+.sortBtn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  background: none;
+  border: none;
+  border-radius: 0;
+  font-size: inherit;
+  font-weight: 600;
+  color: var(--color-text-muted, #666);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.sortBtn:hover {
+  color: var(--text);
+  background: var(--primary-subtle);
+  border-color: transparent;
+}
+
+.sortIndicator {
+  font-size: 0.7em;
+  opacity: 0.5;
+  flex-shrink: 0;
+}
+
+.sortBtn:hover .sortIndicator,
+.sortBtn:focus-visible .sortIndicator {
+  opacity: 0.8;
 }
 
 .table tbody tr:last-child td {
