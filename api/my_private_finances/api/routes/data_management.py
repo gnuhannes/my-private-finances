@@ -25,11 +25,14 @@ router = APIRouter(tags=["data"])
 logger = logging.getLogger(__name__)
 
 _SQLITE_MAGIC = b"SQLite format 3\x00"
+_MAX_RESTORE_BYTES = 500 * 1024 * 1024  # 500 MB
 
 
 @router.post("/restore/sqlite", status_code=200)
 async def restore_sqlite(file: UploadFile, request: Request) -> dict:
     data = await file.read()
+    if len(data) > _MAX_RESTORE_BYTES:
+        raise HTTPException(status_code=413, detail="File too large (max 500 MB)")
     if data[:16] != _SQLITE_MAGIC:
         raise HTTPException(status_code=400, detail="Not a valid SQLite file")
 

@@ -7,7 +7,7 @@ from typing import Annotated, Any, Optional
 from sqlalchemy import func, or_, select
 from sqlalchemy.exc import IntegrityError
 
-from my_private_finances.models import Transaction, Account, Category
+from my_private_finances.models import Transaction, Category
 from my_private_finances.schemas import (
     TransactionRead,
     TransactionCreate,
@@ -17,6 +17,7 @@ from my_private_finances.schemas import (
 
 from my_private_finances.deps import SessionDep
 from my_private_finances.services.transaction_hash import compute_import_hash, HashInput
+from my_private_finances.utils.db_helpers import get_account_or_404
 
 router = APIRouter(prefix="/transactions", tags=["transactions"])
 
@@ -26,11 +27,7 @@ async def create_transaction(
     tx: TransactionCreate,
     session: SessionDep,
 ) -> TransactionRead:
-    res = await session.execute(
-        select(Account).where(Account.id == tx.account_id)  # type: ignore[arg-type]
-    )
-    if res.scalar_one_or_none() is None:
-        raise HTTPException(status_code=404, detail="Account not found")
+    await get_account_or_404(session, tx.account_id)
 
     import_hash = compute_import_hash(
         HashInput(

@@ -66,11 +66,11 @@ async def import_csv(
         decimal_comma if decimal_comma is not None else profile_decimal_comma
     )
 
-    with tempfile.NamedTemporaryFile(suffix=".csv", delete=False) as tmp:
-        tmp.write(content)
-        tmp_path = Path(tmp.name)
-
+    tmp_path: Path | None = None
     try:
+        with tempfile.NamedTemporaryFile(suffix=".csv", delete=False) as tmp:
+            tmp.write(content)
+            tmp_path = Path(tmp.name)
         result = await import_transactions_from_csv_path(
             session=session,
             account_id=account_id,
@@ -87,7 +87,8 @@ async def import_csv(
             raise HTTPException(status_code=404, detail=msg) from e
         raise HTTPException(status_code=400, detail=msg) from e
     finally:
-        tmp_path.unlink(missing_ok=True)
+        if tmp_path is not None:
+            tmp_path.unlink(missing_ok=True)
 
     if result.created > 0:
         try:
@@ -122,15 +123,15 @@ async def import_pdf(
         len(content),
     )
 
-    with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as tmp:
-        tmp.write(content)
-        tmp_path = Path(tmp.name)
-
+    pdf_tmp_path: Path | None = None
     try:
+        with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as tmp:
+            tmp.write(content)
+            pdf_tmp_path = Path(tmp.name)
         result = await import_transactions_from_pdf_path(
             session=session,
             account_id=account_id,
-            pdf_path=tmp_path,
+            pdf_path=pdf_tmp_path,
         )
     except ValueError as e:
         msg = str(e)
@@ -139,7 +140,8 @@ async def import_pdf(
             raise HTTPException(status_code=404, detail=msg) from e
         raise HTTPException(status_code=400, detail=msg) from e
     finally:
-        tmp_path.unlink(missing_ok=True)
+        if pdf_tmp_path is not None:
+            pdf_tmp_path.unlink(missing_ok=True)
 
     if result.created > 0:
         try:

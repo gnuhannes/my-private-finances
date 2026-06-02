@@ -1,3 +1,5 @@
+export const EMPTY_CELL = "—";
+
 export function formatCurrency(value: number, currency: string): string {
   return new Intl.NumberFormat(undefined, {
     style: "currency",

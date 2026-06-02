@@ -2,7 +2,7 @@ import { useTranslation } from "react-i18next";
 import type { TransactionItem } from "../lib/api";
 import type { Category } from "../lib/api/categories";
 import { CategorySelect, type CategorySuggestion } from "./CategorySelect";
-import { formatMoneyString } from "../utils/money";
+import { formatMoneyString, EMPTY_CELL } from "../utils/money";
 import styles from "./TransactionTable.module.css";
 
 type Props = {
@@ -42,8 +42,8 @@ export function TransactionTable({
           {items.map((tx) => (
             <tr key={tx.id}>
               <td>{tx.booking_date}</td>
-              <td>{tx.payee ?? ""}</td>
-              <td>{tx.purpose ?? ""}</td>
+              <td>{tx.payee ?? EMPTY_CELL}</td>
+              <td>{tx.purpose ?? EMPTY_CELL}</td>
               <td>
                 <CategorySelect
                   categories={categories}

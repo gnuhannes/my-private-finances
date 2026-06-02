@@ -7,7 +7,6 @@ from pathlib import Path
 
 import pdfplumber
 from sqlalchemy import select
-from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from my_private_finances.models import Account, Transaction
@@ -117,6 +116,10 @@ async def import_transactions_from_pdf_path(
     failed = 0
     errors: list[str] = []
 
+    # Phase 1: parse all rows into Transaction objects; count parse errors
+    pending: list[Transaction] = []
+    seen_hashes: set[str] = set()
+
     for idx, row in enumerate(rows, start=1):
         # Skip completely empty rows (page breaks, footers, etc.)
         if all(c == "" for c in row):
@@ -162,6 +165,12 @@ async def import_transactions_from_pdf_path(
                 )
             )
 
+            if import_hash in seen_hashes:
+                duplicates += 1
+                logger.debug("Row %d: within-file duplicate, skipped", idx)
+                continue
+            seen_hashes.add(import_hash)
+
             db_obj = Transaction(
                 account_id=account_id,
                 booking_date=booking_date,
@@ -180,16 +189,7 @@ async def import_transactions_from_pdf_path(
                 if matched_cat is not None:
                     db_obj.category_id = matched_cat
 
-            session.add(db_obj)
-            try:
-                await session.commit()
-            except IntegrityError:
-                await session.rollback()
-                duplicates += 1
-                logger.debug("Row %d: duplicate, skipped", idx)
-                continue
-
-            created += 1
+            pending.append(db_obj)
 
         except (ValueError, InvalidOperation, IndexError) as e:
             failed += 1
@@ -197,6 +197,26 @@ async def import_transactions_from_pdf_path(
             logger.warning(msg)
             if len(errors) < max_errors:
                 errors.append(msg)
+
+    # Phase 2: filter out rows already in DB, then batch-insert the rest
+    if pending:
+        pending_hashes = {tx.import_hash for tx in pending}
+        existing_result = await session.execute(
+            select(Transaction.import_hash).where(  # type: ignore[call-overload]
+                Transaction.account_id == account_id,  # type: ignore[arg-type]
+                Transaction.import_hash.in_(pending_hashes),  # type: ignore[attr-defined]
+            )
+        )
+        existing_hashes = {row[0] for row in existing_result}
+        duplicates += len(existing_hashes)
+
+        new_transactions = [
+            tx for tx in pending if tx.import_hash not in existing_hashes
+        ]
+        if new_transactions:
+            session.add_all(new_transactions)
+            await session.commit()
+        created = len(new_transactions)
 
     logger.info(
         "PDF import complete: account_id=%d, total=%d, created=%d, duplicates=%d, failed=%d",

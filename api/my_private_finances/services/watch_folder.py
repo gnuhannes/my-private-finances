@@ -44,8 +44,16 @@ async def _process_file(
     """Import a single watched file into the database."""
     subfolder_name = path.parent.name
     watch_root = path.parent.parent  # e.g. data/watch
-    processed_dir = watch_root.parent / "processed" / date.today().isoformat()
-    failed_dir = watch_root.parent / "failed"
+    data_root = watch_root.parent
+    processed_dir = data_root / "processed" / date.today().isoformat()
+    failed_dir = data_root / "failed"
+
+    # Guard against path traversal: resolved path must stay within data_root
+    try:
+        path.resolve().relative_to(data_root.resolve())
+    except ValueError:
+        logger.error("Rejected file outside watch root: %s", path)
+        return
 
     async with session_factory() as session:
         db_result = await session.execute(

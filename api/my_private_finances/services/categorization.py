@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import logging
 from decimal import Decimal, InvalidOperation
+from typing import Callable
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
@@ -9,6 +10,21 @@ from sqlmodel import select
 from my_private_finances.models import CategorizationRule, Transaction
 
 logger = logging.getLogger(__name__)
+
+_TEXT_OPS: dict[str, Callable[[str, str], bool]] = {
+    "contains": lambda t, v: v.lower() in t.lower(),
+    "exact": lambda t, v: t.lower() == v.lower(),
+    "starts_with": lambda t, v: t.lower().startswith(v.lower()),
+    "ends_with": lambda t, v: t.lower().endswith(v.lower()),
+}
+
+_AMOUNT_OPS: dict[str, Callable[[Decimal, Decimal], bool]] = {
+    "eq": lambda a, t: a == t,
+    "gt": lambda a, t: a > t,
+    "lt": lambda a, t: a < t,
+    "gte": lambda a, t: a >= t,
+    "lte": lambda a, t: a <= t,
+}
 
 
 def match_transaction(tx: Transaction, rules: list[CategorizationRule]) -> int | None:
@@ -41,17 +57,11 @@ def _get_text_field(tx: Transaction, field: str) -> str | None:
 
 
 def _match_text(text: str, operator: str, value: str) -> bool:
-    t = text.lower()
-    v = value.lower()
-    if operator == "contains":
-        return v in t
-    if operator == "exact":
-        return t == v
-    if operator == "starts_with":
-        return t.startswith(v)
-    if operator == "ends_with":
-        return t.endswith(v)
-    return False
+    op = _TEXT_OPS.get(operator)
+    if op is None:
+        logger.warning("Unknown text operator: %r", operator)
+        return False
+    return op(text, value)
 
 
 def _match_amount(amount: Decimal, operator: str, value: str) -> bool:
@@ -59,18 +69,11 @@ def _match_amount(amount: Decimal, operator: str, value: str) -> bool:
         threshold = Decimal(value)
     except InvalidOperation:
         return False
-
-    if operator == "eq":
-        return amount == threshold
-    if operator == "gt":
-        return amount > threshold
-    if operator == "lt":
-        return amount < threshold
-    if operator == "gte":
-        return amount >= threshold
-    if operator == "lte":
-        return amount <= threshold
-    return False
+    op = _AMOUNT_OPS.get(operator)
+    if op is None:
+        logger.warning("Unknown amount operator: %r", operator)
+        return False
+    return op(amount, threshold)
 
 
 async def load_rules_ordered(session: AsyncSession) -> list[CategorizationRule]:
