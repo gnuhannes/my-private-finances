@@ -7,6 +7,7 @@ import { useBudgetVsActual } from "../hooks/useBudgetVsActual";
 import { useFixedVsVariable } from "../hooks/useFixedVsVariable";
 import { useRecurringSummary } from "../hooks/useRecurringPatterns";
 import { formatMoneyString, formatCurrency } from "../utils/money";
+import { lastNMonths } from "../utils/dates";
 import { KpiCard } from "../components/KpiCard";
 import { TopPayeesBarChart } from "../components/TopPayeesBarChart";
 import { CategoryBreakdownChart } from "../components/CategoryBreakdownChart";
@@ -14,22 +15,6 @@ import { TopSpendingsTable } from "../components/TopSpendingsTable";
 import { BudgetVsActualTable } from "../components/BudgetVsActualTable";
 import { mapTopPayeesForChart, mapCategoryBreakdownForChart } from "../domain/reports";
 import styles from "./Dashboard.module.css";
-
-function monthKey(d: Date): string {
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  return `${y}-${m}`;
-}
-
-function lastNMonths(n: number): string[] {
-  const out: string[] = [];
-  const now = new Date();
-  for (let i = 0; i < n; i++) {
-    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-    out.push(monthKey(d));
-  }
-  return out;
-}
 
 export default function Dashboard() {
   const { t } = useTranslation();

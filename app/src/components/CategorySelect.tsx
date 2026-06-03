@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import type { Category } from "../lib/api/categories";
 import styles from "./CategorySelect.module.css";
@@ -48,10 +48,7 @@ function buildTree(categories: Category[]): TreeNode[] {
   return buildNodes(treeRoots, 0);
 }
 
-function filterTree(
-  nodes: TreeNode[],
-  matches: (c: Category) => boolean,
-): TreeNode[] {
+function filterTree(nodes: TreeNode[], matches: (c: Category) => boolean): TreeNode[] {
   return nodes.flatMap((node) => {
     if (matches(node.cat)) {
       return [node]; // parent matches: keep entire subtree intact
@@ -114,17 +111,25 @@ export function CategorySelect({
       ?.scrollIntoView({ block: "nearest" });
   }, [focusedIndex]);
 
-  const selectedCat = value !== null ? categories.find((c) => c.id === value) : null;
-  const suggestedCat = suggestion ? categories.find((c) => c.id === suggestion.categoryId) : null;
+  const selectedCat = useMemo(
+    () => (value !== null ? (categories.find((c) => c.id === value) ?? null) : null),
+    [categories, value],
+  );
+  const suggestedCat = useMemo(
+    () => (suggestion ? (categories.find((c) => c.id === suggestion.categoryId) ?? null) : null),
+    [categories, suggestion],
+  );
 
   const q = search.trim().toLowerCase();
-  const matches = (c: Category) => q === "" || c.name.toLowerCase().includes(q);
+  const tree = useMemo(() => buildTree(categories), [categories]);
+  const filteredTree = useMemo(
+    () => (q === "" ? tree : filterTree(tree, (c) => c.name.toLowerCase().includes(q))),
+    [tree, q],
+  );
+  const flat = useMemo(() => flattenTree(filteredTree), [filteredTree]);
 
-  const tree = buildTree(categories);
-  const filteredTree = q === "" ? tree : filterTree(tree, matches);
-  const flat = flattenTree(filteredTree);
-
-  const showSuggestion = !!suggestedCat && (q === "" || matches(suggestedCat));
+  const showSuggestion =
+    !!suggestedCat && (q === "" || suggestedCat.name.toLowerCase().includes(q));
   const hasResults = flat.length > 0;
 
   // Flat ordered list of selectable option IDs, mirroring render order

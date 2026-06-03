@@ -1,5 +1,6 @@
 import { useTranslation } from "react-i18next";
 import type { TopSpending } from "../lib/api/reports";
+import { EMPTY_CELL } from "../utils/money";
 import styles from "./TopSpendingsTable.module.css";
 
 type Props = {
@@ -29,10 +30,10 @@ export function TopSpendingsTable({ items, formatAmount }: Props) {
             <tr key={`${item.booking_date}-${item.amount}-${i}`}>
               <td className={styles.rank}>{i + 1}</td>
               <td>{item.booking_date}</td>
-              <td>{item.payee ?? ""}</td>
-              <td>{item.purpose ?? ""}</td>
+              <td>{item.payee ?? EMPTY_CELL}</td>
+              <td>{item.purpose ?? EMPTY_CELL}</td>
               <td className={item.category_name ? undefined : styles.muted}>
-                {item.category_name ?? "—"}
+                {item.category_name ?? EMPTY_CELL}
               </td>
               <td className={styles.amount}>{formatAmount(item.amount)}</td>
             </tr>

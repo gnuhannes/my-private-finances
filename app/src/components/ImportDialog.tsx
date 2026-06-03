@@ -258,7 +258,10 @@ export function ImportDialog({ open, onClose }: Props) {
 
           {mutation.isError && (
             <div className={styles.error}>
-              {t("importDialog.failedImport", { error: (mutation.error as Error).message })}
+              {t("importDialog.failedImport", {
+                error:
+                  mutation.error instanceof Error ? mutation.error.message : String(mutation.error),
+              })}
             </div>
           )}
 

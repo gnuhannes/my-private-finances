@@ -3,16 +3,14 @@ import { useLocalStorage } from "../hooks/useLocalStorage";
 import { useSpendingTrend } from "../hooks/useTrends";
 import { TrendBarChart } from "../components/TrendBarChart";
 import { formatCurrency, formatMoneyString } from "../utils/money";
+import { monthKey } from "../utils/dates";
 import type { CategoryTrendItem } from "../lib/api/trends";
 import styles from "./SpendingTrends.module.css";
 
 const LOOKBACK_OPTIONS = [3, 6, 12] as const;
 
 function currentMonthStr(): string {
-  const now = new Date();
-  const y = now.getFullYear();
-  const m = String(now.getMonth() + 1).padStart(2, "0");
-  return `${y}-${m}`;
+  return monthKey(new Date());
 }
 
 type TrendIndicator = "over" | "under" | "on-track";

@@ -10,7 +10,8 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from my_private_finances.deps import SessionDep
-from my_private_finances.models import Account, Category, RecurringPattern
+from my_private_finances.models import Category, RecurringPattern
+from my_private_finances.utils.db_helpers import get_account_or_404
 from my_private_finances.schemas import (
     FrequencyTotal,
     RecurringPatternRead,
@@ -90,9 +91,7 @@ async def list_recurring_patterns(
     session: SessionDep,
     include_inactive: bool = False,
 ) -> list[RecurringPatternRead]:
-    acc = await session.get(Account, account_id)
-    if acc is None:
-        raise HTTPException(status_code=404, detail="Account not found")
+    await get_account_or_404(session, account_id)
 
     stmt = select(RecurringPattern).where(RecurringPattern.account_id == account_id)  # type: ignore[arg-type]
     if not include_inactive:
@@ -108,9 +107,7 @@ async def trigger_detection(
     account_id: Annotated[int, Query(ge=1)],
     session: SessionDep,
 ) -> list[RecurringPatternRead]:
-    acc = await session.get(Account, account_id)
-    if acc is None:
-        raise HTTPException(status_code=404, detail="Account not found")
+    await get_account_or_404(session, account_id)
 
     patterns = await run_detection(session, account_id)
     return [await _to_read(session, p) for p in patterns]
@@ -141,9 +138,7 @@ async def get_recurring_summary(
     account_id: Annotated[int, Query(ge=1)],
     session: SessionDep,
 ) -> RecurringSummary:
-    acc = await session.get(Account, account_id)
-    if acc is None:
-        raise HTTPException(status_code=404, detail="Account not found")
+    await get_account_or_404(session, account_id)
 
     rp = cast(Any, RecurringPattern).__table__
 

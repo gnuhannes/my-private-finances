@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { Suggestion } from "../lib/api/ml";
-import { formatMoneyString } from "../utils/money";
+import { formatMoneyString, EMPTY_CELL } from "../utils/money";
 import styles from "./SuggestionsTable.module.css";
 
 type Props = {
@@ -58,13 +58,11 @@ export function SuggestionsTable({ items, onAccept, onSkip }: Props) {
     }
   };
 
-  const sorted = sortSuggestions(items, sortKey, sortDir);
+  const sorted = useMemo(() => sortSuggestions(items, sortKey, sortDir), [items, sortKey, sortDir]);
 
   const indicator = (key: SortKey) => {
     if (key !== sortKey) return <span className={styles.sortIndicator}>⇅</span>;
-    return (
-      <span className={styles.sortIndicator}>{sortDir === "asc" ? "▲" : "▼"}</span>
-    );
+    return <span className={styles.sortIndicator}>{sortDir === "asc" ? "▲" : "▼"}</span>;
   };
 
   return (
@@ -83,11 +81,7 @@ export function SuggestionsTable({ items, onAccept, onSkip }: Props) {
               </button>
             </th>
             <th>
-              <button
-                type="button"
-                className={styles.sortBtn}
-                onClick={() => handleSort("payee")}
-              >
+              <button type="button" className={styles.sortBtn} onClick={() => handleSort("payee")}>
                 {t("suggestionsTable.tablePayee")}
                 {indicator("payee")}
               </button>
@@ -130,8 +124,8 @@ export function SuggestionsTable({ items, onAccept, onSkip }: Props) {
           {sorted.map((s) => (
             <tr key={s.transaction_id}>
               <td className={styles.date}>{s.booking_date}</td>
-              <td className={styles.payee}>{s.payee ?? "—"}</td>
-              <td className={styles.purpose}>{s.purpose ?? "—"}</td>
+              <td className={styles.payee}>{s.payee ?? EMPTY_CELL}</td>
+              <td className={styles.purpose}>{s.purpose ?? EMPTY_CELL}</td>
               <td className={styles.category}>{s.category_name}</td>
               <td>
                 <span className={`${styles.badge} ${confidenceBadgeClass(s.confidence)}`}>

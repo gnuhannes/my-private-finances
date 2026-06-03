@@ -9,8 +9,9 @@ export function NavBar() {
   const [open, setOpen] = useState(false);
   const { pathname } = useLocation();
 
-  // Reset drawer when route changes (derived-state pattern — runs during render,
-  // not in an effect, to avoid the react-hooks/set-state-in-effect lint rule).
+  // Derived-state pattern: reset drawer on route change during render.
+  // useEffect is intentionally avoided here — the project ESLint rule
+  // react-hooks/set-state-in-effect disallows calling setState in effects.
   const [prevPathname, setPrevPathname] = useState(pathname);
   if (prevPathname !== pathname) {
     setPrevPathname(pathname);

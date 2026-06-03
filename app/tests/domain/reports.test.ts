@@ -17,8 +17,24 @@ describe("mapTopPayeesForChart", () => {
       { payee: "A", total: "abc" },
       { payee: "B", total: "-10.00" },
     ]);
-
     expect(out).toEqual([{ payee: "B", amount: 10 }]);
+  });
+
+  it("returns empty array for empty input", () => {
+    expect(mapTopPayeesForChart([])).toEqual([]);
+  });
+
+  it("makes positive totals positive (absolute value)", () => {
+    const out = mapTopPayeesForChart([{ payee: "Income", total: "100.00" }]);
+    expect(out).toEqual([{ payee: "Income", amount: 100 }]);
+  });
+
+  it("preserves ordering of input items", () => {
+    const out = mapTopPayeesForChart([
+      { payee: "B", total: "-5.00" },
+      { payee: "A", total: "-10.00" },
+    ]);
+    expect(out.map((x) => x.payee)).toEqual(["B", "A"]);
   });
 });
 
@@ -39,5 +55,25 @@ describe("mapCategoryBreakdownForChart", () => {
       { category_name: "B", total: "-20.00" },
     ]);
     expect(out).toEqual([{ category: "B", amount: 20 }]);
+  });
+
+  it("returns empty array for empty input", () => {
+    expect(mapCategoryBreakdownForChart([])).toEqual([]);
+  });
+
+  it("handles single item with zero total", () => {
+    const out = mapCategoryBreakdownForChart([{ category_name: "Zero", total: "0.00" }]);
+    expect(out).toEqual([{ category: "Zero", amount: 0 }]);
+  });
+
+  it("handles mix of null and named categories", () => {
+    const out = mapCategoryBreakdownForChart([
+      { category_name: null, total: "-5.00" },
+      { category_name: "Food", total: "-15.00" },
+    ]);
+    expect(out).toEqual([
+      { category: "Uncategorized", amount: 5 },
+      { category: "Food", amount: 15 },
+    ]);
   });
 });
