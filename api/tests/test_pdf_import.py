@@ -21,16 +21,20 @@ _HEADERS = [
     "Zahlungsausgang",
     "Saldo",
 ]
+_HEADERS_UPPER = [h.upper() for h in _HEADERS]
 _COL_WIDTHS = [25, 30, 55, 32, 32, 26]
 
 
-def _make_tr_pdf(rows: list[tuple[str, ...]], path: Path) -> None:
+def _make_tr_pdf(
+    rows: list[tuple[str, ...]], path: Path, *, uppercase_headers: bool = False
+) -> None:
     """Write a minimal Trade Republic-style statement PDF to *path*."""
     pdf = FPDF()
     pdf.add_page()
     pdf.set_font("Helvetica", size=9)
 
-    for header, w in zip(_HEADERS, _COL_WIDTHS):
+    headers = _HEADERS_UPPER if uppercase_headers else _HEADERS
+    for header, w in zip(headers, _COL_WIDTHS):
         pdf.cell(w, 8, header, border=1)
     pdf.ln()
 
@@ -324,6 +328,29 @@ async def test_pdf_import_empty_row_skipped(
             session=session,
             account_id=acc["id"],
             pdf_path=pdf_path,
+        )
+
+    assert result.total_rows == 1
+    assert result.created == 1
+    assert result.failed == 0
+
+
+@pytest.mark.asyncio
+async def test_pdf_import_uppercase_headers(
+    test_app: AsyncClient,
+    tmp_path: Path,
+) -> None:
+    """PDFs with all-uppercase headers (new TR format) are imported correctly."""
+    acc = await create_account(test_app)
+
+    rows = [("29.01.2026", "Einlage", "Uppercase header test", "100,00", "", "100,00")]
+    pdf_path = tmp_path / "uppercase.pdf"
+    _make_tr_pdf(rows, pdf_path, uppercase_headers=True)
+
+    session_factory = test_app._transport.app.state.session_factory  # type: ignore[attr-defined]
+    async with session_factory() as session:
+        result = await import_transactions_from_pdf_path(
+            session=session, account_id=acc["id"], pdf_path=pdf_path
         )
 
     assert result.total_rows == 1

@@ -18,6 +18,7 @@ class TransactionBase(SQLModel):
 
     payee: Optional[str] = Field(default=None, sa_column=Column(String(255)))
     purpose: Optional[str] = Field(default=None, sa_column=Column(Text))
+    notes: Optional[str] = Field(default=None, sa_column=Column(Text))
 
     category_id: Optional[int] = Field(default=None, foreign_key="category.id")
 

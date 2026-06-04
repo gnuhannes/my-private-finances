@@ -1,11 +1,21 @@
 import { ApiError } from "./client";
 
+export type ImportErrorDetail = {
+  row?: number | null;
+  field?: string | null;
+  raw_value?: string | null;
+  message: string;
+  hint?: string | null;
+  unexpected: boolean;
+};
+
 export type ImportResult = {
   total_rows: number;
   created: number;
   duplicates: number;
   failed: number;
-  errors: string[];
+  errors: ImportErrorDetail[];
+  errors_truncated: boolean;
 };
 
 export type ImportCsvParams = {

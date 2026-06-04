@@ -4,7 +4,7 @@ from pydantic import BaseModel
 
 # Valid field names that can be remapped via column_map
 REMAPPABLE_FIELDS = frozenset(
-    {"booking_date", "amount", "currency", "payee", "purpose", "external_id"}
+    {"booking_date", "amount", "currency", "payee", "purpose", "external_id", "notes"}
 )
 
 

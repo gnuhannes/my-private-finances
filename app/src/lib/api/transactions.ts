@@ -8,6 +8,7 @@ export type TransactionItem = {
   currency: string;
   payee: string | null;
   purpose: string | null;
+  notes: string | null;
   category_id: number | null;
   external_id: string | null;
   import_source: string | null;

@@ -304,7 +304,7 @@ async def test_csv_import_missing_required_column_counted_as_failed(
     assert result.failed == 2
     assert result.created == 0
     assert len(result.errors) == 2
-    assert "missing column" in result.errors[0]
+    assert "Missing column" in result.errors[0].message
 
 
 @pytest.mark.asyncio

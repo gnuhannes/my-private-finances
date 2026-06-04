@@ -34,6 +34,7 @@ export function TransactionTable({
             <th>{t("transactionTable.tableDate")}</th>
             <th>{t("transactionTable.tablePayee")}</th>
             <th>{t("transactionTable.tablePurpose")}</th>
+            <th>{t("transactionTable.tableNotes")}</th>
             <th>{t("transactionTable.tableCategory")}</th>
             <th className={styles.amount}>{t("transactionTable.tableAmount")}</th>
           </tr>
@@ -44,6 +45,7 @@ export function TransactionTable({
               <td>{tx.booking_date}</td>
               <td>{tx.payee ?? EMPTY_CELL}</td>
               <td>{tx.purpose ?? EMPTY_CELL}</td>
+              <td>{tx.notes ?? EMPTY_CELL}</td>
               <td>
                 <CategorySelect
                   categories={categories}

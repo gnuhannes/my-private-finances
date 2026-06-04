@@ -106,6 +106,7 @@ async def import_csv(
         duplicates=result.duplicates,
         failed=result.failed,
         errors=result.errors,
+        errors_truncated=result.errors_truncated,
     )
 
 
@@ -159,4 +160,5 @@ async def import_pdf(
         duplicates=result.duplicates,
         failed=result.failed,
         errors=result.errors,
+        errors_truncated=result.errors_truncated,
     )

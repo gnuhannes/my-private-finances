@@ -9,6 +9,7 @@ const successResult: ImportResultType = {
   duplicates: 2,
   failed: 0,
   errors: [],
+  errors_truncated: false,
 };
 
 const resultWithErrors: ImportResultType = {
@@ -16,7 +17,11 @@ const resultWithErrors: ImportResultType = {
   created: 2,
   duplicates: 1,
   failed: 2,
-  errors: ["Row 3: invalid date format", "Row 5: missing amount"],
+  errors: [
+    { row: 3, field: "booking_date", raw_value: "not-a-date", message: "Invalid ISO date: 'not-a-date'", hint: "Try switching the date format to DMY (dd.mm.yyyy).", unexpected: false },
+    { row: 5, field: "amount", raw_value: null, message: "Missing column 'amount/Betrag'", hint: "Add one of these header names to the CSV.", unexpected: false },
+  ],
+  errors_truncated: false,
 };
 
 describe("ImportResult", () => {
@@ -36,14 +41,27 @@ describe("ImportResult", () => {
   it("does not render error list when there are no errors", () => {
     render(<ImportResult result={successResult} />);
 
-    expect(screen.queryByText("Errors:")).not.toBeInTheDocument();
+    expect(screen.queryByText("Row errors:")).not.toBeInTheDocument();
   });
 
   it("renders error list when there are errors", () => {
     render(<ImportResult result={resultWithErrors} />);
 
-    expect(screen.getByText("Errors:")).toBeInTheDocument();
-    expect(screen.getByText("Row 3: invalid date format")).toBeInTheDocument();
-    expect(screen.getByText("Row 5: missing amount")).toBeInTheDocument();
+    expect(screen.getByText("Row errors:")).toBeInTheDocument();
+    expect(screen.getByText("Invalid ISO date: 'not-a-date'")).toBeInTheDocument();
+    expect(screen.getByText("Missing column 'amount/Betrag'")).toBeInTheDocument();
+  });
+
+  it("renders field and hint details", () => {
+    render(<ImportResult result={resultWithErrors} />);
+
+    expect(screen.getByText("booking_date")).toBeInTheDocument();
+    expect(screen.getByText("Try switching the date format to DMY (dd.mm.yyyy).")).toBeInTheDocument();
+  });
+
+  it("renders raw value when present", () => {
+    render(<ImportResult result={resultWithErrors} />);
+
+    expect(screen.getByText('"not-a-date"')).toBeInTheDocument();
   });
 });

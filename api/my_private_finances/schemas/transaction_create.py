@@ -17,6 +17,7 @@ class TransactionCreate(StrictSchema):
 
     payee: Optional[str] = None
     purpose: Optional[str] = None
+    notes: Optional[str] = None
 
     category_id: Optional[int] = None
 

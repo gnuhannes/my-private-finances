@@ -311,7 +311,11 @@
     "created": "Created",
     "duplicates": "Duplicates",
     "failed": "Failed",
-    "errors": "Errors:"
+    "errors": "Row errors:",
+    "unexpected": "unexpected",
+    "truncated": "Only the first {{shown}} errors are shown — {{failed}} rows failed in total.",
+    "copyReport": "Copy error report",
+    "copied": "Copied!"
   },
   "categorySelect": {
     "placeholder": "Select…",
@@ -324,6 +328,7 @@
     "tableDate": "Date",
     "tablePayee": "Payee",
     "tablePurpose": "Purpose",
+    "tableNotes": "Notes",
     "tableCategory": "Category",
     "tableAmount": "Amount"
   },

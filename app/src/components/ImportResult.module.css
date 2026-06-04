@@ -45,16 +45,96 @@
   padding: 12px;
   border: 1px solid var(--danger);
   border-radius: var(--radius-sm);
-  max-height: 160px;
-  overflow-y: auto;
+}
+
+.errorsHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
 }
 
 .errorList {
   margin: 8px 0 0;
-  padding-left: 20px;
+  padding-left: 0;
+  list-style: none;
+  max-height: 240px;
+  overflow-y: auto;
+  display: grid;
+  gap: 8px;
 }
 
-.errorList li {
+.errorItem {
   font-size: 0.85rem;
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--danger) 6%, transparent);
+  border-left: 3px solid var(--danger);
+}
+
+.errorItem.unexpected {
+  border-left-color: #e67700;
+  background: color-mix(in srgb, #e67700 6%, transparent);
+}
+
+.errorMeta {
+  display: flex;
+  gap: 6px;
+  align-items: baseline;
+  flex-wrap: wrap;
   color: var(--danger);
+  font-weight: 500;
+  margin-bottom: 2px;
+}
+
+.errorItem.unexpected .errorMeta {
+  color: #e67700;
+}
+
+.errorMetaTag {
+  font-size: 0.75rem;
+  padding: 1px 5px;
+  border-radius: 3px;
+  background: color-mix(in srgb, currentColor 15%, transparent);
+}
+
+.errorMessage {
+  color: var(--text);
+}
+
+.errorRaw {
+  color: var(--text-muted);
+  font-family: monospace;
+  font-size: 0.8rem;
+}
+
+.errorHint {
+  margin-top: 4px;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.truncationNotice {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  padding-top: 4px;
+  border-top: 1px solid var(--border);
+  margin-top: 4px;
+}
+
+.copyBtn {
+  font-size: 0.75rem;
+  padding: 3px 8px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  cursor: pointer;
+  color: var(--text-muted);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.copyBtn:hover {
+  background: var(--surface-hover, var(--border));
 }

@@ -5,6 +5,7 @@ import { useImportCsv } from "../hooks/useImportCsv";
 import { useImportPdf } from "../hooks/useImportPdf";
 import { useCsvProfiles } from "../hooks/useCsvProfiles";
 import type { CsvProfile } from "../lib/api/csvProfiles";
+import { ApiError } from "../lib/api/client";
 import { FileDropZone } from "./FileDropZone";
 import { ImportResult } from "./ImportResult";
 import { CsvProfileManager } from "./CsvProfileManager";
@@ -140,7 +141,17 @@ export function ImportDialog({ open, onClose }: Props) {
 
       {mutation.isSuccess ? (
         <div className={styles.body}>
-          <ImportResult result={mutation.data} />
+          <ImportResult
+            result={mutation.data}
+            importContext={{
+              mode,
+              fileName: file?.name,
+              accountId: typeof accountId === "number" ? accountId : undefined,
+              delimiter: mode === "csv" ? delimiter : undefined,
+              dateFormat: mode === "csv" ? dateFormat : undefined,
+              decimalComma: mode === "csv" ? decimalComma : undefined,
+            }}
+          />
           <div className={styles.actions}>
             <button type="button" onClick={handleImportAnother}>
               {t("importDialog.importAnother")}
@@ -260,7 +271,12 @@ export function ImportDialog({ open, onClose }: Props) {
             <div className={styles.error}>
               {t("importDialog.failedImport", {
                 error:
-                  mutation.error instanceof Error ? mutation.error.message : String(mutation.error),
+                  mutation.error instanceof ApiError
+                    ? ((mutation.error.body as { detail?: string })?.detail ??
+                      mutation.error.message)
+                    : mutation.error instanceof Error
+                      ? mutation.error.message
+                      : String(mutation.error),
               })}
             </div>
           )}

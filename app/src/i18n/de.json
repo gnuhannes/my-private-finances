@@ -311,7 +311,11 @@
     "created": "Erstellt",
     "duplicates": "Duplikate",
     "failed": "Fehlgeschlagen",
-    "errors": "Fehler:"
+    "errors": "Zeilenfehler:",
+    "unexpected": "unerwartet",
+    "truncated": "Nur die ersten {{shown}} Fehler werden angezeigt — insgesamt {{failed}} Zeilen fehlgeschlagen.",
+    "copyReport": "Fehlerbericht kopieren",
+    "copied": "Kopiert!"
   },
   "categorySelect": {
     "placeholder": "Auswählen…",
@@ -324,6 +328,7 @@
     "tableDate": "Datum",
     "tablePayee": "Empfänger",
     "tablePurpose": "Verwendungszweck",
+    "tableNotes": "Hinweise",
     "tableCategory": "Kategorie",
     "tableAmount": "Betrag"
   },
