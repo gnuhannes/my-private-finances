@@ -12,6 +12,79 @@ from tests.helpers import create_account, create_category, create_rule
 
 API_PREFIX = "/api"
 
+# ── pt→mm conversion (FPDF uses mm, pdfplumber reports pt) ───────────────────
+_PT_TO_MM = 1 / 2.8346  # 1pt ≈ 0.3528mm
+
+# ── New-format column x-positions (pt) per real TR Kontoauszug ───────────────
+# Amount-side columns must match real TR positions for correct IN/OUT split.
+# DATUM→TYP gap is widened vs. real (110pt) to ensure long German month names
+# ("Oktober", "September") don't bleed into the TYP column in synthetic PDFs.
+_NF_DATUM_PT = 74
+_NF_TYP_PT = 155  # wider than real 110pt to accommodate long month names
+_NF_DESC_PT = 220  # shifted right proportionally
+_NF_MERGED_PT = 340  # ZAHLUNGSEINGANGZAHLUNGSAUSGANG x0 — keep at real position
+_NF_SALDO_PT = 480
+_NF_IN_AMT_PT = 369  # incoming amount x
+_NF_OUT_AMT_PT = 423  # outgoing amount x
+
+
+def _make_tr_pdf_new_format(
+    rows: list[tuple[str, str, str, str, str]],
+    path: Path,
+    *,
+    include_false_datum: bool = False,
+    noise_date_cell: str | None = None,
+) -> None:
+    """Create a borderless (new-format) TR PDF with merged ZAHLUNGSEINGANGZAHLUNGSAUSGANG header.
+
+    Each row is (date, typ, desc, in_amt, out_amt) where exactly one of in_amt/out_amt
+    is non-empty.  Dates should use German abbreviated format, e.g. '8 Jan. 2026'.
+    Uses 5pt font so the wide merged header word does not overlap with SALDO.
+    """
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Helvetica", size=5)
+
+    def px(pt: float, y_mm: float, text: str) -> None:
+        pdf.set_xy(pt * _PT_TO_MM, y_mm)
+        pdf.cell(0, 3, text)
+
+    # Page header: false DATUM at x≈389pt — must NOT trigger header detection
+    if include_false_datum:
+        px(_NF_DATUM_PT + 315, 15, "DATUM")
+
+    # True table header (no borders)
+    for text, pt_x in [
+        ("DATUM", _NF_DATUM_PT),
+        ("TYP", _NF_TYP_PT),
+        ("BESCHREIBUNG", _NF_DESC_PT),
+        ("ZAHLUNGSEINGANGZAHLUNGSAUSGANG", _NF_MERGED_PT),
+        ("SALDO", _NF_SALDO_PT),
+    ]:
+        px(pt_x, 25, text)
+
+    y_mm = 35.0
+    for date, typ, desc, in_amt, out_amt in rows:
+        for text, pt_x in [
+            (date, _NF_DATUM_PT),
+            (typ, _NF_TYP_PT),
+            (desc, _NF_DESC_PT),
+        ]:
+            if text:
+                px(pt_x, y_mm, text)
+        if in_amt:
+            px(_NF_IN_AMT_PT, y_mm, in_amt)
+        if out_amt:
+            px(_NF_OUT_AMT_PT, y_mm, out_amt)
+        y_mm += 10.0
+
+    # Optional noise row: text placed at DATUM x — should be silently skipped
+    if noise_date_cell is not None:
+        px(_NF_DATUM_PT, y_mm, noise_date_cell)
+
+    pdf.output(str(path))
+
+
 # Trade Republic column order
 _HEADERS = [
     "Datum",
@@ -391,3 +464,131 @@ async def test_pdf_import_applies_categorization_rule(
     txn_resp = await test_app.get("/api/transactions", params={"account_id": acc["id"]})
     item = txn_resp.json()["items"][0]
     assert item["category_id"] == cat["id"]
+
+
+# ---------------------------------------------------------------------------
+# New-format (borderless / word-position) tests
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_pdf_import_new_format_parses_incoming_and_outgoing(
+    test_app: AsyncClient,
+    tmp_path: Path,
+) -> None:
+    """Borderless TR PDFs (new format, merged ZAHLUNGSEINGANGZAHLUNGSAUSGANG header)
+    are parsed correctly for both incoming and outgoing transactions."""
+    acc = await create_account(test_app)
+
+    rows = [
+        ("8 Jan. 2026", "Einlage", "Einzahlung Bank", "100,00", ""),
+        ("10 Jan. 2026", "Kartentransaktion", "Amazon", "", "50,00"),
+    ]
+    pdf_path = tmp_path / "new_format.pdf"
+    _make_tr_pdf_new_format(rows, pdf_path)
+
+    session_factory = test_app._transport.app.state.session_factory  # type: ignore[attr-defined]
+    async with session_factory() as session:
+        result = await import_transactions_from_pdf_path(
+            session=session, account_id=acc["id"], pdf_path=pdf_path
+        )
+
+    assert result.total_rows == 2, result
+    assert result.created == 2, result
+    assert result.failed == 0, result
+    assert result.errors == [], result
+
+    resp = await test_app.get("/api/transactions", params={"account_id": acc["id"]})
+    items = resp.json()["items"]
+    by_payee = {item["payee"]: item for item in items}
+
+    assert Decimal(by_payee["Einlage"]["amount"]) == Decimal("100.00")
+    assert by_payee["Einlage"]["booking_date"] == "2026-01-08"
+    assert Decimal(by_payee["Kartentransaktion"]["amount"]) == Decimal("-50.00")
+    assert by_payee["Kartentransaktion"]["booking_date"] == "2026-01-10"
+
+
+@pytest.mark.asyncio
+async def test_pdf_import_new_format_noise_row_silently_skipped(
+    test_app: AsyncClient,
+    tmp_path: Path,
+) -> None:
+    """Non-transaction rows whose date cell starts with >2 digits (ZIP codes, etc.)
+    are silently skipped — not counted as failed rows."""
+    acc = await create_account(test_app)
+
+    rows = [("15 Jan. 2026", "Einlage", "Gutschrift", "200,00", "")]
+    pdf_path = tmp_path / "noise.pdf"
+    _make_tr_pdf_new_format(
+        rows,
+        pdf_path,
+        noise_date_cell="60311 Frankfurt",  # 5-digit ZIP — must NOT become a failed row
+    )
+
+    session_factory = test_app._transport.app.state.session_factory  # type: ignore[attr-defined]
+    async with session_factory() as session:
+        result = await import_transactions_from_pdf_path(
+            session=session, account_id=acc["id"], pdf_path=pdf_path
+        )
+
+    assert result.total_rows == 1, result
+    assert result.created == 1, result
+    assert result.failed == 0, result
+    assert result.errors == [], result
+
+
+@pytest.mark.asyncio
+async def test_pdf_import_new_format_false_datum_ignored(
+    test_app: AsyncClient,
+    tmp_path: Path,
+) -> None:
+    """The false DATUM label (date range header at x≈389pt) on page 1 is not
+    mistaken for the table header — only the real header triggers parsing."""
+    acc = await create_account(test_app)
+
+    rows = [("3 Feb. 2026", "Einlage", "Test", "75,00", "")]
+    pdf_path = tmp_path / "false_datum.pdf"
+    _make_tr_pdf_new_format(rows, pdf_path, include_false_datum=True)
+
+    session_factory = test_app._transport.app.state.session_factory  # type: ignore[attr-defined]
+    async with session_factory() as session:
+        result = await import_transactions_from_pdf_path(
+            session=session, account_id=acc["id"], pdf_path=pdf_path
+        )
+
+    assert result.total_rows == 1, result
+    assert result.created == 1, result
+    assert result.failed == 0, result
+
+
+@pytest.mark.asyncio
+async def test_pdf_import_new_format_full_german_month_names(
+    test_app: AsyncClient,
+    tmp_path: Path,
+) -> None:
+    """New TR PDFs use full German month names without trailing period
+    (März, Juni, Oktober …) rather than 3-letter abbreviations."""
+    acc = await create_account(test_app)
+
+    rows = [
+        ("1 März 2026", "Einlage", "Maerz-Einzahlung", "50,00", ""),
+        ("15 Juni 2026", "Kartentransaktion", "Juni-Kauf", "", "30,00"),
+        ("3 Oktober 2026", "Einlage", "Okt-Einzahlung", "20,00", ""),
+    ]
+    pdf_path = tmp_path / "full_months.pdf"
+    _make_tr_pdf_new_format(rows, pdf_path)
+
+    session_factory = test_app._transport.app.state.session_factory  # type: ignore[attr-defined]
+    async with session_factory() as session:
+        result = await import_transactions_from_pdf_path(
+            session=session, account_id=acc["id"], pdf_path=pdf_path
+        )
+
+    assert result.total_rows == 3, result
+    assert result.created == 3, result
+    assert result.failed == 0, result
+
+    resp = await test_app.get("/api/transactions", params={"account_id": acc["id"]})
+    items = resp.json()["items"]
+    dates = {item["booking_date"] for item in items}
+    assert dates == {"2026-03-01", "2026-06-15", "2026-10-03"}

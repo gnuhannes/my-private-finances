@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import re
 from datetime import datetime
 from decimal import Decimal, InvalidOperation
 from pathlib import Path
@@ -35,27 +36,118 @@ _COL_SALDO = "Saldo"
 _ALL_COLS = (_COL_DATE, _COL_TYPE, _COL_DESC, _COL_IN, _COL_OUT, _COL_SALDO)
 # Columns we actually import data from
 _IMPORT_COLS = (_COL_DATE, _COL_TYPE, _COL_DESC, _COL_IN, _COL_OUT)
+# Header token produced when IN and OUT columns are too close to separate
+_COL_IN_OUT_MERGED = (_COL_IN + _COL_OUT).upper()
 
-# Tolerances for word-position grouping (in PDF points, 1pt ≈ 0.35mm)
-_Y_TOLERANCE = 5  # words within this vertical distance → same row
+# Y tolerance for grouping sub-rows into one transaction row.
+# Overridden at runtime by _compute_y_tolerance(); this is the fallback.
+# Needs to be > max within-transaction gap (~13pt for some types) but
+# < min between-transaction gap (~24pt).
+_Y_TOLERANCE_DEFAULT = 18
 _X_TOLERANCE = 5  # margin when assigning a word to its column
+
+# German abbreviated month names → month number
+_DE_MONTHS: dict[str, int] = {
+    # 3-letter abbreviations (old TR format, with or without trailing period)
+    "jan": 1,
+    "feb": 2,
+    "mär": 3,
+    "mar": 3,
+    "apr": 4,
+    "mai": 5,
+    "jun": 6,
+    "jul": 7,
+    "aug": 8,
+    "sep": 9,
+    "okt": 10,
+    "nov": 11,
+    "dez": 12,
+    # Full German month names (new TR format — no trailing period)
+    "januar": 1,
+    "februar": 2,
+    "märz": 3,
+    "april": 4,
+    "juni": 6,
+    "juli": 7,
+    "august": 8,
+    "september": 9,
+    "oktober": 10,
+    "november": 11,
+    "dezember": 12,
+}
 
 
 def _parse_date(value: str) -> datetime:
-    return datetime.strptime(value.strip(), "%d.%m.%Y").date()  # type: ignore[return-value]
+    raw = value.strip()
+    # Classic format: 29.01.2026
+    try:
+        return datetime.strptime(raw, "%d.%m.%Y").date()  # type: ignore[return-value]
+    except ValueError:
+        pass
+    # New TR format: "8 Jan. 2026" or "01 März 2026" (day, German month, year).
+    # Day may have a trailing period ("1." in some locales); month may be a
+    # 3-letter abbreviation with period ("Jan.") or a full name ("März", "Juni").
+    parts = raw.split()
+    if len(parts) == 3:
+        day_s, mon_s, year_s = parts
+        month_num = _DE_MONTHS.get(mon_s.rstrip(".").lower())
+        if month_num:
+            try:
+                from datetime import date as _date
+
+                return _date(int(year_s), month_num, int(day_s.rstrip(".")))  # type: ignore[return-value]
+            except (ValueError, TypeError):
+                pass
+    raise ValueError(f"Invalid date: '{raw}'")
+
+
+def _strip_saldo(raw: str) -> str:
+    """In TR PDFs the SALDO amount leaks into the amount cell as 'amount € saldo'.
+    The € sign is the separator — take only the part before it."""
+    return raw.split("€")[0].strip()
 
 
 def _parse_german_decimal(value: str) -> Decimal:
-    """Parse German-formatted number: '1.234,56' → Decimal('1234.56')."""
-    raw = value.strip().replace(".", "").replace(",", ".")
+    """Parse German-formatted number: '1.234,56' → Decimal('1234.56').
+    Strips non-numeric suffixes/prefixes (€, +, narrow spaces) before parsing.
+    """
+    # Keep only digits, comma, period, and a leading minus sign
+    cleaned = re.sub(r"[^\d,.\-]", "", value.strip())
+    if not cleaned or cleaned == "-":
+        raise ValueError(f"Invalid decimal value: '{value.strip()}'")
+    if "," in cleaned:
+        cleaned = cleaned.replace(".", "").replace(",", ".")
     try:
-        return Decimal(raw)
+        return Decimal(cleaned)
     except InvalidOperation:
         raise ValueError(f"Invalid decimal value: '{value.strip()}'")
 
 
-def _group_words_by_row(words: list[dict]) -> list[list[dict]]:
-    """Group pdfplumber word dicts into rows by vertical proximity."""
+def _compute_y_tolerance(words: list[dict]) -> float:
+    """Return 1.5× the average word height, clamped to [14, 20]pt.
+
+    Lower bound is 14pt (not 10pt) because the max within-transaction sub-row
+    gap in TR PDFs is ~13pt for some transaction types — a tolerance below that
+    separates the year sub-row from day+month, producing unparseable dates.
+    Upper bound is 20pt to stay well below the ~24pt between-transaction gap.
+    """
+    heights = [
+        w["bottom"] - w["top"] for w in words if w.get("bottom") and w.get("top")
+    ]
+    if not heights:
+        return _Y_TOLERANCE_DEFAULT
+    avg = sum(heights) / len(heights)
+    return max(14.0, min(20.0, avg * 1.5))
+
+
+def _group_words_by_row(
+    words: list[dict], y_tolerance: float = _Y_TOLERANCE_DEFAULT
+) -> list[list[dict]]:
+    """Group pdfplumber word dicts into rows by vertical proximity.
+    Preserves (top, x0) sort order within each merged row so that words at
+    identical x positions (e.g. day and year both at x=74.4) stay in reading
+    order (top-to-bottom) rather than being interleaved arbitrarily.
+    """
     if not words:
         return []
     sorted_words = sorted(words, key=lambda w: (w["top"], w["x0"]))
@@ -63,13 +155,13 @@ def _group_words_by_row(words: list[dict]) -> list[list[dict]]:
     current: list[dict] = [sorted_words[0]]
     ref_y: float = sorted_words[0]["top"]
     for word in sorted_words[1:]:
-        if abs(word["top"] - ref_y) <= _Y_TOLERANCE:
+        if abs(word["top"] - ref_y) <= y_tolerance:
             current.append(word)
         else:
-            rows.append(sorted(current, key=lambda w: w["x0"]))
+            rows.append(current)  # preserve (top, x0) order — do NOT re-sort by x0
             current = [word]
             ref_y = word["top"]
-    rows.append(sorted(current, key=lambda w: w["x0"]))
+    rows.append(current)
     return rows
 
 
@@ -77,11 +169,30 @@ def _find_col_x_positions(rows: list[list[dict]]) -> dict[str, float] | None:
     """
     Scan word rows for the header row.
     Returns {column_name: x0_position} or None if no header found.
+    Handles:
+    - False DATUM labels (requires at least one other column present)
+    - Merged ZAHLUNGSEINGANGZAHLUNGSAUSGANG word: splits at the word's own
+      midpoint ((x0+x1)/2) per the jcmpagel reference parser
+    - SALDO boundary shifted -5pt to catch right-aligned saldo amounts
     """
     for row in rows:
-        upper_to_x = {w["text"].upper(): w["x0"] for w in row}
+        upper_to_word = {w["text"].upper(): w for w in row}
+        upper_to_x = {k: w["x0"] for k, w in upper_to_word.items()}
         if _COL_DATE.upper() not in upper_to_x:
             continue
+        # Require at least one other recognised column (or merged IN+OUT token)
+        other_known = [c.upper() for c in _IMPORT_COLS if c != _COL_DATE]
+        if not any(k in upper_to_x for k in other_known + [_COL_IN_OUT_MERGED]):
+            continue
+        # Split merged ZAHLUNGSEINGANGZAHLUNGSAUSGANG into two virtual columns
+        if _COL_IN_OUT_MERGED in upper_to_word and _COL_IN.upper() not in upper_to_x:
+            merged_word = upper_to_word[_COL_IN_OUT_MERGED]
+            midpoint = (merged_word["x0"] + merged_word["x1"]) / 2
+            upper_to_x[_COL_IN.upper()] = merged_word["x0"]
+            upper_to_x[_COL_OUT.upper()] = midpoint
+        # Shift SALDO boundary 5pt left so right-aligned saldo amounts are caught
+        if _COL_SALDO.upper() in upper_to_x:
+            upper_to_x[_COL_SALDO.upper()] -= 5
         return {
             col: upper_to_x[col.upper()]
             for col in _ALL_COLS
@@ -153,7 +264,8 @@ def _parse_via_words(pdf_path: Path) -> tuple[dict[str, int], list[list[str]]]:
             if not words:
                 continue
 
-            word_rows = _group_words_by_row(words)
+            y_tol = _compute_y_tolerance(words)
+            word_rows = _group_words_by_row(words, y_tolerance=y_tol)
 
             if not header_found:
                 positions = _find_col_x_positions(word_rows)
@@ -167,14 +279,41 @@ def _parse_via_words(pdf_path: Path) -> tuple[dict[str, int], list[list[str]]]:
                     if _COL_DATE.upper() in {w["text"].upper() for w in r}
                 )
                 word_rows = word_rows[header_row_idx + 1 :]
+            else:
+                # On pages after the first, the table header is repeated —
+                # drop any row that looks like a column-header row.
+                other_known = {c.upper() for c in _IMPORT_COLS if c != _COL_DATE}
+                word_rows = [
+                    r
+                    for r in word_rows
+                    if not (
+                        _COL_DATE.upper() in {w["text"].upper() for w in r}
+                        and other_known & {w["text"].upper() for w in r}
+                    )
+                ]
 
             sorted_cols = sorted(col_x.items(), key=lambda kv: kv[1])
             col_starts = [x for _, x in sorted_cols]
 
+            date_col_idx = next(
+                (i for i, (name, _) in enumerate(sorted_cols) if name == _COL_DATE),
+                0,
+            )
+
             for word_row in word_rows:
                 if not word_row:
                     continue
-                data_rows.append(_assign_words_to_columns(word_row, col_starts))
+                cells = _assign_words_to_columns(word_row, col_starts)
+                # Pre-filter structural noise. Real transaction dates always
+                # look like "8 Jan. 2026" or "08.01.2026" — they start with
+                # one or two digits followed by a space or dot. Rows whose
+                # Datum cell starts otherwise (BIC codes, city names, ZIP
+                # codes like "60311", author names, etc.) are skipped silently.
+                date_cell = cells[date_col_idx] if date_col_idx < len(cells) else ""
+                stripped = date_cell.strip()
+                if not re.match(r"^\d{1,2}[\s.]", stripped):
+                    continue
+                data_rows.append(cells)
 
     if not header_found:
         raise ValueError(
@@ -333,8 +472,9 @@ async def import_transactions_from_pdf_path(
             continue
 
         if in_raw:
+            in_amount = _strip_saldo(in_raw)
             try:
-                amount = _parse_german_decimal(in_raw)
+                amount = _parse_german_decimal(in_amount)
             except ValueError as e:
                 _record_error(
                     ImportErrorDetail(
@@ -348,8 +488,9 @@ async def import_transactions_from_pdf_path(
                 failed += 1
                 continue
         elif out_raw:
+            out_amount = _strip_saldo(out_raw)
             try:
-                amount = -_parse_german_decimal(out_raw)
+                amount = -_parse_german_decimal(out_amount)
             except ValueError as e:
                 _record_error(
                     ImportErrorDetail(
