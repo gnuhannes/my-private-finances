@@ -126,10 +126,12 @@ def _parse_german_decimal(value: str) -> Decimal:
 def _compute_y_tolerance(words: list[dict]) -> float:
     """Return 1.5× the average word height, clamped to [14, 20]pt.
 
-    Lower bound is 14pt (not 10pt) because the max within-transaction sub-row
-    gap in TR PDFs is ~13pt for some transaction types — a tolerance below that
-    separates the year sub-row from day+month, producing unparseable dates.
-    Upper bound is 20pt to stay well below the ~24pt between-transaction gap.
+    Lower bound is 18pt — matching the design-safe default — because the
+    dynamic formula (1.5× avg word height) yields ~12pt for typical 8pt TR
+    text, which is less than the actual top-to-top span across all three
+    sub-rows (~15–17pt observed on real PDFs).  Going below 18pt causes the
+    year sub-row to be separated from day+month, producing "01 März" failures.
+    Upper bound is 20pt to stay safely below the ~24pt between-transaction gap.
     """
     heights = [
         w["bottom"] - w["top"] for w in words if w.get("bottom") and w.get("top")
@@ -137,7 +139,7 @@ def _compute_y_tolerance(words: list[dict]) -> float:
     if not heights:
         return _Y_TOLERANCE_DEFAULT
     avg = sum(heights) / len(heights)
-    return max(14.0, min(20.0, avg * 1.5))
+    return max(18.0, min(20.0, avg * 1.5))
 
 
 def _group_words_by_row(
