@@ -44,6 +44,8 @@ async def import_csv(
     profile_delimiter: str = ","
     profile_date_format: str = "iso"
     profile_decimal_comma: bool = False
+    row_filters: dict | None = None
+    row_exclude_filters: dict | None = None
 
     if profile_id is not None:
         profile = await session.get(CsvProfile, profile_id)
@@ -56,6 +58,8 @@ async def import_csv(
         profile_decimal_comma = profile.decimal_comma
         if profile.column_map:
             column_map = profile.column_map  # type: ignore[assignment]
+        row_filters = profile.row_filters
+        row_exclude_filters = profile.row_exclude_filters
 
     effective_delimiter = delimiter if delimiter is not None else profile_delimiter
     effective_date_format = (
@@ -78,6 +82,8 @@ async def import_csv(
             date_format=effective_date_format,
             decimal_comma=effective_decimal_comma,
             column_map=column_map,
+            row_filters=row_filters,
+            row_exclude_filters=row_exclude_filters,
         )
     except ValueError as e:
         msg = str(e)
@@ -102,6 +108,7 @@ async def import_csv(
     return ImportResultResponse(
         total_rows=result.total_rows,
         created=result.created,
+        skipped=result.skipped,
         duplicates=result.duplicates,
         failed=result.failed,
         errors=result.errors,

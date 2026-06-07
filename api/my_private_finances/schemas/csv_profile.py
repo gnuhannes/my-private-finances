@@ -15,6 +15,10 @@ class CsvProfileCreate(BaseModel):
     decimal_comma: bool = False
     # Keys must be members of REMAPPABLE_FIELDS; values are ordered candidate headers.
     column_map: dict[str, list[str]] = {}
+    # Include filter: {column: [allowed_values]}. Rows not matching ALL entries are skipped.
+    row_filters: dict[str, list[str]] | None = None
+    # Exclude filter: {column: [excluded_values]}. Rows matching ANY entry are skipped.
+    row_exclude_filters: dict[str, list[str]] | None = None
 
 
 class CsvProfileRead(CsvProfileCreate):
@@ -27,3 +31,5 @@ class CsvProfileUpdate(BaseModel):
     date_format: str | None = None
     decimal_comma: bool | None = None
     column_map: dict[str, list[str]] | None = None
+    row_filters: dict[str, list[str]] | None = None
+    row_exclude_filters: dict[str, list[str]] | None = None

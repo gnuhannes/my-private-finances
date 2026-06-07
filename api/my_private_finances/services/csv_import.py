@@ -54,6 +54,7 @@ DEFAULT_COLUMN_MAP: ColumnMap = {
 class ImportResult:
     total_rows: int
     created: int
+    skipped: int
     duplicates: int
     failed: int
     errors: list[ImportErrorDetail] = field(default_factory=list)
@@ -124,6 +125,8 @@ async def import_transactions_from_csv_path(
     date_format: str = "iso",
     decimal_comma: bool = False,
     column_map: ColumnMap | None = None,
+    row_filters: dict[str, list[str]] | None = None,
+    row_exclude_filters: dict[str, list[str]] | None = None,
 ) -> ImportResult:
     col: ColumnMap = {**DEFAULT_COLUMN_MAP, **(column_map or {})}
     res = await session.execute(select(Account).where(Account.id == account_id))  # type: ignore[arg-type]
@@ -140,6 +143,7 @@ async def import_transactions_from_csv_path(
 
     total_rows = 0
     created = 0
+    skipped = 0
     duplicates = 0
     failed = 0
     all_errors: list[ImportErrorDetail] = []
@@ -183,6 +187,18 @@ async def import_transactions_from_csv_path(
 
         for idx, row in enumerate(reader, start=2):
             total_rows += 1
+
+            if row_filters and any(
+                row.get(col, "") not in vals for col, vals in row_filters.items()
+            ):
+                skipped += 1
+                continue
+            if row_exclude_filters and any(
+                row.get(col, "") in vals for col, vals in row_exclude_filters.items()
+            ):
+                skipped += 1
+                continue
+
             row_failed = False
 
             # --- booking_date ---
@@ -350,10 +366,11 @@ async def import_transactions_from_csv_path(
         created = len(new_transactions)
 
     logger.info(
-        "CSV import complete: account_id=%d, total=%d, created=%d, duplicates=%d, failed=%d",
+        "CSV import complete: account_id=%d, total=%d, created=%d, skipped=%d, duplicates=%d, failed=%d",
         account_id,
         total_rows,
         created,
+        skipped,
         duplicates,
         failed,
     )
@@ -362,6 +379,7 @@ async def import_transactions_from_csv_path(
     return ImportResult(
         total_rows=total_rows,
         created=created,
+        skipped=skipped,
         duplicates=duplicates,
         failed=failed,
         errors=all_errors,

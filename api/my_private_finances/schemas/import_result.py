@@ -13,6 +13,7 @@ class ImportErrorDetail(BaseModel):
 class ImportResultResponse(BaseModel):
     total_rows: int
     created: int
+    skipped: int = 0
     duplicates: int
     failed: int
     errors: list[ImportErrorDetail]

@@ -21,3 +21,13 @@ class CsvProfile(SQLModel, table=True):
         default_factory=dict,
         sa_column=Column(JSON, nullable=False, server_default="{}"),
     )
+    # Include filter: {column: [allowed_values]}. Rows not matching ALL entries are skipped.
+    row_filters: Optional[dict[str, Any]] = Field(
+        default=None,
+        sa_column=Column(JSON, nullable=True),
+    )
+    # Exclude filter: {column: [excluded_values]}. Rows matching ANY entry are skipped.
+    row_exclude_filters: Optional[dict[str, Any]] = Field(
+        default=None,
+        sa_column=Column(JSON, nullable=True),
+    )
