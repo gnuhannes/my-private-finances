@@ -13,8 +13,8 @@ export type {
   TransactionParams,
 } from "./api/transactions";
 
-export { importCsv, importPdf } from "./api/imports";
-export type { ImportResult, ImportErrorDetail, ImportCsvParams, ImportPdfParams } from "./api/imports";
+export { importCsv } from "./api/imports";
+export type { ImportResult, ImportErrorDetail, ImportCsvParams } from "./api/imports";
 
 export {
   getCsvProfiles,

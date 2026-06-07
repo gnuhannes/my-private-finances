@@ -13,7 +13,6 @@ from my_private_finances.services.csv_import import (
     ColumnMap,
     import_transactions_from_csv_path,
 )
-from my_private_finances.services.pdf_import import import_transactions_from_pdf_path
 from my_private_finances.services.recurring_detection import run_detection
 
 router = APIRouter(prefix="/imports", tags=["imports"])
@@ -96,60 +95,6 @@ async def import_csv(
         except Exception:
             logger.warning(
                 "Auto recurring-detection failed after CSV import for account_id=%d",
-                account_id,
-                exc_info=True,
-            )
-
-    return ImportResultResponse(
-        total_rows=result.total_rows,
-        created=result.created,
-        duplicates=result.duplicates,
-        failed=result.failed,
-        errors=result.errors,
-        errors_truncated=result.errors_truncated,
-    )
-
-
-@router.post("/pdf", response_model=ImportResultResponse)
-async def import_pdf(
-    file: UploadFile,
-    session: SessionDep,
-    account_id: Annotated[int, Query()],
-) -> ImportResultResponse:
-    content = await file.read()
-    logger.info(
-        "PDF import request: account_id=%d, filename=%r, size=%d bytes",
-        account_id,
-        file.filename,
-        len(content),
-    )
-
-    pdf_tmp_path: Path | None = None
-    try:
-        with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as tmp:
-            tmp.write(content)
-            pdf_tmp_path = Path(tmp.name)
-        result = await import_transactions_from_pdf_path(
-            session=session,
-            account_id=account_id,
-            pdf_path=pdf_tmp_path,
-        )
-    except ValueError as e:
-        msg = str(e)
-        logger.warning("PDF import rejected: account_id=%d, reason=%s", account_id, msg)
-        if "not found" in msg:
-            raise HTTPException(status_code=404, detail=msg) from e
-        raise HTTPException(status_code=400, detail=msg) from e
-    finally:
-        if pdf_tmp_path is not None:
-            pdf_tmp_path.unlink(missing_ok=True)
-
-    if result.created > 0:
-        try:
-            await run_detection(session, account_id)
-        except Exception:
-            logger.warning(
-                "Auto recurring-detection failed after PDF import for account_id=%d",
                 account_id,
                 exc_info=True,
             )

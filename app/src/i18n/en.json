@@ -261,7 +261,6 @@
   "importDialog": {
     "title": "Import",
     "tabCsv": "CSV",
-    "tabPdf": "PDF (Trade Republic)",
     "bankProfile": "Bank profile",
     "bankProfileNone": "None / Custom",
     "manageBankProfiles": "Manage profiles",
@@ -303,8 +302,7 @@
     "delete": "Delete"
   },
   "fileDropZone": {
-    "placeholder": "Drop a CSV file here or click to browse",
-    "placeholderPdf": "Drop a PDF file here or click to browse"
+    "placeholder": "Drop a CSV file here or click to browse"
   },
   "importResult": {
     "totalRows": "Total rows",
@@ -451,7 +449,7 @@
     "subfolders": "Subfolder mappings",
     "noConfigs": "No subfolders configured yet. Add one to start auto-importing.",
     "selectAccount": "Select account…",
-    "noProfile": "No CSV profile (PDF only)",
+    "noProfile": "No CSV profile",
     "addSubfolder": "Add",
     "subfolderPlaceholder": "folder-name",
     "addError": "Could not add subfolder. Name may already be in use.",

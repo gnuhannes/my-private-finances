@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useAccounts } from "../hooks/useAccounts";
 import { useImportCsv } from "../hooks/useImportCsv";
-import { useImportPdf } from "../hooks/useImportPdf";
 import { useCsvProfiles } from "../hooks/useCsvProfiles";
 import type { CsvProfile } from "../lib/api/csvProfiles";
 import { ApiError } from "../lib/api/client";
@@ -16,17 +15,13 @@ type Props = {
   onClose: () => void;
 };
 
-type Mode = "csv" | "pdf";
-
 export function ImportDialog({ open, onClose }: Props) {
   const { t } = useTranslation();
   const dialogRef = useRef<HTMLDialogElement>(null);
   const { data: accounts } = useAccounts();
   const { profiles } = useCsvProfiles();
-  const csvMutation = useImportCsv();
-  const pdfMutation = useImportPdf();
+  const mutation = useImportCsv();
 
-  const [mode, setMode] = useState<Mode>("csv");
   const [accountId, setAccountId] = useState<number | "">("");
   const [selectedProfile, setSelectedProfile] = useState<CsvProfile | null>(null);
   const [delimiter, setDelimiter] = useState(",");
@@ -34,8 +29,6 @@ export function ImportDialog({ open, onClose }: Props) {
   const [decimalComma, setDecimalComma] = useState(false);
   const [file, setFile] = useState<File | null>(null);
   const [showProfileManager, setShowProfileManager] = useState(false);
-
-  const mutation = mode === "csv" ? csvMutation : pdfMutation;
 
   useEffect(() => {
     const dialog = dialogRef.current;
@@ -78,8 +71,7 @@ export function ImportDialog({ open, onClose }: Props) {
     setDecimalComma(false);
     setFile(null);
     setShowProfileManager(false);
-    csvMutation.reset();
-    pdfMutation.reset();
+    mutation.reset();
   };
 
   const handleClose = () => {
@@ -92,40 +84,28 @@ export function ImportDialog({ open, onClose }: Props) {
     mutation.reset();
   };
 
-  const handleModeChange = (next: Mode) => {
-    setMode(next);
-    setFile(null);
-    mutation.reset();
-  };
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!file || accountId === "") return;
 
-    if (mode === "csv") {
-      // When a profile is selected, omit format params so the backend uses the profile.
-      // The UI shows auto-filled values, but we let the backend be the source of truth.
-      // If the user changed a format param from the profile's value, we send it explicitly.
-      const delimiterOverride =
-        selectedProfile && delimiter === selectedProfile.delimiter ? undefined : delimiter;
-      const dateFormatOverride =
-        selectedProfile && dateFormat === selectedProfile.date_format ? undefined : dateFormat;
-      const decimalCommaOverride =
-        selectedProfile && decimalComma === selectedProfile.decimal_comma
-          ? undefined
-          : decimalComma;
+    // When a profile is selected, omit format params so the backend uses the profile.
+    // The UI shows auto-filled values, but we let the backend be the source of truth.
+    // If the user changed a format param from the profile's value, we send it explicitly.
+    const delimiterOverride =
+      selectedProfile && delimiter === selectedProfile.delimiter ? undefined : delimiter;
+    const dateFormatOverride =
+      selectedProfile && dateFormat === selectedProfile.date_format ? undefined : dateFormat;
+    const decimalCommaOverride =
+      selectedProfile && decimalComma === selectedProfile.decimal_comma ? undefined : decimalComma;
 
-      csvMutation.mutate({
-        file,
-        accountId: Number(accountId),
-        delimiter: delimiterOverride,
-        dateFormat: dateFormatOverride,
-        decimalComma: decimalCommaOverride,
-        profileId: selectedProfile?.id,
-      });
-    } else {
-      pdfMutation.mutate({ file, accountId: Number(accountId) });
-    }
+    mutation.mutate({
+      file,
+      accountId: Number(accountId),
+      delimiter: delimiterOverride,
+      dateFormat: dateFormatOverride,
+      decimalComma: decimalCommaOverride,
+      profileId: selectedProfile?.id,
+    });
   };
 
   const canSubmit = file !== null && accountId !== "" && !mutation.isPending;
@@ -144,12 +124,12 @@ export function ImportDialog({ open, onClose }: Props) {
           <ImportResult
             result={mutation.data}
             importContext={{
-              mode,
+              mode: "csv",
               fileName: file?.name,
               accountId: typeof accountId === "number" ? accountId : undefined,
-              delimiter: mode === "csv" ? delimiter : undefined,
-              dateFormat: mode === "csv" ? dateFormat : undefined,
-              decimalComma: mode === "csv" ? decimalComma : undefined,
+              delimiter,
+              dateFormat,
+              decimalComma,
             }}
           />
           <div className={styles.actions}>
@@ -163,57 +143,35 @@ export function ImportDialog({ open, onClose }: Props) {
         </div>
       ) : (
         <form onSubmit={handleSubmit} className={styles.body}>
-          {/* Tab bar */}
-          <div className={styles.tabBar}>
+          {/* Profile selector */}
+          <div className={styles.profileRow}>
+            <label className={styles.field}>
+              <span>{t("importDialog.bankProfile")}</span>
+              <select
+                value={selectedProfile?.id ?? ""}
+                onChange={(e) => {
+                  const id = e.target.value === "" ? null : Number(e.target.value);
+                  applyProfile(profiles.data?.find((p) => p.id === id) ?? null);
+                }}
+              >
+                <option value="">{t("importDialog.bankProfileNone")}</option>
+                {profiles.data?.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.name}
+                  </option>
+                ))}
+              </select>
+            </label>
             <button
               type="button"
-              className={`${styles.tab} ${mode === "csv" ? styles.tabActive : ""}`}
-              onClick={() => handleModeChange("csv")}
+              className={styles.manageProfilesBtn}
+              onClick={() => setShowProfileManager((v) => !v)}
             >
-              {t("importDialog.tabCsv")}
-            </button>
-            <button
-              type="button"
-              className={`${styles.tab} ${mode === "pdf" ? styles.tabActive : ""}`}
-              onClick={() => handleModeChange("pdf")}
-            >
-              {t("importDialog.tabPdf")}
+              {t("importDialog.manageBankProfiles")}
             </button>
           </div>
 
-          {/* Profile selector (CSV tab only) */}
-          {mode === "csv" && (
-            <div className={styles.profileRow}>
-              <label className={styles.field}>
-                <span>{t("importDialog.bankProfile")}</span>
-                <select
-                  value={selectedProfile?.id ?? ""}
-                  onChange={(e) => {
-                    const id = e.target.value === "" ? null : Number(e.target.value);
-                    applyProfile(profiles.data?.find((p) => p.id === id) ?? null);
-                  }}
-                >
-                  <option value="">{t("importDialog.bankProfileNone")}</option>
-                  {profiles.data?.map((p) => (
-                    <option key={p.id} value={p.id}>
-                      {p.name}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <button
-                type="button"
-                className={styles.manageProfilesBtn}
-                onClick={() => setShowProfileManager((v) => !v)}
-              >
-                {t("importDialog.manageBankProfiles")}
-              </button>
-            </div>
-          )}
-
-          {showProfileManager && mode === "csv" && (
-            <CsvProfileManager onClose={() => setShowProfileManager(false)} />
-          )}
+          {showProfileManager && <CsvProfileManager onClose={() => setShowProfileManager(false)} />}
 
           <label className={styles.field}>
             <span>{t("importDialog.account")}</span>
@@ -230,42 +188,35 @@ export function ImportDialog({ open, onClose }: Props) {
             </select>
           </label>
 
-          {mode === "csv" && (
-            <div className={styles.optionsRow}>
-              <label className={styles.field}>
-                <span>{t("importDialog.delimiter")}</span>
-                <select value={delimiter} onChange={(e) => setDelimiter(e.target.value)}>
-                  <option value=",">,</option>
-                  <option value=";">;</option>
-                  <option value="&#9;">{t("importDialog.delimiterTab")}</option>
-                </select>
-              </label>
+          <div className={styles.optionsRow}>
+            <label className={styles.field}>
+              <span>{t("importDialog.delimiter")}</span>
+              <select value={delimiter} onChange={(e) => setDelimiter(e.target.value)}>
+                <option value=",">,</option>
+                <option value=";">;</option>
+                <option value="&#9;">{t("importDialog.delimiterTab")}</option>
+              </select>
+            </label>
 
-              <label className={styles.field}>
-                <span>{t("importDialog.dateFormat")}</span>
-                <select value={dateFormat} onChange={(e) => setDateFormat(e.target.value)}>
-                  <option value="iso">{t("importDialog.dateFormatIso")}</option>
-                  <option value="dmy">{t("importDialog.dateFormatDmy")}</option>
-                </select>
-              </label>
+            <label className={styles.field}>
+              <span>{t("importDialog.dateFormat")}</span>
+              <select value={dateFormat} onChange={(e) => setDateFormat(e.target.value)}>
+                <option value="iso">{t("importDialog.dateFormatIso")}</option>
+                <option value="dmy">{t("importDialog.dateFormatDmy")}</option>
+              </select>
+            </label>
 
-              <label className={styles.field}>
-                <span>{t("importDialog.decimalComma")}</span>
-                <input
-                  type="checkbox"
-                  checked={decimalComma}
-                  onChange={(e) => setDecimalComma(e.target.checked)}
-                />
-              </label>
-            </div>
-          )}
+            <label className={styles.field}>
+              <span>{t("importDialog.decimalComma")}</span>
+              <input
+                type="checkbox"
+                checked={decimalComma}
+                onChange={(e) => setDecimalComma(e.target.checked)}
+              />
+            </label>
+          </div>
 
-          <FileDropZone
-            onFile={setFile}
-            file={file}
-            accept={mode === "csv" ? ".csv" : ".pdf"}
-            placeholder={mode === "pdf" ? t("fileDropZone.placeholderPdf") : undefined}
-          />
+          <FileDropZone onFile={setFile} file={file} accept=".csv" />
 
           {mutation.isError && (
             <div className={styles.error}>

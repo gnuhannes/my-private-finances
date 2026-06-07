@@ -13,7 +13,6 @@ from watchdog.observers import Observer  # type: ignore[import-untyped]
 from my_private_finances.models import CsvProfile
 from my_private_finances.models.watch_folder_config import WatchFolderConfig
 from my_private_finances.services.csv_import import import_transactions_from_csv_path
-from my_private_finances.services.pdf_import import import_transactions_from_pdf_path
 from my_private_finances.services.recurring_detection import run_detection
 
 logger = logging.getLogger(__name__)
@@ -33,7 +32,7 @@ class _QueueHandler(FileSystemEventHandler):
         if event.is_directory:
             return
         path = Path(str(event.src_path))
-        if path.suffix.lower() in {".csv", ".pdf"}:
+        if path.suffix.lower() == ".csv":
             asyncio.run_coroutine_threadsafe(self._queue.put(path), self._loop)
 
 
@@ -70,31 +69,24 @@ async def _process_file(
             return
 
         try:
-            if path.suffix.lower() == ".csv":
-                profile = None
-                if config.profile_id is not None:
-                    profile = await session.get(CsvProfile, config.profile_id)
+            profile = None
+            if config.profile_id is not None:
+                profile = await session.get(CsvProfile, config.profile_id)
 
-                kwargs: dict[str, object] = {}
-                if profile is not None:
-                    kwargs["delimiter"] = profile.delimiter
-                    kwargs["date_format"] = profile.date_format
-                    kwargs["decimal_comma"] = profile.decimal_comma
-                    if profile.column_map:
-                        kwargs["column_map"] = profile.column_map
+            kwargs: dict[str, object] = {}
+            if profile is not None:
+                kwargs["delimiter"] = profile.delimiter
+                kwargs["date_format"] = profile.date_format
+                kwargs["decimal_comma"] = profile.decimal_comma
+                if profile.column_map:
+                    kwargs["column_map"] = profile.column_map
 
-                import_result = await import_transactions_from_csv_path(
-                    session=session,
-                    account_id=config.account_id,
-                    csv_path=path,
-                    **kwargs,  # type: ignore[arg-type]
-                )
-            else:
-                import_result = await import_transactions_from_pdf_path(
-                    session=session,
-                    account_id=config.account_id,
-                    pdf_path=path,
-                )
+            import_result = await import_transactions_from_csv_path(
+                session=session,
+                account_id=config.account_id,
+                csv_path=path,
+                **kwargs,  # type: ignore[arg-type]
+            )
 
             if import_result.created > 0:
                 try:

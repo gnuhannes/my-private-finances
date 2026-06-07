@@ -23,18 +23,6 @@ vi.mock("../../src/hooks/useImportCsv", () => ({
   }),
 }));
 
-vi.mock("../../src/hooks/useImportPdf", () => ({
-  useImportPdf: () => ({
-    mutate: vi.fn(),
-    isPending: false,
-    isSuccess: false,
-    isError: false,
-    data: null,
-    error: null,
-    reset: vi.fn(),
-  }),
-}));
-
 vi.mock("../../src/hooks/useCsvProfiles", () => ({
   useCsvProfiles: () => ({
     profiles: { data: [], isLoading: false },
@@ -75,8 +63,6 @@ describe("Import", () => {
     );
 
     expect(screen.getByText("Import", { selector: "h2" })).toBeInTheDocument();
-    expect(screen.getByText("CSV")).toBeInTheDocument();
-    expect(screen.getByText("PDF (Trade Republic)")).toBeInTheDocument();
     expect(screen.getByText("Account")).toBeInTheDocument();
     expect(screen.getByText("Delimiter")).toBeInTheDocument();
     expect(screen.getByText("Date format")).toBeInTheDocument();

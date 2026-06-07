@@ -4,7 +4,7 @@ import type { ImportResult as ImportResultType, ImportErrorDetail } from "../lib
 import styles from "./ImportResult.module.css";
 
 export type ImportContext = {
-  mode: "csv" | "pdf";
+  mode: "csv";
   fileName?: string;
   accountId?: number;
   delimiter?: string;
@@ -19,10 +19,7 @@ type Props = {
 
 function buildReport(result: ImportResultType, ctx?: ImportContext): string {
   const ts = new Date().toISOString().replace("T", " ").slice(0, 19);
-  const lines: string[] = [
-    `Import Error Report — ${ts}`,
-    "=".repeat(40),
-  ];
+  const lines: string[] = [`Import Error Report — ${ts}`, "=".repeat(40)];
   if (ctx) {
     lines.push(`Mode:     ${ctx.mode.toUpperCase()}`);
     if (ctx.fileName) lines.push(`File:     ${ctx.fileName}`);
@@ -48,7 +45,9 @@ function buildReport(result: ImportResultType, ctx?: ImportContext): string {
     if (err.unexpected) lines.push("  [unexpected — please report this]");
   }
   if (result.errors_truncated) {
-    lines.push(`... (only first ${result.errors.length} errors shown; ${result.failed} rows failed total)`);
+    lines.push(
+      `... (only first ${result.errors.length} errors shown; ${result.failed} rows failed total)`,
+    );
   }
   return lines.join("\n");
 }
@@ -65,9 +64,7 @@ function ErrorItem({ err }: { err: ImportErrorDetail }) {
         )}
       </div>
       <div className={styles.errorMessage}>{err.message}</div>
-      {err.raw_value != null && (
-        <div className={styles.errorRaw}>"{err.raw_value}"</div>
-      )}
+      {err.raw_value != null && <div className={styles.errorRaw}>"{err.raw_value}"</div>}
       {err.hint && <div className={styles.errorHint}>{err.hint}</div>}
     </li>
   );

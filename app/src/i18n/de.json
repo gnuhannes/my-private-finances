@@ -261,7 +261,6 @@
   "importDialog": {
     "title": "Importieren",
     "tabCsv": "CSV",
-    "tabPdf": "PDF (Trade Republic)",
     "bankProfile": "Bankprofil",
     "bankProfileNone": "Kein / Benutzerdefiniert",
     "manageBankProfiles": "Profile verwalten",
@@ -303,8 +302,7 @@
     "delete": "Löschen"
   },
   "fileDropZone": {
-    "placeholder": "CSV-Datei hier ablegen oder klicken zum Durchsuchen",
-    "placeholderPdf": "PDF-Datei hier ablegen oder klicken zum Durchsuchen"
+    "placeholder": "CSV-Datei hier ablegen oder klicken zum Durchsuchen"
   },
   "importResult": {
     "totalRows": "Gesamtzeilen",
@@ -451,7 +449,7 @@
     "subfolders": "Unterordner-Zuordnungen",
     "noConfigs": "Noch keine Unterordner konfiguriert. Einen hinzufügen, um den Auto-Import zu starten.",
     "selectAccount": "Konto auswählen…",
-    "noProfile": "Kein CSV-Profil (nur PDF)",
+    "noProfile": "Kein CSV-Profil",
     "addSubfolder": "Hinzufügen",
     "subfolderPlaceholder": "ordner-name",
     "addError": "Unterordner konnte nicht hinzugefügt werden. Name wird möglicherweise bereits verwendet.",

@@ -18,8 +18,22 @@ const resultWithErrors: ImportResultType = {
   duplicates: 1,
   failed: 2,
   errors: [
-    { row: 3, field: "booking_date", raw_value: "not-a-date", message: "Invalid ISO date: 'not-a-date'", hint: "Try switching the date format to DMY (dd.mm.yyyy).", unexpected: false },
-    { row: 5, field: "amount", raw_value: null, message: "Missing column 'amount/Betrag'", hint: "Add one of these header names to the CSV.", unexpected: false },
+    {
+      row: 3,
+      field: "booking_date",
+      raw_value: "not-a-date",
+      message: "Invalid ISO date: 'not-a-date'",
+      hint: "Try switching the date format to DMY (dd.mm.yyyy).",
+      unexpected: false,
+    },
+    {
+      row: 5,
+      field: "amount",
+      raw_value: null,
+      message: "Missing column 'amount/Betrag'",
+      hint: "Add one of these header names to the CSV.",
+      unexpected: false,
+    },
   ],
   errors_truncated: false,
 };
@@ -56,7 +70,9 @@ describe("ImportResult", () => {
     render(<ImportResult result={resultWithErrors} />);
 
     expect(screen.getByText("booking_date")).toBeInTheDocument();
-    expect(screen.getByText("Try switching the date format to DMY (dd.mm.yyyy).")).toBeInTheDocument();
+    expect(
+      screen.getByText("Try switching the date format to DMY (dd.mm.yyyy)."),
+    ).toBeInTheDocument();
   });
 
   it("renders raw value when present", () => {
