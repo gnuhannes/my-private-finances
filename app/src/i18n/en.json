@@ -502,5 +502,20 @@
     "colSubfolder": "Subfolder",
     "colAccount": "Account",
     "colProfile": "CSV Profile"
+  },
+  "welcome": {
+    "stepProgress": "Step {{current}} of {{total}}",
+    "skip": "Skip setup",
+    "back": "Back",
+    "next": "Next",
+    "introTitle": "Welcome to My Private Finances",
+    "introPrivacy": "All your data stays on this machine — no cloud, no accounts, no tracking.",
+    "languageLabel": "Language",
+    "currencyLabel": "Default currency",
+    "accountTitle": "Add your first account",
+    "accountCopy": "Your balance on this date. Anything imported after it adds up from here — powers Net Worth and running balances. Match it to your oldest statement, or use today if starting fresh.",
+    "startingBalanceLabel": "Starting balance",
+    "asOfDateLabel": "As of date",
+    "addAccount": "Add account"
   }
 }

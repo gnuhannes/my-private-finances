@@ -44,6 +44,9 @@ export type { AnnualReport, MonthSummary } from "./api/annual";
 
 export { restoreSqlite, deleteTransactions, wipeAllData } from "./api/settings";
 
+export { getAppSettings, updateAppSettings } from "./api/appSettings";
+export type { AppSettings, AppSettingsUpdatePayload } from "./api/appSettings";
+
 export { trainModel, getSuggestions } from "./api/ml";
 export type { TrainResult, Suggestion } from "./api/ml";
 

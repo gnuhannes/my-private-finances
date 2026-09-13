@@ -5,3 +5,11 @@
 #root {
   min-height: 100%;
 }
+
+.app-splash {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  color: var(--text-muted);
+}
