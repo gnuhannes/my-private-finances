@@ -140,3 +140,28 @@
 .changeBtn:hover {
   border-color: var(--border-strong);
 }
+
+.createToggle {
+  align-self: flex-start;
+  background: none;
+  border: none;
+  color: var(--primary);
+  cursor: pointer;
+  font-size: 0.8rem;
+  padding: 2px 0;
+  text-decoration: underline;
+}
+
+.createForm {
+  display: grid;
+  gap: 8px;
+  padding: 10px;
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius-sm);
+}
+
+.createActions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}

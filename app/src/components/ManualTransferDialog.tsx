@@ -125,6 +125,7 @@ export function ManualTransferDialog({ open, onClose }: Props) {
             onQueryChange={setFromQuery}
             selected={fromSelected}
             onSelect={setFromSelected}
+            otherLeg={toSelected}
           />
 
           <TransactionPicker
@@ -142,6 +143,7 @@ export function ManualTransferDialog({ open, onClose }: Props) {
             onQueryChange={setToQuery}
             selected={toSelected}
             onSelect={setToSelected}
+            otherLeg={fromSelected}
           />
 
           {mutation.isError && (

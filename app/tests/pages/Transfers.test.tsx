@@ -83,6 +83,7 @@ vi.mock("../../src/hooks/useAccounts", () => ({
 
 vi.mock("../../src/hooks/useTransactions", () => ({
   useTransactions: () => ({ data: undefined, isLoading: false, isError: false }),
+  useCreateTransaction: () => ({ mutateAsync: vi.fn(), isPending: false, isError: false }),
 }));
 
 describe("Transfers page", () => {

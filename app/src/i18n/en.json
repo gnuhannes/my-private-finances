@@ -104,6 +104,10 @@
     "setupOpening": "Set up opening balance",
     "accountNamePlaceholder": "Account name",
     "currencyPlaceholder": "EUR",
+    "accountTypeBank": "Bank",
+    "accountTypeCash": "Cash",
+    "accountTypeCashHint": "No bank statement — transactions are entered manually.",
+    "cashBadge": "Cash",
     "creating": "Creating…",
     "create": "Create",
     "failedCreate": "Failed to create account.",
@@ -272,7 +276,15 @@
       "success": "Linked as a transfer. Both transactions are now excluded from spending reports.",
       "linkAnother": "Link Another",
       "close": "Close",
-      "failed": "Failed to link transfer: {{error}}"
+      "failed": "Failed to link transfer: {{error}}",
+      "createNew": "+ Create a new transaction",
+      "createDate": "Date",
+      "createAmount": "Amount",
+      "createPayee": "Payee",
+      "createPurpose": "Purpose",
+      "createSubmit": "Add & Select",
+      "creatingTx": "Adding...",
+      "createFailed": "Failed to create the transaction."
     }
   },
   "kpiCard": {
