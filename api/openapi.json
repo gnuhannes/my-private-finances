@@ -24,6 +24,15 @@
       "AccountCreate": {
         "additionalProperties": false,
         "properties": {
+          "account_type": {
+            "default": "bank",
+            "enum": [
+              "bank",
+              "cash"
+            ],
+            "title": "Account Type",
+            "type": "string"
+          },
           "currency": {
             "default": "EUR",
             "maxLength": 3,
@@ -94,6 +103,14 @@
       },
       "AccountRead": {
         "properties": {
+          "account_type": {
+            "enum": [
+              "bank",
+              "cash"
+            ],
+            "title": "Account Type",
+            "type": "string"
+          },
           "currency": {
             "title": "Currency",
             "type": "string"
@@ -134,7 +151,8 @@
         "required": [
           "id",
           "name",
-          "currency"
+          "currency",
+          "account_type"
         ],
         "title": "AccountRead",
         "type": "object"
@@ -142,6 +160,21 @@
       "AccountUpdate": {
         "additionalProperties": false,
         "properties": {
+          "account_type": {
+            "anyOf": [
+              {
+                "enum": [
+                  "bank",
+                  "cash"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Account Type"
+          },
           "opening_balance": {
             "anyOf": [
               {

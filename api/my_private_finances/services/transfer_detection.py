@@ -42,7 +42,9 @@ async def detect_transfer_candidates(
     tx = table(Transaction)
     acc = table(Account)
 
-    # Load all transactions with account info
+    # Load all transactions with account info. Cash accounts have no external
+    # statement to reconcile against, so they're excluded here — 090's design:
+    # cash transfers are manual-linking only (see create_manual_transfer).
     stmt = (
         select(
             tx.c.id,
@@ -52,6 +54,7 @@ async def detect_transfer_candidates(
             tx.c.payee,
         )
         .select_from(tx.join(acc, tx.c.account_id == acc.c.id))
+        .where(acc.c.account_type != "cash")
         .order_by(tx.c.booking_date, tx.c.amount)
     )
     rows = (await session.execute(stmt)).all()

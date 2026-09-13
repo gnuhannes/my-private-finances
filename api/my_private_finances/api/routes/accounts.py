@@ -16,7 +16,9 @@ router = APIRouter(prefix="/accounts", tags=["accounts"])
 async def create_account(
     account: Annotated[AccountCreate, Body()], session: SessionDep
 ) -> Account:
-    db_obj = Account(name=account.name, currency=account.currency)
+    db_obj = Account(
+        name=account.name, currency=account.currency, account_type=account.account_type
+    )
     session.add(db_obj)
     await session.commit()
     await session.refresh(db_obj)
@@ -43,6 +45,8 @@ async def update_account(
         db_obj.opening_balance = payload.opening_balance
     if payload.opening_balance_date is not None:
         db_obj.opening_balance_date = payload.opening_balance_date
+    if payload.account_type is not None:
+        db_obj.account_type = payload.account_type
 
     await session.commit()
     await session.refresh(db_obj)

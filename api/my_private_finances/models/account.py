@@ -20,3 +20,9 @@ class Account(TimestampMixin, table=True):
     opening_balance_date: Optional[date] = Field(
         default=None, sa_column=Column(Date, nullable=True)
     )
+    # "bank" (statement-imported, treated as source of truth) | "cash" (no
+    # external statement — manual entry is the only way transactions arrive).
+    account_type: str = Field(
+        default="bank",
+        sa_column=Column(String(16), nullable=False, server_default="bank"),
+    )
