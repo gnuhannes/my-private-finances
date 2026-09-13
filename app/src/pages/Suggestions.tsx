@@ -57,10 +57,16 @@ export default function Suggestions() {
 
       {lastTrainResult && (
         <p className={styles.trainResult}>
-          {t("suggestions.trainSuccess", {
-            samples: lastTrainResult.num_samples,
-            categories: lastTrainResult.num_categories,
-          })}
+          {lastTrainResult.cv_accuracy != null
+            ? t("suggestions.trainSuccessWithAccuracy", {
+                samples: lastTrainResult.num_samples,
+                categories: lastTrainResult.num_categories,
+                accuracy: Math.round(lastTrainResult.cv_accuracy * 100),
+              })
+            : t("suggestions.trainSuccess", {
+                samples: lastTrainResult.num_samples,
+                categories: lastTrainResult.num_categories,
+              })}
         </p>
       )}
 

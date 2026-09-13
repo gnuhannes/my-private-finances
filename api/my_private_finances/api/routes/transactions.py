@@ -1,3 +1,4 @@
+import logging
 from datetime import date
 from decimal import Decimal
 from typing import Annotated, Any, Optional
@@ -18,10 +19,13 @@ from my_private_finances.schemas import (
     TransactionSplitRead,
     TransactionUpdate,
 )
+from my_private_finances.services.ml_categorization import note_manual_categorization
 from my_private_finances.services.transaction_hash import HashInput, compute_import_hash
 from my_private_finances.utils.db_helpers import get_account_or_404
 
 router = APIRouter(prefix="/transactions", tags=["transactions"])
+
+logger = logging.getLogger(__name__)
 
 
 async def _count_splits(session: AsyncSession, transaction_id: int) -> int:
@@ -112,6 +116,7 @@ async def update_transaction(
 
     fields = payload.model_dump(exclude_unset=True)
 
+    was_uncategorized = db_obj.category_id is None
     if "category_id" in fields:
         if await _count_splits(session, transaction_id) > 0:
             raise HTTPException(
@@ -125,6 +130,16 @@ async def update_transaction(
 
     await session.commit()
     await session.refresh(db_obj)
+
+    if was_uncategorized and db_obj.category_id is not None:
+        try:
+            await note_manual_categorization(session)
+        except Exception:
+            logger.warning(
+                "Auto-retrain bookkeeping failed for transaction %d",
+                transaction_id,
+                exc_info=True,
+            )
 
     split_count = await _count_splits(session, transaction_id)
     return TransactionRead.model_validate(db_obj).model_copy(

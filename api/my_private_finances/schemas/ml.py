@@ -9,6 +9,7 @@ from sqlmodel import SQLModel
 class TrainResult(SQLModel):
     num_samples: int
     num_categories: int
+    cv_accuracy: float | None = None
 
 
 class Suggestion(SQLModel):
@@ -20,3 +21,4 @@ class Suggestion(SQLModel):
     purpose: str | None
     amount: Decimal
     booking_date: date
+    could_become_rule: bool = False

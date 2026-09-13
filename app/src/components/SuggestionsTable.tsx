@@ -128,8 +128,11 @@ export function SuggestionsTable({ items, onAccept, onSkip }: Props) {
               <td className={styles.purpose}>{s.purpose ?? EMPTY_CELL}</td>
               <td className={styles.category}>{s.category_name}</td>
               <td>
-                <span className={`${styles.badge} ${confidenceBadgeClass(s.confidence)}`}>
-                  {Math.round(s.confidence * 100)}%
+                <span
+                  className={`${styles.badge} ${confidenceBadgeClass(s.confidence)}`}
+                  title={s.could_become_rule ? t("suggestions.couldBecomeRule") : undefined}
+                >
+                  {Math.round(s.confidence * 100)}%{s.could_become_rule ? " ★" : ""}
                 </span>
               </td>
               <td className={`${styles.right} ${styles.amount}`}>

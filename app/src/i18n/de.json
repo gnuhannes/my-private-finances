@@ -450,6 +450,8 @@
     "trainModel": "Modell trainieren",
     "training": "Wird trainiert…",
     "trainSuccess": "Modell auf {{samples}} Transaktionen in {{categories}} Kategorien trainiert.",
+    "trainSuccessWithAccuracy": "Modell auf {{samples}} Transaktionen in {{categories}} Kategorien trainiert — ≈{{accuracy}}% Genauigkeit auf deinen Daten.",
+    "couldBecomeRule": "Hohe Konfidenz — eine Regel dafür könnte sich lohnen",
     "trainFailed": "Training fehlgeschlagen. Stelle sicher, dass du mindestens 10 kategorisierte Transaktionen hast.",
     "acceptAllHighConfidence": "Alle hochkonfidenten (≥80%) akzeptieren — {{count}}",
     "coldStartHint": "Keine Vorschläge verfügbar. Trainiere zuerst das Modell oder kategorisiere mindestens 10 Transaktionen manuell oder per Regeln.",

@@ -15,6 +15,7 @@ from my_private_finances.services.csv_import import (
     import_transactions_from_csv_path,
 )
 from my_private_finances.services.exceptions import NotFoundError, ServiceError
+from my_private_finances.services.ml_categorization import maybe_retrain_after_import
 from my_private_finances.services.recurring_detection import run_detection
 
 router = APIRouter(prefix="/imports", tags=["imports"])
@@ -149,6 +150,14 @@ async def _run_import(
         except Exception:
             logger.warning(
                 "Auto recurring-detection failed after CSV import for account_id=%d",
+                account_id,
+                exc_info=True,
+            )
+        try:
+            await maybe_retrain_after_import(session)
+        except Exception:
+            logger.warning(
+                "Auto-retrain failed after CSV import for account_id=%d",
                 account_id,
                 exc_info=True,
             )

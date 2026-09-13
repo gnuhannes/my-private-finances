@@ -1413,6 +1413,11 @@ export interface components {
             category_name: string;
             /** Confidence */
             confidence: number;
+            /**
+             * Could Become Rule
+             * @default false
+             */
+            could_become_rule: boolean;
             /** Payee */
             payee: string | null;
             /** Purpose */
@@ -1438,6 +1443,8 @@ export interface components {
         };
         /** TrainResult */
         TrainResult: {
+            /** Cv Accuracy */
+            cv_accuracy?: number | null;
             /** Num Categories */
             num_categories: number;
             /** Num Samples */
