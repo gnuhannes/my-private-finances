@@ -34,7 +34,8 @@ Monorepo:
 All targets run from the repo root via Makefiles.
 
 ```
-make ci               # full backend + frontend CI
+make ci               # full backend + frontend CI + OpenAPI contract check
+make openapi          # regenerate api/openapi.json + app/src/lib/api/schema.d.ts
 make sync             # install backend (poetry) + frontend (pnpm) deps
 ```
 
@@ -75,6 +76,26 @@ Dev servers:
 make -C api run       # uvicorn on port 5179
 make -C app run       # vite dev on port 5173 (proxies /api → 127.0.0.1:5179)
 ```
+
+## Before you push
+
+Run `make ci` from the **repo root** before every push — it is the one command
+that mirrors CI exactly (`ci-backend` + `ci-frontend` + `check-openapi`).
+Running individual `poetry run` / `pnpm run` commands by hand is how drift
+slips through and CI fails on something that looked clean locally:
+
+- `make lint` is `ruff check` **and** `ruff format --check`. Running
+  `ruff check` alone passes locally and still fails CI on formatting —
+  always run (or let `make lint`/`make ci` run) `ruff format` too.
+- **Any change to a route's request/response shape** (`api/routes/*.py`,
+  `schemas/*.py`) requires regenerating the FE/BE contract:
+  `make openapi` regenerates `api/openapi.json` and
+  `app/src/lib/api/schema.d.ts`; `check-openapi` (part of `make ci`) diffs
+  both against the committed versions and fails on drift. Commit both files
+  together with the route/schema change — don't rely on remembering to run
+  this separately, `make ci` already does.
+- Any model change requires a migration (see below); `make check-migrations`
+  gates drift the same way.
 
 ## Backend conventions (`api/my_private_finances/`)
 
