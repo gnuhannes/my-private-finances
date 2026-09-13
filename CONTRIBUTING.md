@@ -50,6 +50,7 @@ Run checks:
 
 ```bash
 poetry run ruff check .
+poetry run ruff format --check .
 poetry run mypy my_private_finances
 poetry run pytest
 ```
@@ -57,11 +58,17 @@ poetry run pytest
 Or use the Makefile targets from the repo root:
 
 ```bash
-make lint        # ruff
+make lint        # ruff check + ruff format --check
 make typecheck   # mypy
 make test        # pytest
-make ci          # all backend + frontend checks
+make openapi     # regenerate api/openapi.json + app/src/lib/api/schema.d.ts
+make ci          # all backend + frontend checks + OpenAPI contract drift check
 ```
+
+If your change touches a route's request/response shape (`api/routes/*.py`,
+`schemas/*.py`), run `make openapi` and commit the regenerated
+`api/openapi.json` and `app/src/lib/api/schema.d.ts` alongside it — `make ci`
+fails if they're stale.
 
 ***
 
@@ -118,7 +125,10 @@ Requires Poetry (backend) and pnpm (frontend) set up. See
 1. Fork the repository 
 2. Create a feature branch from main (no direct commits to main)
 3. Make your changes
-4. Ensure CI passes locally (backend and frontend)
+4. Run `make ci` from the repo root — it mirrors CI exactly (backend lint +
+   format + typecheck + coverage + migration drift, frontend checks, and the
+   OpenAPI contract drift check). Running individual `poetry`/`pnpm` commands
+   by hand can pass while `make ci` still fails.
 5. Open a pull request
 
 ***
