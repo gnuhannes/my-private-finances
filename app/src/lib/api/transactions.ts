@@ -14,6 +14,7 @@ export type TransactionItem = {
   import_source: string | null;
   import_hash: string;
   is_transfer: boolean;
+  split_count: number;
 };
 
 export type TransactionListResponse = {
