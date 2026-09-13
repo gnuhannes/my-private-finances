@@ -8,6 +8,7 @@ import { useUpdateTransactionCategory } from "../hooks/useUpdateTransactionCateg
 import { useSuggestions } from "../hooks/useMl";
 import { TransactionTable } from "../components/TransactionTable";
 import { Pagination } from "../components/Pagination";
+import { EmptyState } from "../components/EmptyState";
 import styles from "./Transactions.module.css";
 
 const PAGE_SIZE = 50;
@@ -63,7 +64,7 @@ export default function Transactions() {
 
   if (isLoading) return <div className={styles.status}>{t("common.loadingAccounts")}</div>;
   if (error) return <div className={styles.error}>{t("common.failedAccounts")}</div>;
-  if (!accounts || accounts.length === 0) return <div>{t("common.noAccountsYet")}</div>;
+  if (!accounts || accounts.length === 0) return <EmptyState message={t("common.noAccountsYet")} />;
 
   return (
     <div className={styles.page}>

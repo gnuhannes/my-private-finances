@@ -116,3 +116,64 @@
 .status {
   color: var(--text-muted);
 }
+
+.groupHeading {
+  font-size: 0.95rem;
+  margin: 16px 0 8px;
+}
+
+.checkboxList {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 8px;
+  display: grid;
+  gap: 6px;
+}
+
+.customRows {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.customRow {
+  display: flex;
+  gap: 8px;
+}
+
+.customRow input {
+  flex: 1;
+  padding: 6px 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg);
+  color: var(--text);
+}
+
+.stepActions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.confirmation {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+.doneLinks {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.doneLink {
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  text-align: center;
+  text-decoration: none;
+  color: var(--text);
+}

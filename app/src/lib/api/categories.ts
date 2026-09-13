@@ -29,6 +29,10 @@ export function createCategory(data: CategoryCreate): Promise<Category> {
   return apiPost<Category>("/api/categories", data);
 }
 
+export function createCategoriesBatch(data: CategoryCreate[]): Promise<Category[]> {
+  return apiPost<Category[]>("/api/categories/batch", data);
+}
+
 export function updateCategory(id: number, data: CategoryUpdate): Promise<Category> {
   return apiPatch<Category>(`/api/categories/${id}`, data);
 }

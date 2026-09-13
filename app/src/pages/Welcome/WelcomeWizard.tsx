@@ -5,9 +5,11 @@ import { useAccounts } from "../../hooks/useAccounts";
 import { useAppSettings, useUpdateAppSettings } from "../../hooks/useAppSettings";
 import { WelcomeStepIntro } from "./WelcomeStepIntro";
 import { WelcomeStepAccount } from "./WelcomeStepAccount";
+import { WelcomeStepCategories } from "./WelcomeStepCategories";
+import { WelcomeStepImport } from "./WelcomeStepImport";
+import { WelcomeStepDone } from "./WelcomeStepDone";
 import styles from "./WelcomeWizard.module.css";
 
-/** Full wizard has 5 steps (105-first-run-setup); steps 3-5 land in a later PR. */
 const TOTAL_STEPS = 5;
 
 export default function WelcomeWizard() {
@@ -19,7 +21,15 @@ export default function WelcomeWizard() {
   const { data: accounts } = useAccounts();
   const updateSettings = useUpdateAppSettings();
 
-  const canAdvance = stepIndex === 0 ? true : stepIndex === 1 ? (accounts?.length ?? 0) > 0 : false;
+  const isLastStep = stepIndex === TOTAL_STEPS - 1;
+  const canAdvance =
+    stepIndex === 0
+      ? true
+      : stepIndex === 1
+        ? (accounts?.length ?? 0) > 0
+        : stepIndex === 2 || stepIndex === 3
+          ? true
+          : false;
 
   function handleSkip() {
     updateSettings.mutate(
@@ -60,6 +70,9 @@ export default function WelcomeWizard() {
       <div className={styles.content}>
         {stepIndex === 0 && <WelcomeStepIntro settings={settings} />}
         {stepIndex === 1 && <WelcomeStepAccount defaultCurrency={settings.default_currency} />}
+        {stepIndex === 2 && <WelcomeStepCategories />}
+        {stepIndex === 3 && <WelcomeStepImport onSkip={handleNext} />}
+        {stepIndex === 4 && <WelcomeStepDone defaultCurrency={settings.default_currency} />}
       </div>
 
       <div className={styles.footer}>
@@ -71,14 +84,16 @@ export default function WelcomeWizard() {
         >
           {t("welcome.back")}
         </button>
-        <button
-          type="button"
-          className={styles.nextBtn}
-          onClick={handleNext}
-          disabled={!canAdvance}
-        >
-          {t("welcome.next")}
-        </button>
+        {!isLastStep && (
+          <button
+            type="button"
+            className={styles.nextBtn}
+            onClick={handleNext}
+            disabled={!canAdvance}
+          >
+            {t("welcome.next")}
+          </button>
+        )}
       </div>
     </div>
   );
