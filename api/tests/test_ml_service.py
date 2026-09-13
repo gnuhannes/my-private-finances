@@ -8,7 +8,7 @@ from unittest.mock import patch
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from my_private_finances.models import Account, Category, Transaction
+from my_private_finances.models import Account, Category, Transaction, TransactionSplit
 from my_private_finances.services.ml_categorization import (
     ColdStartError,
     suggest,
@@ -103,6 +103,59 @@ async def test_train_returns_stats(db_session: AsyncSession, tmp_path: Path) -> 
 
 
 @pytest.mark.asyncio
+async def test_train_excludes_split_transactions(
+    db_session: AsyncSession, tmp_path: Path
+) -> None:
+    account_id = await _seed_account(db_session)
+    cat1 = Category(name="Groceries")
+    cat2 = Category(name="Transport")
+    db_session.add(cat1)
+    db_session.add(cat2)
+    await db_session.commit()
+    await db_session.refresh(cat1)
+    await db_session.refresh(cat2)
+
+    for i in range(6):
+        db_session.add(
+            _make_tx(account_id, f"hash-g{i}", category_id=cat1.id, payee="REWE")
+        )
+    for i in range(6):
+        db_session.add(
+            _make_tx(
+                account_id,
+                f"hash-t{i}",
+                category_id=cat2.id,
+                payee="BVG",
+                purpose="Transport",
+            )
+        )
+    await db_session.commit()
+
+    # A transaction that still carries a category_id but has splits — the
+    # 409 guard on PATCH prevents this via the API, but train() must not
+    # rely on that alone: it's an ambiguous label either way.
+    split_tx = _make_tx(account_id, "hash-split", category_id=cat1.id, payee="RENT")
+    db_session.add(split_tx)
+    await db_session.commit()
+    await db_session.refresh(split_tx)
+    db_session.add(
+        TransactionSplit(
+            transaction_id=split_tx.id, category_id=cat1.id, amount=Decimal("42.00")
+        )
+    )
+    await db_session.commit()
+
+    model_path = tmp_path / "ml_model.joblib"
+    with patch(
+        "my_private_finances.services.ml_categorization._model_path",
+        return_value=model_path,
+    ):
+        result = await train(db_session)
+
+    assert result.num_samples == 12
+
+
+@pytest.mark.asyncio
 async def test_suggest_returns_predictions(
     db_session: AsyncSession, tmp_path: Path
 ) -> None:
@@ -148,6 +201,64 @@ async def test_suggest_returns_predictions(
     assert s.category_id in (cat1.id, cat2.id)
     assert 0.0 <= s.confidence <= 1.0
     assert s.payee == "REWE Markt"
+
+
+@pytest.mark.asyncio
+async def test_suggest_excludes_split_transactions(
+    db_session: AsyncSession, tmp_path: Path
+) -> None:
+    account_id = await _seed_account(db_session)
+    cat1 = Category(name="Groceries")
+    cat2 = Category(name="Transport")
+    db_session.add(cat1)
+    db_session.add(cat2)
+    await db_session.commit()
+    await db_session.refresh(cat1)
+    await db_session.refresh(cat2)
+
+    for i in range(6):
+        db_session.add(
+            _make_tx(account_id, f"hash-g{i}", category_id=cat1.id, payee="REWE")
+        )
+    for i in range(6):
+        db_session.add(
+            _make_tx(
+                account_id,
+                f"hash-t{i}",
+                category_id=cat2.id,
+                payee="BVG",
+                purpose="Transport",
+            )
+        )
+    # A genuinely uncategorized transaction: should get a suggestion.
+    db_session.add(
+        _make_tx(account_id, "hash-uncat", category_id=None, payee="REWE Markt")
+    )
+    await db_session.commit()
+
+    # A split transaction: category_id is None too, but it's already
+    # resolved via its splits and must not be offered a suggestion.
+    split_tx = _make_tx(account_id, "hash-split", category_id=None, payee="REWE Split")
+    db_session.add(split_tx)
+    await db_session.commit()
+    await db_session.refresh(split_tx)
+    db_session.add(
+        TransactionSplit(
+            transaction_id=split_tx.id, category_id=cat1.id, amount=Decimal("10.00")
+        )
+    )
+    await db_session.commit()
+
+    model_path = tmp_path / "ml_model.joblib"
+    with patch(
+        "my_private_finances.services.ml_categorization._model_path",
+        return_value=model_path,
+    ):
+        await train(db_session)
+        suggestions = await suggest(db_session)
+
+    assert len(suggestions) == 1
+    assert suggestions[0].payee == "REWE Markt"
 
 
 @pytest.mark.asyncio

@@ -10,17 +10,33 @@ from sklearn.calibration import CalibratedClassifierCV
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.pipeline import Pipeline
 from sklearn.svm import LinearSVC
+from sqlalchemy import literal
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
 
 from my_private_finances.config import get_settings
-from my_private_finances.models import Category, Transaction
+from my_private_finances.models import Category, Transaction, TransactionSplit
 from my_private_finances.schemas.ml import Suggestion, TrainResult
 from my_private_finances.services.exceptions import ServiceError
 
 logger = logging.getLogger(__name__)
 
 MIN_SAMPLES = 10
+
+
+def _not_split() -> Any:
+    """``NOT EXISTS`` clause excluding transactions that have splits.
+
+    A split transaction's own ``category_id`` is already ``NULL`` (the
+    split portions carry the categories instead), so it's ambiguous as a
+    training label and shouldn't be offered a suggestion either.
+    """
+    return ~(
+        select(literal(1))
+        .select_from(TransactionSplit)
+        .where(TransactionSplit.transaction_id == Transaction.id)  # type: ignore[arg-type]
+        .exists()
+    )
 
 
 class ColdStartError(ServiceError):
@@ -68,7 +84,10 @@ def _load_and_predict(model_path: Path, texts: list[str]) -> tuple[Any, Any]:
 async def train(session: AsyncSession) -> TrainResult:
     """Query categorized transactions, fit ML pipeline, persist to disk."""
     result = await session.execute(
-        select(Transaction).where(Transaction.category_id.isnot(None))  # type: ignore[union-attr]
+        select(Transaction).where(
+            Transaction.category_id.isnot(None),  # type: ignore[union-attr]
+            _not_split(),
+        )
     )
     transactions = list(result.scalars().all())
 
@@ -98,9 +117,12 @@ async def suggest(session: AsyncSession) -> list[Suggestion]:
     if not model_path.exists():
         raise ColdStartError("No trained model found. Run /ml/train first.")
 
-    # Load uncategorized transactions
+    # Load uncategorized transactions (excluding ones already resolved via splits)
     result = await session.execute(
-        select(Transaction).where(Transaction.category_id.is_(None))  # type: ignore[union-attr]
+        select(Transaction).where(
+            Transaction.category_id.is_(None),  # type: ignore[union-attr]
+            _not_split(),
+        )
     )
     transactions = list(result.scalars().all())
 

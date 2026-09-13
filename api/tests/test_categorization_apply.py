@@ -114,3 +114,44 @@ async def test_apply_rules_first_match_wins(test_app: AsyncClient) -> None:
 
     tx_res = await test_app.get(f"/api/transactions?account_id={account['id']}")
     assert tx_res.json()["items"][0]["category_id"] == cat1["id"]
+
+
+@pytest.mark.asyncio
+async def test_apply_rules_skips_split_transactions(test_app: AsyncClient) -> None:
+    cat_rule = await create_category(test_app, name="Groceries")
+    cat_a = await create_category(test_app, name="Rent")
+    cat_b = await create_category(test_app, name="Utilities")
+    account = await create_account(test_app)
+    await create_rule(
+        test_app,
+        field="payee",
+        operator="contains",
+        value="Rewe",
+        category_id=cat_rule["id"],
+    )
+
+    # A split transaction has category_id == None, same as an uncategorized
+    # one, but it's already categorized via its splits — rules must not
+    # touch it even though the payee matches.
+    tx = await create_transaction(
+        test_app,
+        account_id=account["id"],
+        payee="REWE Supermarkt",
+        amount="120.00",
+        external_id="apply-split-1",
+    )
+    put_res = await test_app.put(
+        f"/api/transactions/{tx['id']}/splits",
+        json=[
+            {"category_id": cat_a["id"], "amount": "100.00"},
+            {"category_id": cat_b["id"], "amount": "20.00"},
+        ],
+    )
+    assert put_res.status_code == 200, put_res.text
+
+    res = await test_app.post("/api/categorization-rules/apply")
+    assert res.json()["categorized"] == 0
+
+    tx_res = await test_app.get(f"/api/transactions?account_id={account['id']}")
+    assert tx_res.json()["items"][0]["category_id"] is None
+    assert tx_res.json()["items"][0]["split_count"] == 2
