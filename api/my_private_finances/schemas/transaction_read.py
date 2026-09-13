@@ -24,6 +24,7 @@ class TransactionRead(ReadSchema):
     import_source: Optional[str] = None
     import_hash: str
     is_transfer: bool = False
+    split_count: int = 0
 
     created_at: Optional[datetime] = None
 

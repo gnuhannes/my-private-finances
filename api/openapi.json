@@ -2087,6 +2087,11 @@
               }
             ],
             "title": "Purpose"
+          },
+          "split_count": {
+            "default": 0,
+            "title": "Split Count",
+            "type": "integer"
           }
         },
         "required": [
@@ -2098,6 +2103,101 @@
           "import_hash"
         ],
         "title": "TransactionRead",
+        "type": "object"
+      },
+      "TransactionSplitItem": {
+        "additionalProperties": false,
+        "properties": {
+          "amount": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              }
+            ],
+            "title": "Amount"
+          },
+          "category_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Category Id"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          }
+        },
+        "required": [
+          "amount"
+        ],
+        "title": "TransactionSplitItem",
+        "type": "object"
+      },
+      "TransactionSplitRead": {
+        "properties": {
+          "amount": {
+            "title": "Amount",
+            "type": "string"
+          },
+          "category_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Category Id"
+          },
+          "category_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Category Name"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          }
+        },
+        "required": [
+          "id",
+          "amount"
+        ],
+        "title": "TransactionSplitRead",
         "type": "object"
       },
       "TransactionUpdate": {
@@ -4431,6 +4531,143 @@
           }
         },
         "summary": "Update Transaction",
+        "tags": [
+          "transactions"
+        ]
+      }
+    },
+    "/api/transactions/{transaction_id}/splits": {
+      "delete": {
+        "operationId": "delete_transaction_splits_api_transactions__transaction_id__splits_delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "transaction_id",
+            "required": true,
+            "schema": {
+              "title": "Transaction Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Delete Transaction Splits",
+        "tags": [
+          "transactions"
+        ]
+      },
+      "get": {
+        "operationId": "get_transaction_splits_api_transactions__transaction_id__splits_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "transaction_id",
+            "required": true,
+            "schema": {
+              "title": "Transaction Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/TransactionSplitRead"
+                  },
+                  "title": "Response Get Transaction Splits Api Transactions  Transaction Id  Splits Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Transaction Splits",
+        "tags": [
+          "transactions"
+        ]
+      },
+      "put": {
+        "operationId": "replace_transaction_splits_api_transactions__transaction_id__splits_put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "transaction_id",
+            "required": true,
+            "schema": {
+              "title": "Transaction Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "items": {
+                  "$ref": "#/components/schemas/TransactionSplitItem"
+                },
+                "title": "Payload",
+                "type": "array"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/TransactionSplitRead"
+                  },
+                  "title": "Response Replace Transaction Splits Api Transactions  Transaction Id  Splits Put",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Replace Transaction Splits",
         "tags": [
           "transactions"
         ]

@@ -4,21 +4,45 @@ from typing import Annotated, Any, Optional
 
 from fastapi import APIRouter, HTTPException
 from fastapi.params import Query
-from sqlalchemy import func, or_, select
+from sqlalchemy import delete, func, or_, select
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from my_private_finances.deps import SessionDep
-from my_private_finances.models import Category, Transaction
+from my_private_finances.models import Category, Transaction, TransactionSplit
 from my_private_finances.schemas import (
     TransactionCreate,
     TransactionListResponse,
     TransactionRead,
+    TransactionSplitItem,
+    TransactionSplitRead,
     TransactionUpdate,
 )
 from my_private_finances.services.transaction_hash import HashInput, compute_import_hash
 from my_private_finances.utils.db_helpers import get_account_or_404
 
 router = APIRouter(prefix="/transactions", tags=["transactions"])
+
+
+async def _count_splits(session: AsyncSession, transaction_id: int) -> int:
+    res = await session.execute(
+        select(func.count())
+        .select_from(TransactionSplit)
+        .where(TransactionSplit.transaction_id == transaction_id)  # type: ignore[arg-type]
+    )
+    return res.scalar_one()
+
+
+async def _category_name_map(
+    session: AsyncSession, category_ids: set[int]
+) -> dict[int, str]:
+    if not category_ids:
+        return {}
+    stmt = select(Category.id, Category.name).where(  # type: ignore[call-overload]
+        Category.id.in_(category_ids)  # type: ignore[union-attr]
+    )
+    res = await session.execute(stmt)
+    return {cid: name for cid, name in res.all()}
 
 
 @router.post("", response_model=TransactionRead, status_code=201)
@@ -89,6 +113,11 @@ async def update_transaction(
     fields = payload.model_dump(exclude_unset=True)
 
     if "category_id" in fields:
+        if await _count_splits(session, transaction_id) > 0:
+            raise HTTPException(
+                status_code=409,
+                detail="Transaction is split; delete splits first",
+            )
         category_id = fields["category_id"]
         if category_id is not None and await session.get(Category, category_id) is None:
             raise HTTPException(status_code=422, detail="Category not found")
@@ -97,7 +126,10 @@ async def update_transaction(
     await session.commit()
     await session.refresh(db_obj)
 
-    return TransactionRead.model_validate(db_obj)
+    split_count = await _count_splits(session, transaction_id)
+    return TransactionRead.model_validate(db_obj).model_copy(
+        update={"split_count": split_count}
+    )
 
 
 @router.get("", response_model=TransactionListResponse)
@@ -145,8 +177,16 @@ async def list_transactions(
     count_stmt = select(func.count()).select_from(Transaction).where(*filters)  # type: ignore[arg-type]
     total = (await session.execute(count_stmt)).scalar_one()
 
+    split_count_subq = (
+        select(func.count())
+        .select_from(TransactionSplit)
+        .where(TransactionSplit.transaction_id == Transaction.id)  # type: ignore[arg-type]
+        .correlate(Transaction)
+        .scalar_subquery()
+    )
+
     stmt = (
-        select(Transaction)
+        select(Transaction, split_count_subq.label("split_count"))
         .where(*filters)  # type: ignore[arg-type]
         .order_by(
             Transaction.booking_date.desc(),  # type: ignore[attr-defined]
@@ -157,6 +197,124 @@ async def list_transactions(
     )
 
     res = await session.execute(stmt)
-    items = [TransactionRead.model_validate(row) for row in res.scalars().all()]
+    items = [
+        TransactionRead.model_validate(row).model_copy(
+            update={"split_count": split_count}
+        )
+        for row, split_count in res.all()
+    ]
 
     return TransactionListResponse(items=items, total=total)
+
+
+@router.get("/{transaction_id}/splits", response_model=list[TransactionSplitRead])
+async def get_transaction_splits(
+    transaction_id: int,
+    session: SessionDep,
+) -> list[TransactionSplitRead]:
+    if await session.get(Transaction, transaction_id) is None:
+        raise HTTPException(status_code=404, detail="Transaction not found")
+
+    stmt = (
+        select(TransactionSplit, Category.name)  # type: ignore[call-overload]
+        .join(Category, TransactionSplit.category_id == Category.id, isouter=True)  # type: ignore[arg-type]
+        .where(TransactionSplit.transaction_id == transaction_id)  # type: ignore[arg-type]
+        .order_by(TransactionSplit.id)  # type: ignore[union-attr]
+    )
+    rows = (await session.execute(stmt)).all()
+
+    return [
+        TransactionSplitRead.model_validate(split).model_copy(
+            update={"category_name": category_name}
+        )
+        for split, category_name in rows
+    ]
+
+
+@router.put("/{transaction_id}/splits", response_model=list[TransactionSplitRead])
+async def replace_transaction_splits(
+    transaction_id: int,
+    payload: list[TransactionSplitItem],
+    session: SessionDep,
+) -> list[TransactionSplitRead]:
+    tx = await session.get(Transaction, transaction_id)
+    if tx is None:
+        raise HTTPException(status_code=404, detail="Transaction not found")
+
+    if tx.is_transfer:
+        raise HTTPException(status_code=422, detail="Transfers cannot be split")
+
+    if len(payload) < 2:
+        raise HTTPException(status_code=422, detail="A split requires at least 2 rows")
+
+    total = sum((item.amount for item in payload), Decimal("0"))
+    if total != tx.amount:
+        raise HTTPException(
+            status_code=422,
+            detail="Split amounts must sum exactly to the transaction amount",
+        )
+
+    category_ids = {
+        item.category_id for item in payload if item.category_id is not None
+    }
+    if category_ids:
+        found_stmt = select(Category.id).where(  # type: ignore[call-overload]
+            Category.id.in_(category_ids)  # type: ignore[union-attr]
+        )
+        res = await session.execute(found_stmt)
+        missing = category_ids - set(res.scalars().all())
+        if missing:
+            raise HTTPException(status_code=422, detail="Category not found")
+
+    await session.execute(
+        delete(TransactionSplit).where(
+            TransactionSplit.transaction_id == transaction_id  # type: ignore[arg-type]
+        )
+    )
+
+    new_splits = [
+        TransactionSplit(
+            transaction_id=transaction_id,
+            category_id=item.category_id,
+            amount=item.amount,
+            note=item.note,
+        )
+        for item in payload
+    ]
+    session.add_all(new_splits)
+    tx.category_id = None
+
+    await session.commit()
+
+    for split in new_splits:
+        await session.refresh(split)
+
+    category_names = await _category_name_map(session, category_ids)
+    return [
+        TransactionSplitRead.model_validate(split).model_copy(
+            update={
+                "category_name": category_names.get(split.category_id)
+                if split.category_id is not None
+                else None
+            }
+        )
+        for split in new_splits
+    ]
+
+
+@router.delete("/{transaction_id}/splits", status_code=204)
+async def delete_transaction_splits(
+    transaction_id: int,
+    session: SessionDep,
+) -> None:
+    tx = await session.get(Transaction, transaction_id)
+    if tx is None:
+        raise HTTPException(status_code=404, detail="Transaction not found")
+
+    await session.execute(
+        delete(TransactionSplit).where(
+            TransactionSplit.transaction_id == transaction_id  # type: ignore[arg-type]
+        )
+    )
+    tx.category_id = None
+    await session.commit()
