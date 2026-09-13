@@ -776,6 +776,12 @@ export interface components {
         /** AccountCreate */
         AccountCreate: {
             /**
+             * Account Type
+             * @default bank
+             * @enum {string}
+             */
+            account_type: "bank" | "cash";
+            /**
              * Currency
              * @default EUR
              */
@@ -805,6 +811,11 @@ export interface components {
         };
         /** AccountRead */
         AccountRead: {
+            /**
+             * Account Type
+             * @enum {string}
+             */
+            account_type: "bank" | "cash";
             /** Currency */
             currency: string;
             /** Id */
@@ -818,6 +829,8 @@ export interface components {
         };
         /** AccountUpdate */
         AccountUpdate: {
+            /** Account Type */
+            account_type?: ("bank" | "cash") | null;
             /** Opening Balance */
             opening_balance?: number | string | null;
             /** Opening Balance Date */
