@@ -642,6 +642,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/transfers/candidates/{candidate_id}/unlink": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Unlink Candidate
+         * @description Reverse a confirmed transfer, restoring both legs to normal reporting.
+         */
+        post: operations["unlink_candidate_api_transfers_candidates__candidate_id__unlink_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/transfers/detect": {
         parameters: {
             query?: never;
@@ -656,6 +676,32 @@ export interface paths {
          * @description Detect inter-account transfer candidates across all accounts.
          */
         post: operations["trigger_detection_api_transfers_detect_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/transfers/manual": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Create Manual
+         * @description Manually pair two transactions across accounts as a transfer.
+         *
+         *     Bypasses the amount/date match ``detect_transfer_candidates`` requires —
+         *     for transfers through an intermediary (fees, FX spread) or slow transfers
+         *     that never produce an auto-detected candidate. Validation lives in
+         *     ``create_manual_transfer`` (raises ``ServiceError`` subclasses, translated
+         *     to the matching status code by the handler registered in ``main.py``).
+         */
+        post: operations["create_manual_api_transfers_manual_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1389,6 +1435,8 @@ export interface components {
             from_leg: components["schemas"]["TransferLeg"];
             /** Id */
             id: number;
+            /** Source */
+            source: string;
             /** Status */
             status: string;
             to_leg: components["schemas"]["TransferLeg"];
@@ -1410,6 +1458,13 @@ export interface components {
             payee?: string | null;
             /** Transaction Id */
             transaction_id: number;
+        };
+        /** TransferManualCreate */
+        TransferManualCreate: {
+            /** From Transaction Id */
+            from_transaction_id: number;
+            /** To Transaction Id */
+            to_transaction_id: number;
         };
         /** ValidationError */
         ValidationError: {
@@ -2875,6 +2930,37 @@ export interface operations {
             };
         };
     };
+    unlink_candidate_api_transfers_candidates__candidate_id__unlink_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                candidate_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TransferCandidateRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     trigger_detection_api_transfers_detect_post: {
         parameters: {
             query?: never;
@@ -2891,6 +2977,39 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["TransferCandidateRead"][];
+                };
+            };
+        };
+    };
+    create_manual_api_transfers_manual_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TransferManualCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TransferCandidateRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

@@ -23,8 +23,14 @@ class TransferCandidate(SQLModel, table=True):
 
     confidence: Decimal = Field(sa_column=Column(Numeric(3, 2), nullable=False))
 
-    # "pending" | "confirmed" | "dismissed"
+    # "pending" | "confirmed" | "dismissed" | "unlinked"
     status: str = Field(default="pending", sa_column=Column(String(16), nullable=False))
+
+    # "auto" (detect_transfer_candidates) | "manual" (create_manual_transfer)
+    source: str = Field(
+        default="auto",
+        sa_column=Column(String(16), nullable=False, server_default="auto"),
+    )
 
     __table_args__ = (
         UniqueConstraint(

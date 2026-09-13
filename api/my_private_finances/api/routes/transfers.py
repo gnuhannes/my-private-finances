@@ -10,11 +10,17 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from my_private_finances.deps import SessionDep
 from my_private_finances.models import Account, Transaction
 from my_private_finances.models.transfer_candidate import TransferCandidate
-from my_private_finances.schemas import TransferCandidateRead, TransferLeg
+from my_private_finances.schemas import (
+    TransferCandidateRead,
+    TransferLeg,
+    TransferManualCreate,
+)
 from my_private_finances.services.transfer_detection import (
     confirm_transfer,
+    create_manual_transfer,
     detect_transfer_candidates,
     dismiss_transfer,
+    unlink_transfer,
 )
 from my_private_finances.utils.sql import table
 
@@ -55,6 +61,7 @@ def _build_candidate_read(
         ),
         confidence=candidate.confidence,
         status=candidate.status,
+        source=candidate.source,
     )
 
 
@@ -136,6 +143,7 @@ async def list_candidates(
             to_transaction_id=row.to_transaction_id,
             confidence=row.confidence,
             status=row.status,
+            source=row.source,
         )
         for row in rows
     ]
@@ -178,6 +186,43 @@ async def dismiss_candidate(
         )
 
     await dismiss_transfer(session, candidate)
+    await session.commit()
+    await session.refresh(candidate)
+    return await _candidate_to_read(session, candidate)
+
+
+@router.post("/manual", response_model=TransferCandidateRead, status_code=201)
+async def create_manual(
+    payload: TransferManualCreate,
+    session: SessionDep,
+) -> TransferCandidateRead:
+    """Manually pair two transactions across accounts as a transfer.
+
+    Bypasses the amount/date match ``detect_transfer_candidates`` requires —
+    for transfers through an intermediary (fees, FX spread) or slow transfers
+    that never produce an auto-detected candidate. Validation lives in
+    ``create_manual_transfer`` (raises ``ServiceError`` subclasses, translated
+    to the matching status code by the handler registered in ``main.py``).
+    """
+    candidate = await create_manual_transfer(
+        session, payload.from_transaction_id, payload.to_transaction_id
+    )
+    await session.commit()
+    await session.refresh(candidate)
+    return await _candidate_to_read(session, candidate)
+
+
+@router.post("/candidates/{candidate_id}/unlink", response_model=TransferCandidateRead)
+async def unlink_candidate(
+    candidate_id: int,
+    session: SessionDep,
+) -> TransferCandidateRead:
+    """Reverse a confirmed transfer, restoring both legs to normal reporting."""
+    candidate = await session.get(TransferCandidate, candidate_id)
+    if candidate is None:
+        raise HTTPException(status_code=404, detail="Transfer candidate not found")
+
+    await unlink_transfer(session, candidate)
     await session.commit()
     await session.refresh(candidate)
     return await _candidate_to_read(session, candidate)

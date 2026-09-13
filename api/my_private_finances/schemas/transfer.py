@@ -21,4 +21,10 @@ class TransferCandidateRead(StrictSchema):
     from_leg: TransferLeg
     to_leg: TransferLeg
     confidence: Decimal
-    status: str  # "pending" | "confirmed" | "dismissed"
+    status: str  # "pending" | "confirmed" | "dismissed" | "unlinked"
+    source: str  # "auto" | "manual"
+
+
+class TransferManualCreate(StrictSchema):
+    from_transaction_id: int
+    to_transaction_id: int

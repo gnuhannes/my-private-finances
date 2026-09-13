@@ -2100,6 +2100,10 @@
             "title": "Id",
             "type": "integer"
           },
+          "source": {
+            "title": "Source",
+            "type": "string"
+          },
           "status": {
             "title": "Status",
             "type": "string"
@@ -2113,7 +2117,8 @@
           "from_leg",
           "to_leg",
           "confidence",
-          "status"
+          "status",
+          "source"
         ],
         "title": "TransferCandidateRead",
         "type": "object"
@@ -2163,6 +2168,25 @@
           "amount"
         ],
         "title": "TransferLeg",
+        "type": "object"
+      },
+      "TransferManualCreate": {
+        "additionalProperties": false,
+        "properties": {
+          "from_transaction_id": {
+            "title": "From Transaction Id",
+            "type": "integer"
+          },
+          "to_transaction_id": {
+            "title": "To Transaction Id",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "from_transaction_id",
+          "to_transaction_id"
+        ],
+        "title": "TransferManualCreate",
         "type": "object"
       },
       "ValidationError": {
@@ -4519,6 +4543,49 @@
         ]
       }
     },
+    "/api/transfers/candidates/{candidate_id}/unlink": {
+      "post": {
+        "description": "Reverse a confirmed transfer, restoring both legs to normal reporting.",
+        "operationId": "unlink_candidate_api_transfers_candidates__candidate_id__unlink_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "candidate_id",
+            "required": true,
+            "schema": {
+              "title": "Candidate Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransferCandidateRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Unlink Candidate",
+        "tags": [
+          "transfers"
+        ]
+      }
+    },
     "/api/transfers/detect": {
       "post": {
         "description": "Detect inter-account transfer candidates across all accounts.",
@@ -4540,6 +4607,48 @@
           }
         },
         "summary": "Trigger Detection",
+        "tags": [
+          "transfers"
+        ]
+      }
+    },
+    "/api/transfers/manual": {
+      "post": {
+        "description": "Manually pair two transactions across accounts as a transfer.\n\nBypasses the amount/date match ``detect_transfer_candidates`` requires \u2014\nfor transfers through an intermediary (fees, FX spread) or slow transfers\nthat never produce an auto-detected candidate. Validation lives in\n``create_manual_transfer`` (raises ``ServiceError`` subclasses, translated\nto the matching status code by the handler registered in ``main.py``).",
+        "operationId": "create_manual_api_transfers_manual_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TransferManualCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransferCandidateRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create Manual",
         "tags": [
           "transfers"
         ]
