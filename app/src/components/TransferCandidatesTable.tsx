@@ -7,6 +7,7 @@ type Props = {
   items: TransferCandidate[];
   onConfirm?: (id: number) => void;
   onDismiss?: (id: number) => void;
+  onUnlink?: (id: number) => void;
   currency?: string;
 };
 
@@ -23,8 +24,19 @@ function confidenceLabel(confidence: string): string {
   return `${pct}%`;
 }
 
-export function TransferCandidatesTable({ items, onConfirm, onDismiss, currency = "EUR" }: Props) {
+function sourceBadgeClass(source: TransferCandidate["source"]): string {
+  return source === "manual" ? styles.badgeManual : styles.badgeAuto;
+}
+
+export function TransferCandidatesTable({
+  items,
+  onConfirm,
+  onDismiss,
+  onUnlink,
+  currency = "EUR",
+}: Props) {
   const { t } = useTranslation();
+  const hasActions = onConfirm || onDismiss || onUnlink;
   return (
     <div className={styles.card}>
       <table className={styles.table}>
@@ -37,7 +49,8 @@ export function TransferCandidatesTable({ items, onConfirm, onDismiss, currency 
             <th>{t("transferTable.tableToAccount")}</th>
             <th>{t("transferTable.tableDate")}</th>
             <th>{t("transferTable.tableConfidence")}</th>
-            {(onConfirm || onDismiss) && <th>{t("transferTable.tableActions")}</th>}
+            <th>{t("transferTable.tableSource")}</th>
+            {hasActions && <th>{t("transferTable.tableActions")}</th>}
           </tr>
         </thead>
         <tbody>
@@ -56,7 +69,14 @@ export function TransferCandidatesTable({ items, onConfirm, onDismiss, currency 
                   {confidenceLabel(c.confidence)}
                 </span>
               </td>
-              {(onConfirm || onDismiss) && (
+              <td>
+                <span className={`${styles.badge} ${sourceBadgeClass(c.source)}`}>
+                  {c.source === "manual"
+                    ? t("transferTable.sourceManual")
+                    : t("transferTable.sourceAuto")}
+                </span>
+              </td>
+              {hasActions && (
                 <td>
                   <div className={styles.actions}>
                     {onConfirm && (
@@ -75,6 +95,19 @@ export function TransferCandidatesTable({ items, onConfirm, onDismiss, currency 
                         onClick={() => onDismiss(c.id)}
                       >
                         {t("transferTable.dismiss")}
+                      </button>
+                    )}
+                    {onUnlink && c.status === "confirmed" && (
+                      <button
+                        type="button"
+                        className={styles.dismissBtn}
+                        onClick={() => {
+                          if (window.confirm(t("transferTable.unlinkConfirm"))) {
+                            onUnlink(c.id);
+                          }
+                        }}
+                      >
+                        {t("transferTable.unlink")}
                       </button>
                     )}
                   </div>

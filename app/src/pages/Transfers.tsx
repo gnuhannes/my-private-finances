@@ -1,21 +1,26 @@
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   useConfirmTransfer,
   useDetectTransfers,
   useDismissTransfer,
   useTransferCandidates,
+  useUnlinkTransfer,
 } from "../hooks/useTransferCandidates";
 import { TransferCandidatesTable } from "../components/TransferCandidatesTable";
+import { ManualTransferDialog } from "../components/ManualTransferDialog";
 import styles from "./Transfers.module.css";
 
 export default function Transfers() {
   const { t } = useTranslation();
   const pending = useTransferCandidates("pending");
   const confirmed = useTransferCandidates("confirmed");
+  const [manualDialogOpen, setManualDialogOpen] = useState(false);
 
   const detectMutation = useDetectTransfers();
   const confirmMutation = useConfirmTransfer();
   const dismissMutation = useDismissTransfer();
+  const unlinkMutation = useUnlinkTransfer();
 
   const pendingCount = pending.data?.length ?? 0;
   const confirmedCount = confirmed.data?.length ?? 0;
@@ -34,6 +39,9 @@ export default function Transfers() {
         >
           {detectMutation.isPending ? t("transfers.detecting") : t("transfers.detectTransfers")}
         </button>
+        <button type="button" onClick={() => setManualDialogOpen(true)}>
+          {t("transfers.manual.openButton")}
+        </button>
         {detectMutation.isSuccess && detectMutation.data.length === 0 && (
           <span className={styles.statusMsg}>{t("transfers.noNewCandidates")}</span>
         )}
@@ -43,6 +51,8 @@ export default function Transfers() {
           </span>
         )}
       </div>
+
+      <ManualTransferDialog open={manualDialogOpen} onClose={() => setManualDialogOpen(false)} />
 
       <section className={styles.section}>
         <h2 className={styles.sectionTitle}>
@@ -72,7 +82,10 @@ export default function Transfers() {
             {t("transfers.confirmedTransfers")}
             <span className={styles.badge}>{confirmedCount}</span>
           </h2>
-          <TransferCandidatesTable items={confirmed.data ?? []} />
+          <TransferCandidatesTable
+            items={confirmed.data ?? []}
+            onUnlink={(id) => unlinkMutation.mutate(id)}
+          />
         </section>
       )}
     </div>

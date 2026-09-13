@@ -4,6 +4,37 @@ import { MemoryRouter } from "react-router-dom";
 import Transfers from "../../src/pages/Transfers";
 
 const detect = { mutate: vi.fn(), isPending: false, isSuccess: false, data: [] };
+const unlink = { mutate: vi.fn() };
+const link = {
+  mutate: vi.fn(),
+  isPending: false,
+  isSuccess: false,
+  isError: false,
+  reset: vi.fn(),
+};
+
+const confirmedCandidate = {
+  id: 2,
+  from_leg: {
+    transaction_id: 20,
+    account_id: 1,
+    account_name: "Checking",
+    booking_date: "2026-01-05",
+    amount: "-50.25",
+    payee: "PayPal",
+  },
+  to_leg: {
+    transaction_id: 21,
+    account_id: 3,
+    account_name: "PayPal",
+    booking_date: "2026-01-08",
+    amount: "50.00",
+    payee: "Bank Deposit",
+  },
+  confidence: "1.00",
+  status: "confirmed",
+  source: "manual",
+};
 
 vi.mock("../../src/hooks/useTransferCandidates", () => ({
   useTransferCandidates: (status: string) => ({
@@ -30,15 +61,28 @@ vi.mock("../../src/hooks/useTransferCandidates", () => ({
               },
               confidence: "0.9",
               status: "pending",
+              source: "auto",
             },
           ]
-        : [],
+        : status === "confirmed"
+          ? [confirmedCandidate]
+          : [],
     isLoading: false,
     isError: false,
   }),
   useDetectTransfers: () => detect,
   useConfirmTransfer: () => ({ mutate: vi.fn() }),
   useDismissTransfer: () => ({ mutate: vi.fn() }),
+  useUnlinkTransfer: () => unlink,
+  useLinkManualTransfer: () => link,
+}));
+
+vi.mock("../../src/hooks/useAccounts", () => ({
+  useAccounts: () => ({ data: [] }),
+}));
+
+vi.mock("../../src/hooks/useTransactions", () => ({
+  useTransactions: () => ({ data: undefined, isLoading: false, isError: false }),
 }));
 
 describe("Transfers page", () => {
@@ -48,8 +92,9 @@ describe("Transfers page", () => {
         <Transfers />
       </MemoryRouter>,
     );
-    expect(screen.getByRole("heading", { name: /transfer/i })).toBeInTheDocument();
-    expect(screen.getByText("1")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Inter-Account Transfers" })).toBeInTheDocument();
+    // Both the pending (1) and confirmed (1) sections show a "1" count badge.
+    expect(screen.getAllByText("1")).toHaveLength(2);
   });
 
   it("triggers detection on button click", () => {
@@ -60,5 +105,26 @@ describe("Transfers page", () => {
     );
     getByRole("button", { name: /detect/i }).click();
     expect(detect.mutate).toHaveBeenCalled();
+  });
+
+  it("renders the manual-link button and a source badge on confirmed transfers", () => {
+    render(
+      <MemoryRouter>
+        <Transfers />
+      </MemoryRouter>,
+    );
+    expect(screen.getByRole("button", { name: /link transactions manually/i })).toBeInTheDocument();
+    expect(screen.getByText("Manual")).toBeInTheDocument();
+  });
+
+  it("unlinks a confirmed transfer after confirmation", () => {
+    vi.spyOn(window, "confirm").mockReturnValue(true);
+    render(
+      <MemoryRouter>
+        <Transfers />
+      </MemoryRouter>,
+    );
+    screen.getByRole("button", { name: /unlink/i }).click();
+    expect(unlink.mutate).toHaveBeenCalledWith(confirmedCandidate.id);
   });
 });

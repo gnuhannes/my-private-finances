@@ -251,7 +251,29 @@
     "noPending": "No pending transfer candidates. Click \"Detect Transfers\" to scan your transactions.",
     "confirmedTransfers": "Confirmed Transfers",
     "loading": "Loading...",
-    "failed": "Failed to load candidates."
+    "failed": "Failed to load candidates.",
+    "manual": {
+      "openButton": "Link Transactions Manually",
+      "title": "Link Transactions as a Transfer",
+      "subtitle": "Pick the outgoing transaction in one account and the matching incoming transaction in another. Use this when amounts or dates don't match exactly — for example a transfer through PayPal that carries a small fee.",
+      "fromLabel": "From (outgoing)",
+      "fromHint": "The account the money left — an outgoing (negative) transaction.",
+      "toLabel": "To (incoming)",
+      "toHint": "The account the money arrived in — an incoming (positive) transaction.",
+      "account": "Account",
+      "selectAccount": "Select an account…",
+      "searchPlaceholder": "Search by payee or purpose…",
+      "noMatches": "No matching transactions found.",
+      "searchFailed": "Failed to search transactions.",
+      "change": "Change",
+      "cancel": "Cancel",
+      "submit": "Link as Transfer",
+      "linking": "Linking...",
+      "success": "Linked as a transfer. Both transactions are now excluded from spending reports.",
+      "linkAnother": "Link Another",
+      "close": "Close",
+      "failed": "Failed to link transfer: {{error}}"
+    }
   },
   "kpiCard": {
     "loading": "…"
@@ -401,9 +423,14 @@
     "tableAmount": "Amount",
     "tableToAccount": "To Account",
     "tableConfidence": "Confidence",
+    "tableSource": "Source",
+    "sourceAuto": "Auto",
+    "sourceManual": "Manual",
     "tableActions": "Actions",
     "confirm": "Confirm",
-    "dismiss": "Dismiss"
+    "dismiss": "Dismiss",
+    "unlink": "Unlink",
+    "unlinkConfirm": "Unlink this transfer? Both transactions will reappear in spending reports."
   },
   "suggestions": {
     "title": "ML Category Suggestions",
