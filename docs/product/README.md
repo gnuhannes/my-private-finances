@@ -25,4 +25,6 @@ Iteration-by-iteration product specs for My Private Finances.
 | [090](090-cash-transactions.md) | Cash Transactions | 💡 Idea |
 | [100](100-bill-scanning.md) | Bill Scanning & Line-Item Split | 💡 Idea |
 | [160](160-transaction-splitting.md) | Transaction Splitting (multi-category) | 🔜 Planned |
+| [170](170-ml-transfer-recurring-detection.md) | ML for Transfer & Recurring Detection | 🔬 Investigated — Not Pursuing |
+| [180](180-category-tree-and-suggestions.md) | Category Tree & New-Category Suggestions | 🔜 Planned |
 | — | [Backlog](backlog.md) | Small fixes & UX improvements |
