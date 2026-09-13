@@ -9,12 +9,15 @@ export type TransferLeg = {
   payee: string | null;
 };
 
+export type TransferStatus = "pending" | "confirmed" | "dismissed" | "unlinked";
+
 export type TransferCandidate = {
   id: number;
   from_leg: TransferLeg;
   to_leg: TransferLeg;
   confidence: string;
-  status: "pending" | "confirmed" | "dismissed";
+  status: TransferStatus;
+  source: "auto" | "manual";
 };
 
 export function detectTransfers(): Promise<TransferCandidate[]> {
@@ -22,7 +25,7 @@ export function detectTransfers(): Promise<TransferCandidate[]> {
 }
 
 export function getTransferCandidates(
-  status: "pending" | "confirmed" | "dismissed" = "pending",
+  status: TransferStatus = "pending",
 ): Promise<TransferCandidate[]> {
   return apiGet<TransferCandidate[]>(`/api/transfers/candidates?status=${status}`);
 }
@@ -33,4 +36,18 @@ export function confirmTransfer(id: number): Promise<TransferCandidate> {
 
 export function dismissTransfer(id: number): Promise<TransferCandidate> {
   return apiPost<TransferCandidate>(`/api/transfers/candidates/${id}/dismiss`, {});
+}
+
+export function linkManualTransfer(params: {
+  fromTransactionId: number;
+  toTransactionId: number;
+}): Promise<TransferCandidate> {
+  return apiPost<TransferCandidate>("/api/transfers/manual", {
+    from_transaction_id: params.fromTransactionId,
+    to_transaction_id: params.toTransactionId,
+  });
+}
+
+export function unlinkTransfer(id: number): Promise<TransferCandidate> {
+  return apiPost<TransferCandidate>(`/api/transfers/candidates/${id}/unlink`, {});
 }

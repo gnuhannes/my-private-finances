@@ -13,6 +13,7 @@ export type TransactionItem = {
   external_id: string | null;
   import_source: string | null;
   import_hash: string;
+  is_transfer: boolean;
 };
 
 export type TransactionListResponse = {

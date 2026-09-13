@@ -251,7 +251,29 @@
     "noPending": "Keine ausstehenden Überweisungskandidaten. Klicke auf \"Überweisungen erkennen\", um deine Transaktionen zu scannen.",
     "confirmedTransfers": "Bestätigte Überweisungen",
     "loading": "Lädt...",
-    "failed": "Kandidaten konnten nicht geladen werden."
+    "failed": "Kandidaten konnten nicht geladen werden.",
+    "manual": {
+      "openButton": "Transaktionen manuell verknüpfen",
+      "title": "Transaktionen als Überweisung verknüpfen",
+      "subtitle": "Wähle die abgehende Transaktion in einem Konto und die passende eingehende Transaktion in einem anderen. Nutze dies, wenn Beträge oder Daten nicht exakt übereinstimmen — etwa bei einer Überweisung über PayPal mit einer kleinen Gebühr.",
+      "fromLabel": "Von (abgehend)",
+      "fromHint": "Das Konto, aus dem das Geld abgeflossen ist — eine abgehende (negative) Transaktion.",
+      "toLabel": "Zu (eingehend)",
+      "toHint": "Das Konto, in dem das Geld angekommen ist — eine eingehende (positive) Transaktion.",
+      "account": "Konto",
+      "selectAccount": "Konto auswählen…",
+      "searchPlaceholder": "Nach Empfänger oder Verwendungszweck suchen…",
+      "noMatches": "Keine passenden Transaktionen gefunden.",
+      "searchFailed": "Transaktionssuche fehlgeschlagen.",
+      "change": "Ändern",
+      "cancel": "Abbrechen",
+      "submit": "Als Überweisung verknüpfen",
+      "linking": "Wird verknüpft...",
+      "success": "Als Überweisung verknüpft. Beide Transaktionen sind jetzt von Ausgabenberichten ausgeschlossen.",
+      "linkAnother": "Weitere verknüpfen",
+      "close": "Schließen",
+      "failed": "Verknüpfung fehlgeschlagen: {{error}}"
+    }
   },
   "kpiCard": {
     "loading": "…"
@@ -401,9 +423,14 @@
     "tableAmount": "Betrag",
     "tableToAccount": "Zu Konto",
     "tableConfidence": "Konfidenz",
+    "tableSource": "Quelle",
+    "sourceAuto": "Automatisch",
+    "sourceManual": "Manuell",
     "tableActions": "Aktionen",
     "confirm": "Bestätigen",
-    "dismiss": "Ablehnen"
+    "dismiss": "Ablehnen",
+    "unlink": "Trennen",
+    "unlinkConfirm": "Diese Überweisung trennen? Beide Transaktionen erscheinen danach wieder in Ausgabenberichten."
   },
   "suggestions": {
     "title": "ML-Kategorievorschläge",

@@ -76,6 +76,16 @@
   color: #721c24;
 }
 
+.badgeAuto {
+  background: var(--color-border, #e9ecef);
+  color: var(--color-text-muted, #495057);
+}
+
+.badgeManual {
+  background: #cce5ff;
+  color: #004085;
+}
+
 .actions {
   display: flex;
   gap: 0.5rem;
