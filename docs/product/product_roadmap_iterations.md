@@ -108,6 +108,20 @@ attribute each portion via a UNION-ALL selectable in `services/reporting.py`. Ab
 percentage is a frontend concern — the API stores absolute amounts only. **Foundation for
 [100 — Bill Scanning](100-bill-scanning.md)**; sequence after issue #104.
 
+### [180 — Category Tree & New-Category Suggestions](180-category-tree-and-suggestions.md) 🔜
+**Goal:** A real, hierarchical, localized pre-defined category tree (beyond 105's flat
+starter list), plus proactive suggestions to create a **new** category when a cluster of
+transactions doesn't fit any existing one — extending
+[080 — ML Category Suggestions](080-ml-category-suggestions.md), which today only ever
+routes transactions into categories that already exist.
+
+Tree skeleton modeled on COICOP (public UN taxonomy, official en/de labels), cross-checked
+against Plaid's Personal Finance Category taxonomy and Actual Budget's defaults for everyday
+naming. New-category detection reuses the existing TF-IDF pipeline: cluster low-confidence
+uncategorized transactions, name the cluster from common payee tokens, and match it against
+the pre-defined tree to suggest a parent — all reviewed by the user before any category is
+created. No new backend dependency.
+
 ---
 
 ## Mid-term
