@@ -1,4 +1,5 @@
 from .account import Account
+from .app_settings import AppSettings
 from .budget import Budget
 from .categorization_rule import CategorizationRule
 from .category import Category
@@ -10,6 +11,7 @@ from .watch_folder_config import WatchFolderConfig, WatchSettings
 
 __all__ = [
     "Account",
+    "AppSettings",
     "Budget",
     "CategorizationRule",
     "Category",

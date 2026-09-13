@@ -13,6 +13,8 @@ class AccountCreate(StrictSchema):
     name: str = Field(min_length=1, max_length=120)
     currency: str = Field(default="EUR", min_length=3, max_length=3)
     account_type: Literal["bank", "cash"] = "bank"
+    opening_balance: Optional[Decimal] = None
+    opening_balance_date: Optional[date] = None
 
 
 class AccountUpdate(StrictSchema):

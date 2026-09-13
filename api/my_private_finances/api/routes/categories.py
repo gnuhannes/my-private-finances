@@ -32,6 +32,32 @@ async def create_category(
     return db_obj
 
 
+@router.post("/batch", response_model=list[CategoryRead], status_code=201)
+async def create_categories_batch(
+    categories: Annotated[list[CategoryCreate], Body()], session: SessionDep
+) -> list[Category]:
+    db_objs: list[Category] = []
+    for category in categories:
+        if category.parent_id is not None:
+            parent = await session.get(Category, category.parent_id)
+            if parent is None:
+                await session.rollback()
+                raise HTTPException(status_code=422, detail="parent_id does not exist")
+
+        db_obj = Category(
+            name=category.name,
+            parent_id=category.parent_id,
+            cost_type=category.cost_type,
+        )
+        session.add(db_obj)
+        db_objs.append(db_obj)
+
+    await session.commit()
+    for db_obj in db_objs:
+        await session.refresh(db_obj)
+    return db_objs
+
+
 @router.get("", response_model=list[CategoryRead])
 async def list_categories(session: SessionDep) -> list[Category]:
     res = await session.execute(select(Category).order_by(Category.name))  # type: ignore[arg-type]

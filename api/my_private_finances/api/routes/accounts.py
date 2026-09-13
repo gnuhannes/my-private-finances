@@ -17,7 +17,11 @@ async def create_account(
     account: Annotated[AccountCreate, Body()], session: SessionDep
 ) -> Account:
     db_obj = Account(
-        name=account.name, currency=account.currency, account_type=account.account_type
+        name=account.name,
+        currency=account.currency,
+        account_type=account.account_type,
+        opening_balance=account.opening_balance,
+        opening_balance_date=account.opening_balance_date,
     )
     session.add(db_obj)
     await session.commit()

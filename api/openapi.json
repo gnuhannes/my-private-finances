@@ -45,6 +45,33 @@
             "minLength": 1,
             "title": "Name",
             "type": "string"
+          },
+          "opening_balance": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Opening Balance"
+          },
+          "opening_balance_date": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Opening Balance Date"
           }
         },
         "required": [
@@ -267,6 +294,99 @@
           "months"
         ],
         "title": "AnnualReport",
+        "type": "object"
+      },
+      "AppSettingsRead": {
+        "properties": {
+          "default_currency": {
+            "title": "Default Currency",
+            "type": "string"
+          },
+          "locale": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Locale"
+          },
+          "onboarding_completed_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Onboarding Completed At"
+          },
+          "onboarding_skipped": {
+            "title": "Onboarding Skipped",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "onboarding_skipped",
+          "default_currency"
+        ],
+        "title": "AppSettingsRead",
+        "type": "object"
+      },
+      "AppSettingsUpdate": {
+        "additionalProperties": false,
+        "properties": {
+          "default_currency": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Default Currency"
+          },
+          "locale": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Locale"
+          },
+          "onboarding_completed_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Onboarding Completed At"
+          },
+          "onboarding_skipped": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Onboarding Skipped"
+          }
+        },
+        "title": "AppSettingsUpdate",
         "type": "object"
       },
       "ApplyResult": {
@@ -2717,6 +2837,55 @@
         ]
       }
     },
+    "/api/categories/batch": {
+      "post": {
+        "operationId": "create_categories_batch_api_categories_batch_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "items": {
+                  "$ref": "#/components/schemas/CategoryCreate"
+                },
+                "title": "Categories",
+                "type": "array"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/CategoryRead"
+                  },
+                  "title": "Response Create Categories Batch Api Categories Batch Post",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create Categories Batch",
+        "tags": [
+          "categories"
+        ]
+      }
+    },
     "/api/categories/{category_id}": {
       "delete": {
         "operationId": "delete_category_api_categories__category_id__delete",
@@ -4163,6 +4332,66 @@
         "summary": "Restore Sqlite",
         "tags": [
           "data"
+        ]
+      }
+    },
+    "/api/settings/app": {
+      "get": {
+        "operationId": "get_app_settings_api_settings_app_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AppSettingsRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Get App Settings",
+        "tags": [
+          "settings"
+        ]
+      },
+      "patch": {
+        "operationId": "update_app_settings_api_settings_app_patch",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AppSettingsUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AppSettingsRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Update App Settings",
+        "tags": [
+          "settings"
         ]
       }
     },
