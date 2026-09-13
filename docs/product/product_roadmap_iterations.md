@@ -43,6 +43,19 @@ Local scikit-learn pipeline (TF-IDF char n-grams + CalibratedClassifierCV/Linear
 
 ## Planned
 
+### [035 — Manual Transfer Linking](035-manual-transfer-linking.md) 🔜
+**Goal:** Let the user manually pair two transactions across accounts as a transfer when
+[030](030-multi-account-aggregation.md)'s automatic detection misses them.
+
+Auto-detection requires exact amount match within a 3-day window; real transfers through an
+intermediary (fees, FX spread) or slow international transfers often violate both. Adds
+`POST /transfers/manual` (no amount/date check, reuses the `TransferCandidate` model with a
+new `source: "auto" | "manual"` column) and `POST /transfers/candidates/{id}/unlink` to
+reverse a confirmed pair — closing the existing gap where a transfer, once confirmed, can
+never be undone via the API.
+
+---
+
 ### [105 — First-Run Setup](105-first-run-setup.md) 🔜
 **Goal:** Guide a new user from an empty database to a usable dashboard.
 

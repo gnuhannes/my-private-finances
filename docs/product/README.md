@@ -10,6 +10,7 @@ Iteration-by-iteration product specs for My Private Finances.
 | [010](010-mvp-import-and-rules.md) | MVP: Import & Rules | ✅ Complete |
 | [020](020-insights-and-budgets.md) | Insights & Budgets | ✅ Complete |
 | [030](030-multi-account-aggregation.md) | Multi-Account Aggregation | ✅ Complete |
+| [035](035-manual-transfer-linking.md) | Manual Transfer Linking | 🔜 Planned |
 | [040](040-net-worth-tracking.md) | Net-Worth Tracking | ✅ Complete |
 | [050](050-spending-trend-analysis.md) | Spending Trend Analysis | ✅ Complete |
 | [060](060-annual-overview.md) | Annual Overview | ✅ Complete |
