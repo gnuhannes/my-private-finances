@@ -19,6 +19,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from my_private_finances.models import Account, Transaction
 from my_private_finances.models.transfer_candidate import TransferCandidate
+from my_private_finances.services.exceptions import (
+    ConflictError,
+    NotFoundError,
+    ValidationError,
+)
 from my_private_finances.utils.money import money_from_db
 from my_private_finances.utils.sql import table
 
@@ -142,6 +147,103 @@ async def dismiss_transfer(session: AsyncSession, candidate: TransferCandidate) 
     await session.flush()
     logger.info(
         "Transfer dismissed: candidate_id=%s (tx %s → %s)",
+        candidate.id,
+        candidate.from_transaction_id,
+        candidate.to_transaction_id,
+    )
+
+
+async def create_manual_transfer(
+    session: AsyncSession,
+    from_transaction_id: int,
+    to_transaction_id: int,
+) -> TransferCandidate:
+    """Manually pair two transactions across accounts as a transfer and confirm it.
+
+    Skips the amount/date match ``detect_transfer_candidates`` requires — for
+    transfers through an intermediary (fees, FX spread) or slow transfers that
+    never produce an auto-detected candidate. Unlike ``confirm_transfer`` /
+    ``dismiss_transfer`` (which assume the caller already validated candidate
+    state), this validates eligibility itself since there is no pre-existing
+    candidate to have been reviewed.
+    """
+    if from_transaction_id == to_transaction_id:
+        raise ValidationError("A transaction cannot be paired with itself")
+
+    from_tx = await session.get(Transaction, from_transaction_id)
+    if from_tx is None:
+        raise NotFoundError(f"Transaction {from_transaction_id} not found")
+    to_tx = await session.get(Transaction, to_transaction_id)
+    if to_tx is None:
+        raise NotFoundError(f"Transaction {to_transaction_id} not found")
+
+    if from_tx.account_id == to_tx.account_id:
+        raise ValidationError("Both legs of a transfer must be in different accounts")
+    if from_tx.amount >= 0 or to_tx.amount <= 0:
+        raise ValidationError(
+            "'from' must be the outgoing (negative) leg and 'to' the incoming "
+            "(positive) leg"
+        )
+    if from_tx.is_transfer or to_tx.is_transfer:
+        raise ConflictError("One of these transactions is already part of a transfer")
+
+    # (from_transaction_id, to_transaction_id) carries a DB-level unique
+    # constraint regardless of status, so a pair that was previously dismissed
+    # or unlinked must reuse that row rather than insert a duplicate — only a
+    # still-active (pending/confirmed) row for this exact pair is a conflict.
+    tc = table(TransferCandidate)
+    existing_stmt = select(tc.c.id, tc.c.status).where(
+        tc.c.from_transaction_id == from_transaction_id,
+        tc.c.to_transaction_id == to_transaction_id,
+    )
+    existing_row = (await session.execute(existing_stmt)).first()
+    if existing_row is not None and existing_row.status in ("pending", "confirmed"):
+        raise ConflictError("This pair is already tracked as a transfer")
+
+    if existing_row is not None:
+        candidate = await session.get(TransferCandidate, existing_row.id)
+        assert candidate is not None
+        candidate.confidence = Decimal("1.00")
+        candidate.source = "manual"
+    else:
+        candidate = TransferCandidate(
+            from_transaction_id=from_transaction_id,
+            to_transaction_id=to_transaction_id,
+            confidence=Decimal("1.00"),
+            source="manual",
+        )
+        session.add(candidate)
+    await confirm_transfer(session, candidate)
+    logger.info(
+        "Manual transfer created: candidate_id=%s (tx %s → %s)",
+        candidate.id,
+        from_transaction_id,
+        to_transaction_id,
+    )
+    return candidate
+
+
+async def unlink_transfer(session: AsyncSession, candidate: TransferCandidate) -> None:
+    """Reverse a confirmed transfer, restoring both legs to normal reporting.
+
+    Works for auto-detected and manually-linked candidates alike.
+    """
+    if candidate.status != "confirmed":
+        raise ConflictError(f"Candidate is not confirmed (status={candidate.status})")
+
+    candidate.status = "unlinked"
+
+    from_tx = await session.get(Transaction, candidate.from_transaction_id)
+    to_tx = await session.get(Transaction, candidate.to_transaction_id)
+
+    if from_tx is not None:
+        from_tx.is_transfer = False
+    if to_tx is not None:
+        to_tx.is_transfer = False
+
+    await session.flush()
+    logger.info(
+        "Transfer unlinked: candidate_id=%s (tx %s → %s)",
         candidate.id,
         candidate.from_transaction_id,
         candidate.to_transaction_id,

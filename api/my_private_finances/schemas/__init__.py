@@ -33,7 +33,7 @@ from .transaction_create import TransactionCreate
 from .transaction_list import TransactionListResponse
 from .transaction_read import TransactionRead
 from .transaction_update import TransactionUpdate
-from .transfer import TransferCandidateRead, TransferLeg
+from .transfer import TransferCandidateRead, TransferLeg, TransferManualCreate
 from .watch_folder import (
     WatchFolderConfigCreate,
     WatchFolderConfigRead,
@@ -80,6 +80,7 @@ __all__ = [
     "ImportResultResponse",
     "TransferCandidateRead",
     "TransferLeg",
+    "TransferManualCreate",
     "AccountBalancePoint",
     "AccountNetWorthSummary",
     "NetWorthPoint",
