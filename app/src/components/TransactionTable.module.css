@@ -35,6 +35,73 @@
   opacity: 0.7;
 }
 
+.categoryCell {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.splitBtn {
+  background: none;
+  border: none;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 2px 4px;
+  white-space: nowrap;
+}
+
+.splitBtn:hover {
+  color: var(--text);
+  text-decoration: underline;
+}
+
+.splitChip {
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--bg);
+  padding: 3px 10px;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.splitChip:hover {
+  background: var(--border);
+}
+
+.expandBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  padding: 0 2px;
+}
+
+.expandBtn:hover {
+  color: var(--text);
+}
+
+.previewRow td {
+  padding: 4px 12px 10px;
+  border-bottom: 1px solid var(--border);
+}
+
+.previewList {
+  margin: 0;
+  padding: 0 0 0 24px;
+  list-style: disc;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}
+
+.previewList li {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  max-width: 360px;
+}
+
 @media (max-width: 640px) {
   .tableScroll {
     overflow-x: auto;
