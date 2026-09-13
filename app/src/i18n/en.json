@@ -21,6 +21,7 @@
     "loadingAccounts": "Loading accounts…",
     "failedAccounts": "Failed to load accounts.",
     "noAccountsYet": "No accounts yet.",
+    "emptyStateCta": "Set up your first account",
     "account": "Account",
     "allAccounts": "All Accounts",
     "save": "Save",
@@ -78,7 +79,30 @@
     "tableParent": "Parent",
     "tableCostType": "Cost Type",
     "loading": "Loading categories...",
-    "failed": "Failed to load categories."
+    "failed": "Failed to load categories.",
+    "starter": {
+      "fixed": {
+        "rent": "Rent",
+        "insurance": "Insurance",
+        "subscriptions": "Subscriptions"
+      },
+      "variable": {
+        "groceries": "Groceries",
+        "dining": "Dining",
+        "shopping": "Shopping",
+        "transport": "Transport"
+      },
+      "income": {
+        "salary": "Salary"
+      }
+    },
+    "starterGroupFixed": "Fixed costs",
+    "starterGroupVariable": "Everyday spending",
+    "starterGroupIncome": "Income",
+    "addOwnTitle": "Add your own",
+    "addOwnPlaceholder": "Category name",
+    "addOwnAdd": "Add row",
+    "addOwnRemove": "Remove"
   },
   "import": {
     "title": "Import",
@@ -484,6 +508,9 @@
     "watchFolderTitle": "Watch Folder",
     "watchFolderSubtitle": "Drop bank export files into subfolders and they get imported automatically.",
     "languageTitle": "Language",
+    "rerunWizardTitle": "Setup wizard",
+    "rerunWizardDesc": "Re-run the first-run setup wizard to add accounts or starter categories again.",
+    "rerunWizard": "Re-run setup wizard",
     "dangerTitle": "Danger Zone",
     "deleteTransactions": "Delete all transactions",
     "deleteTransactionsDesc": "Remove all transactions, recurring patterns, and transfer links. Accounts and categories are kept.",
@@ -518,6 +545,19 @@
     "accountCopy": "Your balance on this date. Anything imported after it adds up from here — powers Net Worth and running balances. Match it to your oldest statement, or use today if starting fresh.",
     "startingBalanceLabel": "Starting balance",
     "asOfDateLabel": "As of date",
-    "addAccount": "Add account"
+    "addAccount": "Add account",
+    "categoriesTitle": "Pick your starter categories",
+    "categoriesCopy": "These cover most everyday spending. Uncheck any you don't need, or add your own below — you can always change these later.",
+    "categoriesSubmit": "Add selected categories",
+    "categoriesSubmitted": "Categories added.",
+    "importTitle": "Import your first statement",
+    "importCopy": "Optional — you can always import later from the Import page.",
+    "importLater": "I'll do this later",
+    "importSuccess": "{{count}} imported, {{categorized}} auto-categorized.",
+    "doneTitle": "You're all set",
+    "doneSummary": "{{accounts}} account(s) · {{balance}} starting balance · {{categories}} categories · {{transactions}} transactions",
+    "goToDashboard": "Go to Dashboard",
+    "goToImport": "Go to Import",
+    "goToRules": "Go to Rules"
   }
 }

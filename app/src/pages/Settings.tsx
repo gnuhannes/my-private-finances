@@ -125,6 +125,15 @@ export default function Settings() {
         <LanguageSwitcher />
       </section>
 
+      {/* Setup wizard */}
+      <section className={styles.section}>
+        <h2 className={styles.sectionTitle}>{t("settings.rerunWizardTitle")}</h2>
+        <p className={styles.sectionSubtitle}>{t("settings.rerunWizardDesc")}</p>
+        <button type="button" onClick={() => navigate("/welcome?rerun=1")}>
+          {t("settings.rerunWizard")}
+        </button>
+      </section>
+
       {/* Danger Zone */}
       <section className={styles.dangerSection}>
         <h2 className={styles.sectionTitle}>{t("settings.dangerTitle")}</h2>

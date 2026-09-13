@@ -37,6 +37,23 @@ vi.mock("../../../src/hooks/useNetWorth", () => ({
   useCreateAccount: () => ({ mutate: createAccountMutate, isPending: false }),
 }));
 
+vi.mock("../../../src/hooks/useCategories", () => ({
+  useCategories: () => ({ data: [] }),
+  useCreateCategoriesBatch: () => ({ mutate: vi.fn(), isPending: false }),
+}));
+
+vi.mock("../../../src/hooks/useCsvProfiles", () => ({
+  useCsvProfiles: () => ({ profiles: { data: [] } }),
+}));
+
+vi.mock("../../../src/hooks/useImportCsv", () => ({
+  useImportCsv: () => ({ mutate: vi.fn(), isPending: false, isSuccess: false, isError: false }),
+}));
+
+vi.mock("../../../src/hooks/useTransactions", () => ({
+  useTransactions: () => ({ data: { items: [], total: 0 } }),
+}));
+
 function renderWizard() {
   const client = new QueryClient({
     defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
@@ -120,5 +137,21 @@ describe("WelcomeWizard", () => {
     );
     const [payload] = createAccountMutate.mock.calls[0];
     expect(payload.opening_balance_date).toBeTypeOf("string");
+  });
+
+  it("advances through categories and import to the done step, hiding Next on the last step", () => {
+    accountsData = [{ id: 1, name: "Main", currency: "EUR" }];
+    renderWizard();
+
+    fireEvent.click(screen.getByText("Next")); // -> step 2 (account)
+    fireEvent.click(screen.getByText("Next")); // -> step 3 (categories)
+    expect(screen.getByText("Step 3 of 5")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByText("Next")); // -> step 4 (import)
+    expect(screen.getByText("Step 4 of 5")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByText("Next")); // -> step 5 (done)
+    expect(screen.getByText("Step 5 of 5")).toBeInTheDocument();
+    expect(screen.queryByText("Next")).not.toBeInTheDocument();
   });
 });
