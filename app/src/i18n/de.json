@@ -504,5 +504,20 @@
     "colSubfolder": "Unterordner",
     "colAccount": "Konto",
     "colProfile": "CSV-Profil"
+  },
+  "welcome": {
+    "stepProgress": "Schritt {{current}} von {{total}}",
+    "skip": "Einrichtung überspringen",
+    "back": "Zurück",
+    "next": "Weiter",
+    "introTitle": "Willkommen bei My Private Finances",
+    "introPrivacy": "Alle Ihre Daten bleiben auf diesem Gerät — keine Cloud, keine Konten, kein Tracking.",
+    "languageLabel": "Sprache",
+    "currencyLabel": "Standardwährung",
+    "accountTitle": "Fügen Sie Ihr erstes Konto hinzu",
+    "accountCopy": "Ihr Kontostand an diesem Datum. Alles, was danach importiert wird, rechnet sich ab hier hinzu — das ist die Grundlage für Vermögensübersicht und laufende Salden. Wählen Sie das Datum Ihres ältesten Kontoauszugs, oder heute, wenn Sie neu beginnen.",
+    "startingBalanceLabel": "Startsaldo",
+    "asOfDateLabel": "Stand vom",
+    "addAccount": "Konto hinzufügen"
   }
 }
