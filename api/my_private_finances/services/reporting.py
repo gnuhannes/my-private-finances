@@ -14,10 +14,16 @@ from datetime import date, timedelta
 from decimal import Decimal
 from typing import Any, Optional
 
-from sqlalchemy import ColumnElement, and_, case, func, literal, select
+from sqlalchemy import ColumnElement, and_, case, func, literal, select, union_all
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from my_private_finances.models import Account, Budget, Category, Transaction
+from my_private_finances.models import (
+    Account,
+    Budget,
+    Category,
+    Transaction,
+    TransactionSplit,
+)
 from my_private_finances.schemas import (
     AccountBalancePoint,
     AccountNetWorthSummary,
@@ -59,6 +65,7 @@ class AccountNotFound(NotFoundError):
 _TX = table(Transaction)
 _CAT = table(Category)
 _BUDGET = table(Budget)
+_SPLIT = table(TransactionSplit)
 
 
 def parse_month(value: str) -> tuple[date, date]:
@@ -103,19 +110,59 @@ def non_transfer_filter(
     start: date,
     end: date,
     expenses_only: bool = False,
+    source: Any = None,
 ) -> ColumnElement[bool]:
     """The filter every report shares: non-transfer rows in ``[start, end)``,
-    optionally scoped to one account and/or restricted to expenses."""
+    optionally scoped to one account and/or restricted to expenses.
+
+    ``source`` defaults to the ``transaction`` table but can be swapped for
+    another selectable exposing the same ``booking_date`` / ``is_transfer`` /
+    ``account_id`` / ``amount`` columns, e.g. :func:`category_attribution`.
+    """
+    src = _TX if source is None else source
     conditions: list[Any] = [
-        _TX.c.booking_date >= start,
-        _TX.c.booking_date < end,
-        _TX.c.is_transfer == False,  # noqa: E712
+        src.c.booking_date >= start,
+        src.c.booking_date < end,
+        src.c.is_transfer == False,  # noqa: E712
     ]
     if account_id is not None:
-        conditions.append(_TX.c.account_id == account_id)
+        conditions.append(src.c.account_id == account_id)
     if expenses_only:
-        conditions.append(_TX.c.amount < 0)
+        conditions.append(src.c.amount < 0)
     return and_(*conditions)
+
+
+def category_attribution() -> Any:
+    """Selectable mapping every euro to the category it actually belongs to.
+
+    A split transaction contributes one row per split portion (the split's
+    own ``category_id``, which may be ``None`` for an unassigned portion)
+    instead of one row for the whole transaction. An unsplit transaction
+    passes through unchanged. Column shape matches ``transaction`` closely
+    enough that ``non_transfer_filter`` and category joins port over via a
+    table-handle swap.
+    """
+    split_rows = select(
+        _SPLIT.c.category_id.label("category_id"),
+        _SPLIT.c.amount.label("amount"),
+        _TX.c.booking_date.label("booking_date"),
+        _TX.c.account_id.label("account_id"),
+        _TX.c.is_transfer.label("is_transfer"),
+        _TX.c.payee.label("payee"),
+        _TX.c.purpose.label("purpose"),
+    ).select_from(_SPLIT.join(_TX, _SPLIT.c.transaction_id == _TX.c.id))
+
+    unsplit_rows = select(
+        _TX.c.category_id,
+        _TX.c.amount,
+        _TX.c.booking_date,
+        _TX.c.account_id,
+        _TX.c.is_transfer,
+        _TX.c.payee,
+        _TX.c.purpose,
+    ).where(~(select(literal(1)).where(_SPLIT.c.transaction_id == _TX.c.id).exists()))
+
+    return union_all(split_rows, unsplit_rows).subquery("category_attribution")
 
 
 # --------------------------------------------------------------------------- #
@@ -163,16 +210,26 @@ async def monthly_report(
         )
     ).all()
 
+    attribution = category_attribution()
+    cat_expense_filter = non_transfer_filter(
+        source=attribution,
+        account_id=account_id,
+        start=start,
+        end=end,
+        expenses_only=True,
+    )
     cat_rows = (
         await session.execute(
             select(
                 _CAT.c.name.label("category_name"),
-                func.coalesce(func.sum(_TX.c.amount), 0).label("total"),
+                func.coalesce(func.sum(attribution.c.amount), 0).label("total"),
             )
-            .select_from(_TX.outerjoin(_CAT, _TX.c.category_id == _CAT.c.id))
-            .where(expense_filter)
-            .group_by(_TX.c.category_id)
-            .order_by(func.sum(_TX.c.amount).asc())
+            .select_from(
+                attribution.outerjoin(_CAT, attribution.c.category_id == _CAT.c.id)
+            )
+            .where(cat_expense_filter)
+            .group_by(attribution.c.category_id)
+            .order_by(func.sum(attribution.c.amount).asc())
         )
     ).all()
 
@@ -248,18 +305,23 @@ async def budget_vs_actual(
     if not budget_rows:
         return []
 
+    attribution = category_attribution()
     actual_rows = (
         await session.execute(
             select(
-                _TX.c.category_id,
-                func.coalesce(func.sum(_TX.c.amount), 0).label("actual"),
+                attribution.c.category_id,
+                func.coalesce(func.sum(attribution.c.amount), 0).label("actual"),
             )
             .where(
                 non_transfer_filter(
-                    account_id=account_id, start=start, end=end, expenses_only=True
+                    source=attribution,
+                    account_id=account_id,
+                    start=start,
+                    end=end,
+                    expenses_only=True,
                 )
             )
-            .group_by(_TX.c.category_id)
+            .group_by(attribution.c.category_id)
         )
     ).all()
     actuals = {r.category_id: money_from_db(r.actual) for r in actual_rows}
@@ -294,17 +356,24 @@ async def fixed_vs_variable(
     start, end = parse_month(month)
     currency = await resolve_currency(session, account_id)
 
+    attribution = category_attribution()
     rows = (
         await session.execute(
             select(
                 _CAT.c.cost_type,
-                func.coalesce(func.sum(_TX.c.amount), 0).label("total"),
+                func.coalesce(func.sum(attribution.c.amount), 0).label("total"),
                 func.count(func.distinct(_CAT.c.id)).label("category_count"),
             )
-            .select_from(_TX.outerjoin(_CAT, _TX.c.category_id == _CAT.c.id))
+            .select_from(
+                attribution.outerjoin(_CAT, attribution.c.category_id == _CAT.c.id)
+            )
             .where(
                 non_transfer_filter(
-                    account_id=account_id, start=start, end=end, expenses_only=True
+                    source=attribution,
+                    account_id=account_id,
+                    start=start,
+                    end=end,
+                    expenses_only=True,
                 )
             )
             .group_by(_CAT.c.cost_type)
@@ -357,17 +426,21 @@ async def spending_trend(
         lb_year -= 1
     lookback_start = date(lb_year, lb_month, 1)
 
+    attribution = category_attribution()
     rows = (
         await session.execute(
             select(
-                _TX.c.booking_date,
-                _TX.c.category_id,
+                attribution.c.booking_date,
+                attribution.c.category_id,
                 _CAT.c.name.label("category_name"),
-                _TX.c.amount,
+                attribution.c.amount,
             )
-            .select_from(_TX.outerjoin(_CAT, _TX.c.category_id == _CAT.c.id))
+            .select_from(
+                attribution.outerjoin(_CAT, attribution.c.category_id == _CAT.c.id)
+            )
             .where(
                 non_transfer_filter(
+                    source=attribution,
                     account_id=account_id,
                     start=lookback_start,
                     end=month_end,

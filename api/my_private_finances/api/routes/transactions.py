@@ -4,7 +4,7 @@ from typing import Annotated, Any, Optional
 
 from fastapi import APIRouter, HTTPException
 from fastapi.params import Query
-from sqlalchemy import delete, func, or_, select
+from sqlalchemy import and_, delete, func, literal, or_, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -154,7 +154,15 @@ async def list_transactions(
         filters.append(Transaction.booking_date <= date_to)  # type: ignore[arg-type]
     if category_filter is not None:
         if category_filter == "uncategorized":
-            filters.append(Transaction.category_id.is_(None))  # type: ignore[union-attr]
+            no_split = ~(
+                select(literal(1))
+                .select_from(TransactionSplit)
+                .where(TransactionSplit.transaction_id == Transaction.id)  # type: ignore[arg-type]
+                .exists()
+            )
+            filters.append(
+                and_(Transaction.category_id.is_(None), no_split)  # type: ignore[union-attr]
+            )
         elif category_filter.isdigit():
             filters.append(Transaction.category_id == int(category_filter))  # type: ignore[arg-type]
         else:

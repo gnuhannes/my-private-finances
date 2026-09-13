@@ -102,3 +102,38 @@ async def test_list_transactions_uncategorized_filter(test_app: AsyncClient) -> 
     body = res.json()
     assert body["total"] == 1
     assert body["items"][0]["id"] == tx_uncat["id"]
+
+
+@pytest.mark.asyncio
+async def test_list_transactions_uncategorized_filter_excludes_split(
+    test_app: AsyncClient,
+) -> None:
+    acc = await create_account(test_app)
+    cat_a = await create_category(test_app, name="Rent")
+    cat_b = await create_category(test_app, name="Utilities")
+
+    tx_uncat = await create_transaction(
+        test_app, account_id=acc["id"], external_id="uncat-split-1"
+    )
+    tx_split = await create_transaction(
+        test_app, account_id=acc["id"], external_id="split-1", amount="120.00"
+    )
+    put_res = await test_app.put(
+        f"/api/transactions/{tx_split['id']}/splits",
+        json=[
+            {"category_id": cat_a["id"], "amount": "100.00"},
+            {"category_id": cat_b["id"], "amount": "20.00"},
+        ],
+    )
+    assert put_res.status_code == 200, put_res.text
+
+    # tx_split now has category_id == None but shouldn't count as
+    # "uncategorized" — it's categorized via its splits instead.
+    res = await test_app.get(
+        "/api/transactions",
+        params={"account_id": acc["id"], "category_filter": "uncategorized"},
+    )
+    assert res.status_code == 200
+    body = res.json()
+    assert body["total"] == 1
+    assert body["items"][0]["id"] == tx_uncat["id"]
