@@ -3,7 +3,7 @@ from __future__ import annotations
 from decimal import Decimal
 from typing import Optional
 
-from sqlalchemy import Column, Numeric, String, UniqueConstraint
+from sqlalchemy import Column, Index, Numeric, String, UniqueConstraint, text
 from sqlmodel import Field, SQLModel
 
 
@@ -37,5 +37,24 @@ class TransferCandidate(SQLModel, table=True):
             "from_transaction_id",
             "to_transaction_id",
             name="uq_transfer_candidate_pair",
+        ),
+        # A transaction can be the subject of at most one *active* candidate at
+        # a time (pending or confirmed) — whichever role it plays. Dismissed /
+        # unlinked rows are history and don't count, so this is a partial
+        # index, not a plain unique column. Backstops the application-level
+        # checks in transfer_detection.py (is_transfer guard, stale-sibling
+        # dismissal) that exist to keep this invariant from ever being
+        # violated in the first place.
+        Index(
+            "uq_transfer_candidate_active_from",
+            "from_transaction_id",
+            unique=True,
+            sqlite_where=text("status IN ('pending', 'confirmed')"),
+        ),
+        Index(
+            "uq_transfer_candidate_active_to",
+            "to_transaction_id",
+            unique=True,
+            sqlite_where=text("status IN ('pending', 'confirmed')"),
         ),
     )
