@@ -44,7 +44,12 @@ function AccountRow({
 
   return (
     <tr>
-      <td className={styles.accountName}>{account.name}</td>
+      <td className={styles.accountName}>
+        {account.name}
+        {account.account_type === "cash" && (
+          <span className={styles.cashBadge}>{t("netWorth.cashBadge")}</span>
+        )}
+      </td>
       <td>
         {editing ? (
           <div className={styles.editRow}>
@@ -104,6 +109,7 @@ export default function NetWorth() {
   const [addingAccount, setAddingAccount] = useState(false);
   const [newName, setNewName] = useState("");
   const [newCurrency, setNewCurrency] = useState("EUR");
+  const [newAccountType, setNewAccountType] = useState<"bank" | "cash">("bank");
 
   const { data: report, isLoading: reportLoading, isError } = useNetWorth(months);
   const updateAccount = useUpdateAccount();
@@ -118,12 +124,17 @@ export default function NetWorth() {
     e.preventDefault();
     if (!newName.trim()) return;
     createAccount.mutate(
-      { name: newName.trim(), currency: newCurrency.toUpperCase() || "EUR" },
+      {
+        name: newName.trim(),
+        currency: newCurrency.toUpperCase() || "EUR",
+        account_type: newAccountType,
+      },
       {
         onSuccess: () => {
           setAddingAccount(false);
           setNewName("");
           setNewCurrency("EUR");
+          setNewAccountType("bank");
         },
       },
     );
@@ -249,6 +260,17 @@ export default function NetWorth() {
               maxLength={3}
               onChange={(e) => setNewCurrency(e.target.value)}
             />
+            <select
+              value={newAccountType}
+              className={styles.input}
+              onChange={(e) => setNewAccountType(e.target.value as "bank" | "cash")}
+            >
+              <option value="bank">{t("netWorth.accountTypeBank")}</option>
+              <option value="cash">{t("netWorth.accountTypeCash")}</option>
+            </select>
+            {newAccountType === "cash" && (
+              <p className={styles.hint}>{t("netWorth.accountTypeCashHint")}</p>
+            )}
             {createAccount.isError && (
               <span className={styles.createError}>{t("netWorth.failedCreate")}</span>
             )}
@@ -266,6 +288,7 @@ export default function NetWorth() {
                 setAddingAccount(false);
                 setNewName("");
                 setNewCurrency("EUR");
+                setNewAccountType("bank");
                 createAccount.reset();
               }}
             >

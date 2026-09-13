@@ -1,5 +1,6 @@
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useTransactions } from "../hooks/useTransactions";
+import { useCreateTransaction, useTransactions } from "../hooks/useTransactions";
 import type { Account } from "../lib/api/accounts";
 import type { TransactionItem } from "../lib/api/transactions";
 import { formatMoneyString } from "../utils/money";
@@ -19,6 +20,8 @@ type Props = {
   onQueryChange: (q: string) => void;
   selected: TransactionItem | null;
   onSelect: (tx: TransactionItem | null) => void;
+  /** The other side's already-selected leg, if any — used to prefill the "create" form. */
+  otherLeg?: TransactionItem | null;
 };
 
 export function TransactionPicker({
@@ -33,6 +36,7 @@ export function TransactionPicker({
   onQueryChange,
   selected,
   onSelect,
+  otherLeg = null,
 }: Props) {
   const { t } = useTranslation();
   const results = useTransactions({
@@ -40,13 +44,53 @@ export function TransactionPicker({
     q: query || undefined,
     limit: 20,
   });
+  const createMutation = useCreateTransaction();
+
+  const [creating, setCreating] = useState(false);
+  const [createDate, setCreateDate] = useState("");
+  const [createAmount, setCreateAmount] = useState("");
+  const [createPayee, setCreatePayee] = useState("");
+  const [createPurpose, setCreatePurpose] = useState("");
 
   const account = accounts.find((a) => a.id === accountId);
+  const isCashAccount = account?.account_type === "cash";
   const matches = (results.data?.items ?? []).filter((tx) => {
     if (tx.is_transfer) return false;
     const amount = Number(tx.amount);
     return polarity === "negative" ? amount < 0 : amount > 0;
   });
+
+  function resetCreateForm() {
+    setCreating(false);
+    setCreateDate("");
+    setCreateAmount("");
+    setCreatePayee("");
+    setCreatePurpose("");
+    createMutation.reset();
+  }
+
+  function openCreateForm() {
+    setCreateDate(otherLeg?.booking_date ?? "");
+    setCreateAmount(otherLeg ? Math.abs(Number(otherLeg.amount)).toFixed(2) : "");
+    setCreatePayee("");
+    setCreatePurpose("");
+    setCreating(true);
+  }
+
+  async function handleCreateSubmit() {
+    if (accountId === "" || !createDate || !createAmount) return;
+    const signedAmount = polarity === "negative" ? `-${createAmount}` : createAmount;
+    const newTx = await createMutation.mutateAsync({
+      accountId,
+      bookingDate: createDate,
+      amount: signedAmount,
+      currency: account?.currency,
+      payee: createPayee,
+      purpose: createPurpose,
+    });
+    onSelect(newTx);
+    resetCreateForm();
+  }
 
   return (
     <fieldset className={styles.picker}>
@@ -73,7 +117,10 @@ export function TransactionPicker({
             <span>{t("transfers.manual.account")}</span>
             <select
               value={accountId}
-              onChange={(e) => onAccountChange(e.target.value === "" ? "" : Number(e.target.value))}
+              onChange={(e) => {
+                onAccountChange(e.target.value === "" ? "" : Number(e.target.value));
+                resetCreateForm();
+              }}
             >
               <option value="">{t("transfers.manual.selectAccount")}</option>
               {accounts
@@ -86,7 +133,65 @@ export function TransactionPicker({
             </select>
           </label>
 
-          {accountId !== "" && (
+          {accountId !== "" && creating && (
+            <div className={styles.createForm}>
+              <label className={styles.field}>
+                <span>{t("transfers.manual.createDate")}</span>
+                <input
+                  type="date"
+                  value={createDate}
+                  onChange={(e) => setCreateDate(e.target.value)}
+                />
+              </label>
+              <label className={styles.field}>
+                <span>{t("transfers.manual.createAmount")}</span>
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={createAmount}
+                  onChange={(e) => setCreateAmount(e.target.value)}
+                />
+              </label>
+              <label className={styles.field}>
+                <span>{t("transfers.manual.createPayee")}</span>
+                <input
+                  type="text"
+                  value={createPayee}
+                  onChange={(e) => setCreatePayee(e.target.value)}
+                />
+              </label>
+              <label className={styles.field}>
+                <span>{t("transfers.manual.createPurpose")}</span>
+                <input
+                  type="text"
+                  value={createPurpose}
+                  onChange={(e) => setCreatePurpose(e.target.value)}
+                />
+              </label>
+
+              {createMutation.isError && (
+                <p className={styles.error}>{t("transfers.manual.createFailed")}</p>
+              )}
+
+              <div className={styles.createActions}>
+                <button type="button" onClick={resetCreateForm}>
+                  {t("transfers.manual.cancel")}
+                </button>
+                <button
+                  type="button"
+                  disabled={!createDate || !createAmount || createMutation.isPending}
+                  onClick={handleCreateSubmit}
+                >
+                  {createMutation.isPending
+                    ? t("transfers.manual.creatingTx")
+                    : t("transfers.manual.createSubmit")}
+                </button>
+              </div>
+            </div>
+          )}
+
+          {accountId !== "" && !creating && (
             <>
               <input
                 type="search"
@@ -122,6 +227,12 @@ export function TransactionPicker({
                     </li>
                   ))}
                 </ul>
+              )}
+
+              {isCashAccount && (
+                <button type="button" className={styles.createToggle} onClick={openCreateForm}>
+                  {t("transfers.manual.createNew")}
+                </button>
               )}
             </>
           )}

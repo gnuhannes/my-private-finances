@@ -1,5 +1,5 @@
-import { useQuery } from "@tanstack/react-query";
-import { getTransactions } from "../lib/api";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { createTransaction, getTransactions } from "../lib/api";
 
 export function useTransactions(params: {
   accountId: number | "all" | null;
@@ -38,5 +38,15 @@ export function useTransactions(params: {
         amountMax: params.amountMax,
       }),
     enabled: params.accountId !== null,
+  });
+}
+
+export function useCreateTransaction() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: createTransaction,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["transactions"] });
+    },
   });
 }

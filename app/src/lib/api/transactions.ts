@@ -1,4 +1,4 @@
-import { apiGet, apiPatch } from "./client";
+import { apiGet, apiPatch, apiPost } from "./client";
 
 export type TransactionItem = {
   id: number;
@@ -55,5 +55,25 @@ export function updateTransactionCategory(
 ): Promise<TransactionItem> {
   return apiPatch<TransactionItem>(`/api/transactions/${id}`, {
     category_id: categoryId,
+  });
+}
+
+export type TransactionCreatePayload = {
+  accountId: number;
+  bookingDate: string;
+  amount: string;
+  currency?: string;
+  payee?: string;
+  purpose?: string;
+};
+
+export function createTransaction(payload: TransactionCreatePayload): Promise<TransactionItem> {
+  return apiPost<TransactionItem>("/api/transactions", {
+    account_id: payload.accountId,
+    booking_date: payload.bookingDate,
+    amount: payload.amount,
+    currency: payload.currency,
+    payee: payload.payee || undefined,
+    purpose: payload.purpose || undefined,
   });
 }

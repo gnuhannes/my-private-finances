@@ -6,9 +6,10 @@ export type { Account, AccountCreatePayload, AccountUpdatePayload } from "./api/
 export { getMonthlyReport } from "./api/reports";
 export type { CategoryTotal, MonthlyReport, PayeeTotal, TopSpending } from "./api/reports";
 
-export { getTransactions, updateTransactionCategory } from "./api/transactions";
+export { createTransaction, getTransactions, updateTransactionCategory } from "./api/transactions";
 export type {
   TransactionItem,
+  TransactionCreatePayload,
   TransactionListResponse,
   TransactionParams,
 } from "./api/transactions";

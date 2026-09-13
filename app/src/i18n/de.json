@@ -104,6 +104,10 @@
     "setupOpening": "Anfangssaldo einrichten",
     "accountNamePlaceholder": "Kontoname",
     "currencyPlaceholder": "EUR",
+    "accountTypeBank": "Bank",
+    "accountTypeCash": "Bargeld",
+    "accountTypeCashHint": "Kein Kontoauszug — Transaktionen werden manuell erfasst.",
+    "cashBadge": "Bargeld",
     "creating": "Wird erstellt…",
     "create": "Erstellen",
     "failedCreate": "Konto konnte nicht erstellt werden.",
@@ -272,7 +276,15 @@
       "success": "Als Überweisung verknüpft. Beide Transaktionen sind jetzt von Ausgabenberichten ausgeschlossen.",
       "linkAnother": "Weitere verknüpfen",
       "close": "Schließen",
-      "failed": "Verknüpfung fehlgeschlagen: {{error}}"
+      "failed": "Verknüpfung fehlgeschlagen: {{error}}",
+      "createNew": "+ Neue Transaktion erstellen",
+      "createDate": "Datum",
+      "createAmount": "Betrag",
+      "createPayee": "Empfänger",
+      "createPurpose": "Verwendungszweck",
+      "createSubmit": "Hinzufügen & auswählen",
+      "creatingTx": "Wird hinzugefügt...",
+      "createFailed": "Transaktion konnte nicht erstellt werden."
     }
   },
   "kpiCard": {
