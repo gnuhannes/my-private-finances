@@ -6,6 +6,9 @@ where:
   - abs(amount_A) == abs(amount_B)
   - |date_A - date_B| <= window_days (default 3)
   - The pair is not already tracked in TransferCandidate with any status
+  - Neither leg is already the subject of another active (pending/confirmed)
+    candidate — a transaction can be part of at most one transfer; enforced
+    at the DB level by the partial unique indexes on TransferCandidate.
 """
 
 from __future__ import annotations
@@ -14,7 +17,7 @@ import logging
 from datetime import timedelta
 from decimal import Decimal
 
-from sqlalchemy import select
+from sqlalchemy import or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from my_private_finances.models import Account, Transaction
@@ -36,7 +39,10 @@ async def detect_transfer_candidates(
 ) -> list[TransferCandidate]:
     """Detect inter-account transfer candidates across all accounts.
 
-    Skips pairs that are already in TransferCandidate (any status).
+    Skips pairs that are already in TransferCandidate (any status), and skips
+    any transaction that already has an active (pending/confirmed) candidate
+    — whether from a prior detection run or a manual link — so it's never
+    proposed a second time against a different counterpart.
     Returns newly created TransferCandidate rows (status='pending').
     """
     tx = table(Transaction)
@@ -45,6 +51,8 @@ async def detect_transfer_candidates(
     # Load all transactions with account info. Cash accounts have no external
     # statement to reconcile against, so they're excluded here — 090's design:
     # cash transfers are manual-linking only (see create_manual_transfer).
+    # Already-transferred transactions are excluded too — a transaction can
+    # only be part of one transfer.
     stmt = (
         select(
             tx.c.id,
@@ -54,7 +62,7 @@ async def detect_transfer_candidates(
             tx.c.payee,
         )
         .select_from(tx.join(acc, tx.c.account_id == acc.c.id))
-        .where(acc.c.account_type != "cash")
+        .where(acc.c.account_type != "cash", tx.c.is_transfer == False)  # noqa: E712
         .order_by(tx.c.booking_date, tx.c.amount)
     )
     rows = (await session.execute(stmt)).all()
@@ -68,21 +76,34 @@ async def detect_transfer_candidates(
     outgoing = [r for r in rows if r.amount < 0]
     incoming = [r for r in rows if r.amount > 0]
 
-    # Load already-tracked pairs to avoid duplicates
+    # Load already-tracked pairs (any status) and transactions already
+    # claimed by an active candidate, to avoid duplicates.
     tc = table(TransferCandidate)
-    existing_stmt = select(tc.c.from_transaction_id, tc.c.to_transaction_id)
+    existing_stmt = select(
+        tc.c.from_transaction_id, tc.c.to_transaction_id, tc.c.status
+    )
     existing_rows = (await session.execute(existing_stmt)).all()
     existing_pairs: set[tuple[int, int]] = {
         (r.from_transaction_id, r.to_transaction_id) for r in existing_rows
+    }
+    active_tx_ids: set[int] = {
+        tid
+        for r in existing_rows
+        if r.status in ("pending", "confirmed")
+        for tid in (r.from_transaction_id, r.to_transaction_id)
     }
 
     new_candidates: list[TransferCandidate] = []
     window = timedelta(days=window_days)
 
     for out_tx in outgoing:
+        if out_tx.id in active_tx_ids:
+            continue
         out_abs = abs(money_from_db(out_tx.amount))
 
         for in_tx in incoming:
+            if in_tx.id in active_tx_ids:
+                continue
             # Must be different accounts
             if out_tx.account_id == in_tx.account_id:
                 continue
@@ -114,7 +135,12 @@ async def detect_transfer_candidates(
             )
             session.add(candidate)
             new_candidates.append(candidate)
-            existing_pairs.add(pair)  # prevent duplicate within same run
+            existing_pairs.add(pair)
+            active_tx_ids.add(out_tx.id)
+            active_tx_ids.add(in_tx.id)
+            # out_tx is now claimed — a transaction can match at most one
+            # candidate, so stop looking for further incoming matches for it.
+            break
 
     await session.flush()
     logger.info(
@@ -123,13 +149,80 @@ async def detect_transfer_candidates(
     return new_candidates
 
 
-async def confirm_transfer(session: AsyncSession, candidate: TransferCandidate) -> None:
-    """Mark both transaction legs as transfers and set candidate status to confirmed."""
-    candidate.status = "confirmed"
+async def _dismiss_stale_siblings(
+    session: AsyncSession,
+    from_transaction_id: int,
+    to_transaction_id: int,
+    keep_candidate_id: int | None,
+) -> None:
+    """Dismiss any other still-pending candidate referencing either leg.
 
+    A transaction can be the subject of at most one active (pending/confirmed)
+    candidate at a time — enforced by the partial unique indexes on
+    TransferCandidate. Without this, confirming one candidate while a stale
+    pending sibling for the same transaction still exists would either
+    violate that index, or (before the index existed) let a later confirm of
+    the stale sibling silently flip an unrelated transaction's is_transfer.
+
+    Runs (and flushes) before the caller adds or mutates its own candidate
+    row, so a brand-new INSERT never transiently collides with a sibling
+    still marked "pending" under the partial unique index.
+    """
+    tc = table(TransferCandidate)
+    ids = (from_transaction_id, to_transaction_id)
+    conditions = [
+        tc.c.status == "pending",
+        or_(tc.c.from_transaction_id.in_(ids), tc.c.to_transaction_id.in_(ids)),
+    ]
+    if keep_candidate_id is not None:
+        conditions.append(tc.c.id != keep_candidate_id)
+
+    with session.no_autoflush:
+        stale_ids = [
+            row.id
+            for row in (await session.execute(select(tc.c.id).where(*conditions))).all()
+        ]
+        for stale_id in stale_ids:
+            stale = await session.get(TransferCandidate, stale_id)
+            if stale is not None:
+                stale.status = "dismissed"
+
+    if stale_ids:
+        await session.flush()
+        logger.info(
+            "Dismissed %d stale pending candidate(s) referencing tx %s/%s",
+            len(stale_ids),
+            from_transaction_id,
+            to_transaction_id,
+        )
+
+
+async def confirm_transfer(session: AsyncSession, candidate: TransferCandidate) -> None:
+    """Mark both transaction legs as transfers and set candidate status to confirmed.
+
+    Rejects if either leg is already part of a transfer — defense in depth:
+    detect_transfer_candidates and create_manual_transfer both avoid ever
+    creating such a candidate, but this guard also protects the plain
+    auto-confirm route, which has no validation of its own. Dismisses any
+    other still-pending candidate referencing either leg first (see
+    _dismiss_stale_siblings) so the partial unique indexes are never violated.
+    """
     from_tx = await session.get(Transaction, candidate.from_transaction_id)
     to_tx = await session.get(Transaction, candidate.to_transaction_id)
 
+    if (from_tx is not None and from_tx.is_transfer) or (
+        to_tx is not None and to_tx.is_transfer
+    ):
+        raise ConflictError("One of these transactions is already part of a transfer")
+
+    await _dismiss_stale_siblings(
+        session,
+        candidate.from_transaction_id,
+        candidate.to_transaction_id,
+        candidate.id,
+    )
+
+    candidate.status = "confirmed"
     if from_tx is not None:
         from_tx.is_transfer = True
     if to_tx is not None:
@@ -202,6 +295,19 @@ async def create_manual_transfer(
     existing_row = (await session.execute(existing_stmt)).first()
     if existing_row is not None and existing_row.status in ("pending", "confirmed"):
         raise ConflictError("This pair is already tracked as a transfer")
+
+    # Dismiss any other still-pending candidate for either leg *before*
+    # constructing/adding this candidate — if this ends up being a brand-new
+    # row, doing this first (and flushing) keeps that INSERT from ever
+    # transiently colliding with a stale sibling under the partial unique
+    # indexes. confirm_transfer() below repeats this call (a cheap no-op by
+    # then) so the plain auto-confirm route gets the same protection.
+    await _dismiss_stale_siblings(
+        session,
+        from_transaction_id,
+        to_transaction_id,
+        keep_candidate_id=existing_row.id if existing_row is not None else None,
+    )
 
     if existing_row is not None:
         candidate = await session.get(TransferCandidate, existing_row.id)
