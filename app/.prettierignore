@@ -4,6 +4,11 @@ node_modules
 coverage
 pnpm-lock.yaml
 
+# Tauri build output (not source; also not a language Prettier formats)
+src-tauri/target
+src-tauri/binaries
+src-tauri/gen
+
 # Playwright artifacts
 .e2e
 playwright-report
