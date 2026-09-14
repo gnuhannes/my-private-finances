@@ -1,6 +1,6 @@
 # 110 — Desktop App
 
-## Status: Planned 🔜
+## Status: In Progress 🚧 (Part A shipped)
 
 ## Goal
 
@@ -63,8 +63,27 @@ GitHub Actions matrix:
 - No webview access to filesystem except through Tauri commands
 - PyInstaller binary signed on macOS (notarisation) and Windows (code signing, optional)
 
+## Decisions (Part A, #178)
+
+- **PyInstaller over PyOxidizer**: simpler and more mature; this app's dependency
+  set (FastAPI, scikit-learn, aiosqlite) is well-trodden ground for PyInstaller.
+  Onefile build via `api/desktop.spec`, ~80 MB (dominated by scikit-learn/scipy).
+- **First-launch migration**: auto-detect and copy, silently, once. On desktop
+  startup, if the resolved app-data DB doesn't exist yet and a dev-mode
+  `./data/my_private_finances.sqlite` is found relative to cwd, copy it (and
+  `ml_model.joblib` if present) into the app-data dir before running
+  migrations. The source is never deleted or modified, and an existing
+  app-data DB is never overwritten. This covers a developer running the
+  packaged binary from their own checkout; it does nothing for end users who
+  never had a dev-mode `data/` dir. No UI prompt yet (Part A ships no UI) — a
+  confirmation dialog can be layered on top once Part C's native dialogs land,
+  if this ever turns out to be surprising in practice.
+- `data_dir` now defaults to the OS-standard app-data path (table above) only
+  inside a PyInstaller-frozen build (`sys.frozen`); source/dev runs
+  (`uvicorn --reload`, pytest, the CLI) keep the existing `./data` default
+  unchanged. See `Settings._default_data_dir` in `api/my_private_finances/config.py`.
+
 ## Open Questions
 
-- PyInstaller vs PyOxidizer: PyInstaller is simpler; PyOxidizer produces smaller binaries but is less mature
-- First-launch migration: how to move existing dev SQLite into app-data dir
-- Auto-update: Tauri Updater (GitHub releases as update server) — opt-in
+- Auto-update: Tauri Updater (GitHub releases as update server) — opt-in, out
+  of scope for v1 (see Part D, #181)

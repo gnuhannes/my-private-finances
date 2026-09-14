@@ -1,9 +1,36 @@
 from __future__ import annotations
 
+import os
+import sys
 from functools import lru_cache
 from pathlib import Path
 
+from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
+def _default_data_dir() -> Path:
+    """Default ``data_dir`` when ``DATA_DIR`` is unset.
+
+    Running from source (uvicorn --reload, pytest, the CLI) keeps the
+    long-standing ``./data`` default, relative to the process cwd. The
+    PyInstaller-packaged desktop binary (``sys.frozen`` is only set inside a
+    frozen build, see ``desktop_main.py``) instead defaults to the OS-standard
+    per-user app-data directory, since a desktop app has no meaningful "cwd"
+    and must not scatter its database next to wherever it happens to be
+    launched from. See docs/product/110-desktop-app.md.
+    """
+    if not getattr(sys, "frozen", False):
+        return Path("data")
+    if sys.platform == "darwin":
+        return Path.home() / "Library" / "Application Support" / "my-private-finance"
+    if sys.platform == "win32":
+        appdata = os.environ.get("APPDATA")
+        base = Path(appdata) if appdata else Path.home() / "AppData" / "Roaming"
+        return base / "my-private-finance"
+    xdg_data_home = os.environ.get("XDG_DATA_HOME")
+    base = Path(xdg_data_home) if xdg_data_home else Path.home() / ".local" / "share"
+    return base / "my-private-finance"
 
 
 class Settings(BaseSettings):
@@ -17,7 +44,7 @@ class Settings(BaseSettings):
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
-    data_dir: Path = Path("data")
+    data_dir: Path = Field(default_factory=_default_data_dir)
     database_url: str | None = None
     log_level: str = "INFO"
 
