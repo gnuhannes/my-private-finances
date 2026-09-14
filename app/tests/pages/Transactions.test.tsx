@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
-import { render, screen } from "@testing-library/react";
-import { MemoryRouter } from "react-router-dom";
+import { screen } from "@testing-library/react";
+import { renderApp } from "../render";
 import Transactions from "../../src/pages/Transactions";
 
 vi.mock("../../src/hooks/useAccounts", () => ({
@@ -44,10 +44,13 @@ vi.mock("../../src/hooks/useTransactions", () => ({
           currency: "EUR",
           payee: "Rewe",
           purpose: "Groceries",
+          notes: null,
           category_id: null,
           external_id: null,
           import_source: null,
           import_hash: "abc",
+          is_transfer: false,
+          split_count: 0,
         },
       ],
       total: 1,
@@ -57,43 +60,27 @@ vi.mock("../../src/hooks/useTransactions", () => ({
 
 describe("Transactions", () => {
   it("renders page title", () => {
-    render(
-      <MemoryRouter>
-        <Transactions />
-      </MemoryRouter>,
-    );
+    renderApp(<Transactions />);
 
     expect(screen.getByText("Transactions")).toBeInTheDocument();
   });
 
   it("renders account selector", () => {
-    render(
-      <MemoryRouter>
-        <Transactions />
-      </MemoryRouter>,
-    );
+    renderApp(<Transactions />);
 
     expect(screen.getByText("Account")).toBeInTheDocument();
     expect(screen.getByText("#1 — Main (EUR)")).toBeInTheDocument();
   });
 
   it("renders date filter inputs", () => {
-    render(
-      <MemoryRouter>
-        <Transactions />
-      </MemoryRouter>,
-    );
+    renderApp(<Transactions />);
 
     expect(screen.getByText("From")).toBeInTheDocument();
     expect(screen.getByText("To")).toBeInTheDocument();
   });
 
   it("renders transaction rows", () => {
-    render(
-      <MemoryRouter>
-        <Transactions />
-      </MemoryRouter>,
-    );
+    renderApp(<Transactions />);
 
     expect(screen.getByText("Rewe")).toBeInTheDocument();
     expect(screen.getAllByText("Groceries").length).toBeGreaterThanOrEqual(1);
