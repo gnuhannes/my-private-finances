@@ -17,6 +17,7 @@ vi.mock("../../src/hooks/useMl", () => ({
         purpose: "Food",
         amount: "-12.34",
         booking_date: "2026-01-01",
+        could_become_rule: false,
       },
     ],
     isLoading: false,

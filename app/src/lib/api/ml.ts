@@ -3,6 +3,7 @@ import { apiGet, apiPost } from "./client";
 export type TrainResult = {
   num_samples: number;
   num_categories: number;
+  cv_accuracy: number | null;
 };
 
 export type Suggestion = {
@@ -14,6 +15,7 @@ export type Suggestion = {
   purpose: string | null;
   amount: string;
   booking_date: string;
+  could_become_rule: boolean;
 };
 
 export function trainModel(): Promise<TrainResult> {

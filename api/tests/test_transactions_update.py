@@ -1,7 +1,52 @@
 import pytest
 from httpx import AsyncClient
 
+from my_private_finances.models import MLModelState
 from tests.helpers import create_account, create_category, create_transaction
+
+
+@pytest.mark.asyncio
+async def test_patch_transaction_sets_category_bumps_retrain_counter(
+    test_app: AsyncClient,
+) -> None:
+    acc = await create_account(test_app)
+    cat = await create_category(test_app, name="Groceries")
+    tx = await create_transaction(test_app, account_id=acc["id"])
+
+    res = await test_app.patch(
+        f"/api/transactions/{tx['id']}", json={"category_id": cat["id"]}
+    )
+    assert res.status_code == 200
+
+    session_factory = test_app._transport.app.state.session_factory  # type: ignore[union-attr]
+    async with session_factory() as session:
+        state = await session.get(MLModelState, 1)
+        assert state is not None
+        assert state.categorizations_since_train == 1
+
+
+@pytest.mark.asyncio
+async def test_patch_transaction_recategorize_does_not_double_count(
+    test_app: AsyncClient,
+) -> None:
+    acc = await create_account(test_app)
+    cat_a = await create_category(test_app, name="Groceries")
+    cat_b = await create_category(test_app, name="Transport")
+    tx = await create_transaction(test_app, account_id=acc["id"])
+
+    await test_app.patch(
+        f"/api/transactions/{tx['id']}", json={"category_id": cat_a["id"]}
+    )
+    # Already categorized -> re-categorizing should NOT bump the counter again.
+    await test_app.patch(
+        f"/api/transactions/{tx['id']}", json={"category_id": cat_b["id"]}
+    )
+
+    session_factory = test_app._transport.app.state.session_factory  # type: ignore[union-attr]
+    async with session_factory() as session:
+        state = await session.get(MLModelState, 1)
+        assert state is not None
+        assert state.categorizations_since_train == 1
 
 
 @pytest.mark.asyncio

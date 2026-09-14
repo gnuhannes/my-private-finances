@@ -4,6 +4,7 @@ from .budget import Budget
 from .categorization_rule import CategorizationRule
 from .category import Category
 from .csv_profile import CsvProfile
+from .ml_model_state import MLModelState
 from .recurring_pattern import RecurringPattern
 from .transaction import Transaction
 from .transaction_split import TransactionSplit
@@ -17,6 +18,7 @@ __all__ = [
     "CategorizationRule",
     "Category",
     "CsvProfile",
+    "MLModelState",
     "RecurringPattern",
     "Transaction",
     "TransactionSplit",

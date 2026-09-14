@@ -78,6 +78,8 @@ async def test_train_and_suggest_flow(test_app: AsyncClient, tmp_path: Path) -> 
         body = train_resp.json()
         assert body["num_samples"] == 12
         assert body["num_categories"] == 2
+        assert body["cv_accuracy"] is not None
+        assert 0.0 <= body["cv_accuracy"] <= 1.0
 
         suggest_resp = await test_app.get("/api/ml/suggest")
         assert suggest_resp.status_code == 200
@@ -88,3 +90,4 @@ async def test_train_and_suggest_flow(test_app: AsyncClient, tmp_path: Path) -> 
         assert "category_id" in s
         assert "confidence" in s
         assert 0.0 <= s["confidence"] <= 1.0
+        assert "could_become_rule" in s

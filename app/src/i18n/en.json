@@ -450,6 +450,8 @@
     "trainModel": "Train Model",
     "training": "Training…",
     "trainSuccess": "Model trained on {{samples}} transactions across {{categories}} categories.",
+    "trainSuccessWithAccuracy": "Model trained on {{samples}} transactions across {{categories}} categories — ≈{{accuracy}}% accuracy on your data.",
+    "couldBecomeRule": "High confidence — consider adding a rule for this",
     "trainFailed": "Training failed. Make sure you have at least 10 categorized transactions.",
     "acceptAllHighConfidence": "Accept All High-Confidence (≥80%) — {{count}}",
     "coldStartHint": "No suggestions available. Train the model first, or categorize at least 10 transactions manually or via rules.",

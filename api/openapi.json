@@ -1859,6 +1859,11 @@
             "title": "Confidence",
             "type": "number"
           },
+          "could_become_rule": {
+            "default": false,
+            "title": "Could Become Rule",
+            "type": "boolean"
+          },
           "payee": {
             "anyOf": [
               {
@@ -1955,6 +1960,17 @@
       },
       "TrainResult": {
         "properties": {
+          "cv_accuracy": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cv Accuracy"
+          },
           "num_categories": {
             "title": "Num Categories",
             "type": "integer"
