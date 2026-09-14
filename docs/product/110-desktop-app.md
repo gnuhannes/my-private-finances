@@ -1,6 +1,6 @@
 # 110 — Desktop App
 
-## Status: In Progress 🚧 (Part A shipped)
+## Status: In Progress 🚧 (Parts A + B shipped)
 
 ## Goal
 
@@ -82,6 +82,37 @@ GitHub Actions matrix:
   inside a PyInstaller-frozen build (`sys.frozen`); source/dev runs
   (`uvicorn --reload`, pytest, the CLI) keep the existing `./data` default
   unchanged. See `Settings._default_data_dir` in `api/my_private_finances/config.py`.
+
+## Decisions (Part B, #179)
+
+- Tauri v2, scaffolded via `cargo tauri init` into `app/src-tauri/`. The sidecar
+  is spawned from Rust's `setup()` hook (never from the webview), so the
+  renderer has zero shell/native permissions declared in
+  `src-tauri/capabilities/default.json` — satisfies "renderer can only call
+  explicitly declared APIs" without needing any allowlist entries yet, since
+  there's nothing to allow until Part C adds native file dialogs.
+  `wait_for_sidecar_health` polls `GET /api/health` (not just a TCP connect)
+  before the window is considered ready, and `RunEvent::ExitRequested` sends a
+  real SIGTERM (via `libc`, Unix only — Windows falls back to
+  `CommandChild::kill()`/`TerminateProcess`) so the sidecar's FastAPI lifespan
+  shutdown runs instead of a hard kill.
+- The frontend's fetch client (`app/src/lib/api/client.ts`) now targets
+  `http://127.0.0.1:5179` explicitly when `window.__TAURI_INTERNALS__` is
+  present, since the webview's asset origin (`tauri://localhost`) differs from
+  the sidecar's; `Settings.cors_origins` allows that origin accordingly.
+- `make desktop-sidecar` / `desktop-dev` / `desktop-build` (root Makefile) plus
+  `scripts/package-desktop-sidecar.sh` build the Part A PyInstaller binary and
+  stage it at `app/src-tauri/binaries/my-private-finance-api-<target-triple>`,
+  matching `bundle.externalBin` in `tauri.conf.json`.
+- Verified end-to-end on Linux: `cargo tauri dev` spawns the sidecar, which
+  correctly resolves the OS app-data dir, auto-migrates a legacy dev DB, and
+  runs Alembic migrations; the webview loads the built frontend and makes real
+  API calls (`/api/settings/app`, `/api/accounts`) through the sidecar
+  successfully. The window-close → SIGTERM path is implemented and reviewed
+  against the `tauri-plugin-shell` source, but wasn't exercised by an actual
+  window-close click in this environment (no `xdotool`/`wmctrl`) — worth a
+  manual check on a real desktop before relying on it, or an automated check
+  in Part D's CI matrix.
 
 ## Open Questions
 

@@ -141,3 +141,29 @@ describe("apiRequest headers, timeout, delete", () => {
     await expect(apiGet("/api/slow", { timeoutMs: 5 })).rejects.toBeInstanceOf(TimeoutError);
   });
 });
+
+describe("Tauri desktop shell base URL", () => {
+  beforeEach(() => {
+    vi.stubGlobal("fetch", vi.fn());
+  });
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    Reflect.deleteProperty(window, "__TAURI_INTERNALS__");
+  });
+
+  it("uses a relative path in the browser (no __TAURI_INTERNALS__)", async () => {
+    vi.mocked(fetch).mockResolvedValueOnce(new Response("{}", { status: 200 }));
+    await apiGet("/api/x");
+    expect(vi.mocked(fetch).mock.calls[0][0]).toBe("/api/x");
+  });
+
+  it("prefixes the sidecar origin inside the Tauri webview", async () => {
+    Object.defineProperty(window, "__TAURI_INTERNALS__", {
+      value: {},
+      configurable: true,
+    });
+    vi.mocked(fetch).mockResolvedValueOnce(new Response("{}", { status: 200 }));
+    await apiGet("/api/x");
+    expect(vi.mocked(fetch).mock.calls[0][0]).toBe("http://127.0.0.1:5179/api/x");
+  });
+});

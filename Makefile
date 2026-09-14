@@ -17,6 +17,9 @@ help:
 	@echo "  make fe-test       - Frontend tests (if configured)"
 	@echo "  make e2e           - Playwright E2E smoke (boots api + app; not in ci)"
 	@echo "  make sync          - Install deps (backend + frontend)"
+	@echo "  make desktop-sidecar - Build the PyInstaller backend and stage it as a Tauri sidecar"
+	@echo "  make desktop-dev   - Run the desktop app in dev mode (cargo tauri dev)"
+	@echo "  make desktop-build - Build the desktop app for the current OS"
 
 .PHONY: ci
 ci: ci-backend ci-frontend check-openapi
@@ -73,3 +76,15 @@ sync-backend:
 
 sync-frontend:
 	$(MAKE) -C app sync
+
+.PHONY: desktop-sidecar
+desktop-sidecar:
+	./scripts/package-desktop-sidecar.sh
+
+.PHONY: desktop-dev
+desktop-dev: desktop-sidecar
+	cd app && cargo tauri dev
+
+.PHONY: desktop-build
+desktop-build: desktop-sidecar
+	cd app && cargo tauri build
