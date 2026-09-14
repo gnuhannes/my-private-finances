@@ -4,10 +4,11 @@ import logging
 from decimal import Decimal, InvalidOperation
 from typing import Callable
 
+from sqlalchemy import literal
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
 
-from my_private_finances.models import CategorizationRule, Transaction
+from my_private_finances.models import CategorizationRule, Transaction, TransactionSplit
 
 logger = logging.getLogger(__name__)
 
@@ -92,8 +93,17 @@ async def apply_rules_to_uncategorized(session: AsyncSession) -> int:
     if not rules:
         return 0
 
+    no_split = ~(
+        select(literal(1))
+        .select_from(TransactionSplit)
+        .where(TransactionSplit.transaction_id == Transaction.id)  # type: ignore[arg-type]
+        .exists()
+    )
     result = await session.execute(
-        select(Transaction).where(Transaction.category_id.is_(None))  # type: ignore[union-attr]
+        select(Transaction).where(
+            Transaction.category_id.is_(None),  # type: ignore[union-attr]
+            no_split,
+        )
     )
     transactions = list(result.scalars().all())
 
