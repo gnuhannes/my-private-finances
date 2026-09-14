@@ -16,10 +16,12 @@ const isCI = !!process.env.CI;
 
 export default defineConfig({
   testDir: "./e2e",
-  fullyParallel: true,
+  // All specs share one backend + SQLite DB (booted once above), so spec files must not
+  // run concurrently — onboarding.spec.ts depends on the DB being empty of accounts on boot.
+  fullyParallel: false,
   forbidOnly: isCI,
   retries: isCI ? 2 : 0,
-  workers: isCI ? 1 : undefined,
+  workers: 1,
   reporter: isCI ? [["github"], ["html", { open: "never" }]] : "list",
   use: {
     baseURL: `http://${HOST}:${WEB_PORT}`,

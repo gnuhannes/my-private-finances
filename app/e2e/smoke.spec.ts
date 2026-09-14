@@ -12,6 +12,13 @@ test("app shell loads, talks to the API, and navigates", async ({ page, request 
   });
   expect(seeded.ok()).toBeTruthy();
 
+  // Onboarding (105) redirects a fresh DB to /welcome; stamp it complete so this
+  // journey can assert on the dashboard shell directly, independent of the wizard.
+  const settings = await request.patch("/api/settings/app", {
+    data: { onboarding_completed_at: new Date().toISOString() },
+  });
+  expect(settings.ok()).toBeTruthy();
+
   await page.goto("/");
 
   // Shell + dashboard rendered from live API data.

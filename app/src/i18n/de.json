@@ -21,6 +21,7 @@
     "loadingAccounts": "Konten werden geladen…",
     "failedAccounts": "Konten konnten nicht geladen werden.",
     "noAccountsYet": "Noch keine Konten.",
+    "emptyStateCta": "Erstes Konto einrichten",
     "account": "Konto",
     "allAccounts": "Alle Konten",
     "save": "Speichern",
@@ -78,7 +79,30 @@
     "tableParent": "Übergeordnet",
     "tableCostType": "Kostenart",
     "loading": "Kategorien werden geladen...",
-    "failed": "Kategorien konnten nicht geladen werden."
+    "failed": "Kategorien konnten nicht geladen werden.",
+    "starter": {
+      "fixed": {
+        "rent": "Miete",
+        "insurance": "Versicherung",
+        "subscriptions": "Abonnements"
+      },
+      "variable": {
+        "groceries": "Lebensmittel",
+        "dining": "Essen gehen",
+        "shopping": "Einkaufen",
+        "transport": "Transport"
+      },
+      "income": {
+        "salary": "Gehalt"
+      }
+    },
+    "starterGroupFixed": "Feste Kosten",
+    "starterGroupVariable": "Alltägliche Ausgaben",
+    "starterGroupIncome": "Einnahmen",
+    "addOwnTitle": "Eigene hinzufügen",
+    "addOwnPlaceholder": "Kategoriename",
+    "addOwnAdd": "Zeile hinzufügen",
+    "addOwnRemove": "Entfernen"
   },
   "import": {
     "title": "Importieren",
@@ -484,6 +508,9 @@
     "watchFolderTitle": "Beobachtungsordner",
     "watchFolderSubtitle": "Bankexporte in Unterordner ablegen und sie werden automatisch importiert.",
     "languageTitle": "Sprache",
+    "rerunWizardTitle": "Einrichtungsassistent",
+    "rerunWizardDesc": "Den Einrichtungsassistenten erneut ausführen, um Konten oder Startkategorien wieder hinzuzufügen.",
+    "rerunWizard": "Einrichtung erneut ausführen",
     "dangerTitle": "Gefahrenzone",
     "deleteTransactions": "Alle Transaktionen löschen",
     "deleteTransactionsDesc": "Alle Transaktionen, wiederkehrende Muster und Überweisungsverknüpfungen entfernen. Konten und Kategorien bleiben erhalten.",
@@ -504,5 +531,33 @@
     "colSubfolder": "Unterordner",
     "colAccount": "Konto",
     "colProfile": "CSV-Profil"
+  },
+  "welcome": {
+    "stepProgress": "Schritt {{current}} von {{total}}",
+    "skip": "Einrichtung überspringen",
+    "back": "Zurück",
+    "next": "Weiter",
+    "introTitle": "Willkommen bei My Private Finances",
+    "introPrivacy": "Alle Ihre Daten bleiben auf diesem Gerät — keine Cloud, keine Konten, kein Tracking.",
+    "languageLabel": "Sprache",
+    "currencyLabel": "Standardwährung",
+    "accountTitle": "Fügen Sie Ihr erstes Konto hinzu",
+    "accountCopy": "Ihr Kontostand an diesem Datum. Alles, was danach importiert wird, rechnet sich ab hier hinzu — das ist die Grundlage für Vermögensübersicht und laufende Salden. Wählen Sie das Datum Ihres ältesten Kontoauszugs, oder heute, wenn Sie neu beginnen.",
+    "startingBalanceLabel": "Startsaldo",
+    "asOfDateLabel": "Stand vom",
+    "addAccount": "Konto hinzufügen",
+    "categoriesTitle": "Wählen Sie Ihre Startkategorien",
+    "categoriesCopy": "Diese decken die meisten alltäglichen Ausgaben ab. Deaktivieren Sie, was Sie nicht benötigen, oder fügen Sie unten eigene hinzu — Sie können dies später jederzeit ändern.",
+    "categoriesSubmit": "Ausgewählte Kategorien hinzufügen",
+    "categoriesSubmitted": "Kategorien hinzugefügt.",
+    "importTitle": "Ihren ersten Kontoauszug importieren",
+    "importCopy": "Optional — Sie können auch später über die Import-Seite importieren.",
+    "importLater": "Das mache ich später",
+    "importSuccess": "{{count}} importiert, {{categorized}} automatisch kategorisiert.",
+    "doneTitle": "Fertig!",
+    "doneSummary": "{{accounts}} Konto(en) · {{balance}} Startsaldo · {{categories}} Kategorien · {{transactions}} Transaktionen",
+    "goToDashboard": "Zum Dashboard",
+    "goToImport": "Zum Import",
+    "goToRules": "Zu den Regeln"
   }
 }

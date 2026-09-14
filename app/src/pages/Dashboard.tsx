@@ -8,6 +8,7 @@ import { useFixedVsVariable } from "../hooks/useFixedVsVariable";
 import { useRecurringSummary } from "../hooks/useRecurringPatterns";
 import { formatMoneyString, formatCurrency } from "../utils/money";
 import { lastNMonths } from "../utils/dates";
+import { EmptyState } from "../components/EmptyState";
 import { KpiCard } from "../components/KpiCard";
 import { TopPayeesBarChart } from "../components/TopPayeesBarChart";
 import { CategoryBreakdownChart } from "../components/CategoryBreakdownChart";
@@ -44,7 +45,7 @@ export default function Dashboard() {
 
   if (isLoading) return <div>{t("common.loadingAccounts")}</div>;
   if (error) return <div>{t("common.failedAccounts")}</div>;
-  if (!accounts || accounts.length === 0) return <div>{t("common.noAccountsYet")}</div>;
+  if (!accounts || accounts.length === 0) return <EmptyState message={t("common.noAccountsYet")} />;
 
   return (
     <div className={styles.page}>

@@ -6,6 +6,7 @@ import { useRecurringPatterns, useRecurringSummary } from "../hooks/useRecurring
 import { detectRecurringPatterns, updateRecurringPattern } from "../lib/api/recurringPatterns";
 import { formatMoneyString } from "../utils/money";
 import { RecurringPatternsTable } from "../components/RecurringPatternsTable";
+import { EmptyState } from "../components/EmptyState";
 import styles from "./Recurring.module.css";
 
 export default function Recurring() {
@@ -48,8 +49,7 @@ export default function Recurring() {
   });
 
   if (accountsLoading) return <div className={styles.status}>{t("recurring.loading")}</div>;
-  if (!accounts || accounts.length === 0)
-    return <div className={styles.status}>{t("common.noAccountsYet")}</div>;
+  if (!accounts || accounts.length === 0) return <EmptyState message={t("common.noAccountsYet")} />;
 
   return (
     <div className={styles.page}>
