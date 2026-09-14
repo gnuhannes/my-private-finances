@@ -38,6 +38,7 @@ function tx(overrides: Partial<TransactionItem>): TransactionItem {
     import_source: null,
     import_hash: "h",
     is_transfer: false,
+    split_count: 0,
     ...overrides,
   };
 }
