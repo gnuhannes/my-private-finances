@@ -1,0 +1,211 @@
+name: desktop-release
+
+# Builds and publishes desktop installers on a version tag push (v*):
+#   ubuntu-latest  -> .deb + .AppImage
+#   windows-latest -> .msi + .exe (NSIS)
+#   macOS          -> universal .dmg (x86_64 + arm64), built from two
+#                     arch-native PyInstaller sidecars merged by `cargo tauri
+#                     build --target universal-apple-darwin` (lipo).
+#
+# Code signing (macOS notarization, Windows Authenticode) is intentionally
+# not configured — optional for v1 per docs/product/110-desktop-app.md.
+# Unsigned binaries will trigger an OS warning (Gatekeeper / SmartScreen);
+# users must explicitly allow the app on first launch.
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch: {}
+
+env:
+  PNPM_VERSION: "9.15.0"
+
+jobs:
+  # --- Linux: single native sidecar + build ---------------------------------
+  release-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Tauri Linux system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libwebkit2gtk-4.1-dev build-essential curl wget file libxdo-dev \
+            libssl-dev libayatana-appindicator3-dev librsvg2-dev
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Poetry
+        run: pipx install poetry
+
+      - name: Install backend dependencies
+        working-directory: api
+        run: poetry install --no-interaction
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+
+      - name: Enable pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@${{ env.PNPM_VERSION }} --activate
+
+      - name: Install frontend dependencies
+        working-directory: app
+        run: pnpm install --frozen-lockfile
+
+      - name: Build and stage the backend sidecar
+        run: ./scripts/package-desktop-sidecar.sh
+
+      - name: Build the frontend
+        working-directory: app
+        run: pnpm build
+
+      - name: Build Tauri app (.deb + .AppImage)
+        working-directory: app
+        run: cargo tauri build --bundles deb,appimage
+
+      - name: Publish to GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            app/src-tauri/target/release/bundle/deb/*.deb
+            app/src-tauri/target/release/bundle/appimage/*.AppImage
+
+  # --- Windows: single native sidecar + build --------------------------------
+  release-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Poetry
+        run: pipx install poetry
+
+      - name: Install backend dependencies
+        working-directory: api
+        run: poetry install --no-interaction
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+
+      - name: Enable pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@${{ env.PNPM_VERSION }} --activate
+
+      - name: Install frontend dependencies
+        working-directory: app
+        run: pnpm install --frozen-lockfile
+
+      - name: Build and stage the backend sidecar
+        run: ./scripts/package-desktop-sidecar.sh
+        shell: bash
+
+      - name: Build the frontend
+        working-directory: app
+        run: pnpm build
+
+      - name: Build Tauri app (.msi + .exe)
+        working-directory: app
+        run: cargo tauri build --bundles msi,nsis
+
+      - name: Publish to GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            app/src-tauri/target/release/bundle/msi/*.msi
+            app/src-tauri/target/release/bundle/nsis/*.exe
+
+  # --- macOS: one PyInstaller sidecar per arch (PyInstaller doesn't cross-
+  # compile), then merged into a universal .dmg by a separate job. -----------
+  macos-sidecar:
+    strategy:
+      matrix:
+        include:
+          - runner: macos-13 # Intel
+            triple: x86_64-apple-darwin
+          - runner: macos-14 # Apple Silicon
+            triple: aarch64-apple-darwin
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Poetry
+        run: pipx install poetry
+
+      - name: Install backend dependencies
+        working-directory: api
+        run: poetry install --no-interaction
+
+      - name: Build the backend sidecar
+        run: ./scripts/package-desktop-sidecar.sh
+        shell: bash
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sidecar-${{ matrix.triple }}
+          path: app/src-tauri/binaries/my-private-finance-api-${{ matrix.triple }}
+
+  release-macos:
+    needs: macos-sidecar
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-apple-darwin,aarch64-apple-darwin
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+
+      - name: Enable pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@${{ env.PNPM_VERSION }} --activate
+
+      - name: Install frontend dependencies
+        working-directory: app
+        run: pnpm install --frozen-lockfile
+
+      - name: Build the frontend
+        working-directory: app
+        run: pnpm build
+
+      - name: Download both arch sidecars
+        uses: actions/download-artifact@v4
+        with:
+          pattern: sidecar-*
+          path: app/src-tauri/binaries
+          merge-multiple: true
+
+      - name: Restore sidecar executable bit
+        run: chmod +x app/src-tauri/binaries/*
+
+      - name: Build Tauri app (universal .dmg)
+        working-directory: app
+        run: cargo tauri build --target universal-apple-darwin --bundles dmg
+
+      - name: Publish to GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: app/src-tauri/target/universal-apple-darwin/release/bundle/dmg/*.dmg

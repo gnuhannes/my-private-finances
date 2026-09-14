@@ -1,6 +1,6 @@
 # 110 — Desktop App
 
-## Status: In Progress 🚧 (Parts A + B + C shipped)
+## Status: Shipped ✅ (Parts A + B + C + D)
 
 ## Goal
 
@@ -151,6 +151,41 @@ GitHub Actions matrix:
   UI weren't exercised by simulated clicks in this environment (no
   `xdotool`/`wmctrl`) — same caveat as Part B's window-close path; worth a
   manual pass on a real desktop before relying on them.
+
+## Decisions (Part D, #181)
+
+- `make desktop-build` builds for the current OS locally (dev loop, added in
+  Part B). `make desktop-release` doesn't build anything itself — it just
+  explains that a real cross-platform release only happens in CI (PyInstaller
+  can't cross-compile the backend sidecar for another OS/arch), triggered by
+  pushing a `v*` tag.
+- `.github/workflows/desktop-release.yml`: `release-linux` and
+  `release-windows` are single-runner jobs (native sidecar build → `cargo
+  tauri build --bundles ...` → publish). macOS needs two runners since
+  PyInstaller only produces a binary for its own arch: `macos-sidecar` builds
+  the backend on `macos-13` (Intel) and `macos-14` (Apple Silicon) as a
+  matrix, uploads both as artifacts, and `release-macos` downloads both,
+  stages them as `my-private-finance-api-x86_64-apple-darwin` /
+  `...-aarch64-apple-darwin`, then runs `cargo tauri build --target
+  universal-apple-darwin` — Tauri lipo-merges the two sidecars into the
+  universal `.dmg` automatically since both externalBin files are present.
+- Each job publishes straight to the GitHub release via
+  `softprops/action-gh-release@v2` rather than a separate artifact-gathering
+  job — simpler, and the action supports being called multiple times against
+  the same tag.
+- Code signing (macOS notarization, Windows Authenticode) is **not
+  configured**, per the spec's "optional, skip for v1" — no signing secrets
+  exist in this repo. Unsigned binaries will trigger a Gatekeeper prompt on
+  macOS ("unidentified developer") and a SmartScreen warning on Windows;
+  users need to explicitly allow the app on first launch. Revisit if/when a
+  signing certificate becomes available.
+- Auto-update (Tauri Updater) is **not implemented**, per the spec's out-of-
+  scope-for-v1 call — see Open Questions below.
+- Not verified end-to-end: this workflow has not yet run in GitHub Actions
+  (no tag pushed). The Linux job's steps mirror the already-verified local
+  `make desktop-build` flow closely; the Windows and macOS jobs (especially
+  the universal-binary lipo merge) are new and unverified — the first real
+  tag push should be treated as this pipeline's first real test.
 
 ## Open Questions
 
