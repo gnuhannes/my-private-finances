@@ -37,35 +37,23 @@ All 12 months at a glance: income vs expenses grouped bar chart, savings rate pe
 Full-text search on payee/purpose, amount range filter, all-accounts mode — all filters compose.
 
 ### [080 — ML Category Suggestions](080-ml-category-suggestions.md) ✅
-Local scikit-learn pipeline (TF-IDF char n-grams + CalibratedClassifierCV/LinearSVC) trained on the user's own categorised transactions. Suggests categories with confidence scores; bulk-accept ≥80% predictions. Auto-detects recurring patterns on import.
+Local scikit-learn pipeline (TF-IDF char n-grams + LogisticRegression, feature-enriched with amount/date/recurring-payee signals) trained on the user's own categorised transactions. Suggests categories with confidence scores; bulk-accept ≥80% predictions; cached in-process model + auto-retrain after manual categorizations or import. Auto-detects recurring patterns on import.
+
+### [120 — Watch Folder (Auto-Import)](120-watch-folder.md) ✅
+`watchdog`-based background task monitors `<data_dir>/watch/`, auto-imports dropped `.csv`/`.pdf` files, moves them to `processed/`/`failed/`.
+
+### [035 — Manual Transfer Linking](035-manual-transfer-linking.md) ✅
+`POST /transfers/manual` (no amount/date check) and unlink endpoint to reverse a confirmed pair, closing the gap where auto-detection misses fee/FX/slow-transfer pairs.
+
+### [105 — First-Run Setup](105-first-run-setup.md) ✅
+Full-screen wizard on first launch: create a first account with a starting balance, pick a localized starter category set, optionally import a first statement. Backed by `AppSettings` singleton (`onboarding_completed_at`, `default_currency`, `locale`).
+
+### [160 — Transaction Splitting](160-transaction-splitting.md) ✅
+Split one bank transaction across several categories by absolute amount or percentage. `transaction_split` child table; category reports (monthly breakdown, budget-vs-actual, fixed-vs-variable, spending-trend) attribute each portion via a UNION-ALL selectable in `services/reporting.py`.
 
 ---
 
 ## Planned
-
-### [035 — Manual Transfer Linking](035-manual-transfer-linking.md) 🔜
-**Goal:** Let the user manually pair two transactions across accounts as a transfer when
-[030](030-multi-account-aggregation.md)'s automatic detection misses them.
-
-Auto-detection requires exact amount match within a 3-day window; real transfers through an
-intermediary (fees, FX spread) or slow international transfers often violate both. Adds
-`POST /transfers/manual` (no amount/date check, reuses the `TransferCandidate` model with a
-new `source: "auto" | "manual"` column) and `POST /transfers/candidates/{id}/unlink` to
-reverse a confirmed pair — closing the existing gap where a transfer, once confirmed, can
-never be undone via the API.
-
----
-
-### [105 — First-Run Setup](105-first-run-setup.md) 🔜
-**Goal:** Guide a new user from an empty database to a usable dashboard.
-
-Full-screen wizard shown on first launch: create a first account **with a starting balance
-in one step**, pick a localized starter category set, optionally import a first statement.
-Backed by a new `AppSettings` singleton table (`onboarding_completed_at`, `default_currency`,
-`locale`); a migration stamps existing databases as done so they skip the wizard. Precursor
-to [110](110-desktop-app.md), where every first launch is a blank database.
-
----
 
 ### [110 — Desktop App](110-desktop-app.md) 🔜
 **Goal:** Installable, self-contained desktop app for Windows, macOS, and Linux.
@@ -82,31 +70,6 @@ to [110](110-desktop-app.md), where every first launch is a blank database.
 **Security:** Tauri's allowlist restricts renderer access to only declared native APIs. The sidecar API is bound to localhost only.
 
 ---
-
-### [120 — Watch Folder (Auto-Import)](120-watch-folder.md) 🔜
-**Goal:** Drop a bank export file into a directory and it is automatically imported — no UI interaction required.
-
-**Stack:** Python `watchdog` library running as a background asyncio task inside the existing FastAPI backend.
-
-- Monitors `<data_dir>/watch/` (or a user-configured path).
-- Detects new `.csv` and `.pdf` files using filesystem events (cross-platform).
-- Runs the existing import pipeline; on success moves the file to `processed/YYYY-MM-DD/`; on failure to `failed/` with a sidecar `.error.txt`.
-- Account assignment: either a `watch-config.json` file in the watch directory, or one subfolder per account (e.g. `watch/checking/`, `watch/savings/`).
-- Ships as part of the desktop app (110) but can also run in the existing dev server for power users.
-
----
-
-### [160 — Transaction Splitting](160-transaction-splitting.md) 🔜
-**Goal:** Split one bank transaction across several categories — by absolute amount or by
-percentage (e.g. a single transfer covering rent + utilities).
-
-New `transaction_split` child table; `Transaction.category_id` stays as the fast path for
-single-category transactions (no data migration). Split amounts must sum exactly to the
-transaction total; splitting is attribution-only, so balances and net worth are untouched.
-Category reports (monthly breakdown, budget-vs-actual, fixed-vs-variable, spending-trend)
-attribute each portion via a UNION-ALL selectable in `services/reporting.py`. Absolute vs.
-percentage is a frontend concern — the API stores absolute amounts only. **Foundation for
-[100 — Bill Scanning](100-bill-scanning.md)**; sequence after issue #104.
 
 ### [180 — Category Tree & New-Category Suggestions](180-category-tree-and-suggestions.md) 🔜
 **Goal:** A real, hierarchical, localized pre-defined category tree (beyond 105's flat
