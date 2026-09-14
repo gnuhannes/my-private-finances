@@ -1,4 +1,5 @@
 from .account import AccountCreate, AccountRead, AccountUpdate
+from .app_settings import AppSettingsRead, AppSettingsUpdate
 from .base import ReadSchema, StrictSchema
 from .budget import BudgetCreate, BudgetRead, BudgetUpdate
 from .categorization_rule import (
@@ -49,6 +50,8 @@ __all__ = [
     "AccountCreate",
     "AccountRead",
     "AccountUpdate",
+    "AppSettingsRead",
+    "AppSettingsUpdate",
     "BudgetCreate",
     "BudgetRead",
     "BudgetUpdate",

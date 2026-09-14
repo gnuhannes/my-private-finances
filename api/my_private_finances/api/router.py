@@ -3,6 +3,7 @@ from fastapi import APIRouter
 from my_private_finances.api.routes import reports
 from my_private_finances.api.routes.accounts import router as accounts_router
 from my_private_finances.api.routes.annual import router as annual_router
+from my_private_finances.api.routes.app_settings import router as app_settings_router
 from my_private_finances.api.routes.budgets import router as budgets_router
 from my_private_finances.api.routes.categories import router as categories_router
 from my_private_finances.api.routes.categorization_rules import (
@@ -27,6 +28,7 @@ from my_private_finances.api.routes.watch_folder import router as watch_folder_r
 
 api_router = APIRouter()
 api_router.include_router(accounts_router)
+api_router.include_router(app_settings_router)
 api_router.include_router(budgets_router)
 api_router.include_router(categories_router)
 api_router.include_router(categorization_rules_router)

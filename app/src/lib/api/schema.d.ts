@@ -93,6 +93,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/categories/batch": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Create Categories Batch */
+        post: operations["create_categories_batch_api_categories_batch_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/categories/{category_id}": {
         parameters: {
             query?: never;
@@ -547,6 +564,24 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/settings/app": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get App Settings */
+        get: operations["get_app_settings_api_settings_app_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update App Settings */
+        patch: operations["update_app_settings_api_settings_app_patch"];
+        trace?: never;
+    };
     "/api/transactions": {
         parameters: {
             query?: never;
@@ -788,6 +823,10 @@ export interface components {
             currency: string;
             /** Name */
             name: string;
+            /** Opening Balance */
+            opening_balance?: number | string | null;
+            /** Opening Balance Date */
+            opening_balance_date?: string | null;
         };
         /** AccountNetWorthSummary */
         AccountNetWorthSummary: {
@@ -854,6 +893,28 @@ export interface components {
             total_net: string;
             /** Year */
             year: number;
+        };
+        /** AppSettingsRead */
+        AppSettingsRead: {
+            /** Default Currency */
+            default_currency: string;
+            /** Locale */
+            locale?: string | null;
+            /** Onboarding Completed At */
+            onboarding_completed_at?: string | null;
+            /** Onboarding Skipped */
+            onboarding_skipped: boolean;
+        };
+        /** AppSettingsUpdate */
+        AppSettingsUpdate: {
+            /** Default Currency */
+            default_currency?: string | null;
+            /** Locale */
+            locale?: string | null;
+            /** Onboarding Completed At */
+            onboarding_completed_at?: string | null;
+            /** Onboarding Skipped */
+            onboarding_skipped?: boolean | null;
         };
         /** ApplyResult */
         ApplyResult: {
@@ -1783,6 +1844,39 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["CategoryRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_categories_batch_api_categories_batch_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CategoryCreate"][];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CategoryRead"][];
                 };
             };
             /** @description Validation Error */
@@ -2730,6 +2824,59 @@ export interface operations {
                     "application/json": {
                         [key: string]: unknown;
                     };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_app_settings_api_settings_app_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AppSettingsRead"];
+                };
+            };
+        };
+    };
+    update_app_settings_api_settings_app_patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AppSettingsUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AppSettingsRead"];
                 };
             };
             /** @description Validation Error */
