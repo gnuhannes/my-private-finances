@@ -6,7 +6,7 @@ from fastapi import APIRouter, Body, HTTPException
 from sqlmodel import select
 
 from my_private_finances.deps import SessionDep
-from my_private_finances.models import Category, Transaction
+from my_private_finances.models import Category, Transaction, TransactionSplit
 from my_private_finances.schemas import CategoryCreate, CategoryRead, CategoryUpdate
 
 router = APIRouter(prefix="/categories", tags=["categories"])
@@ -113,6 +113,17 @@ async def delete_category(category_id: int, session: SessionDep) -> None:
         raise HTTPException(
             status_code=409,
             detail="Category is in use by transactions and cannot be deleted",
+        )
+
+    split_result = await session.execute(
+        select(TransactionSplit.id)
+        .where(TransactionSplit.category_id == category_id)
+        .limit(1)
+    )
+    if split_result.scalar_one_or_none() is not None:
+        raise HTTPException(
+            status_code=409,
+            detail="Category is in use by a transaction split and cannot be deleted",
         )
 
     await session.delete(db_obj)

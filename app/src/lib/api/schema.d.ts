@@ -617,6 +617,25 @@ export interface paths {
         patch: operations["update_transaction_api_transactions__transaction_id__patch"];
         trace?: never;
     };
+    "/api/transactions/{transaction_id}/splits": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Transaction Splits */
+        get: operations["get_transaction_splits_api_transactions__transaction_id__splits_get"];
+        /** Replace Transaction Splits */
+        put: operations["replace_transaction_splits_api_transactions__transaction_id__splits_put"];
+        post?: never;
+        /** Delete Transaction Splits */
+        delete: operations["delete_transaction_splits_api_transactions__transaction_id__splits_delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/transfers/candidates": {
         parameters: {
             query?: never;
@@ -1496,6 +1515,33 @@ export interface components {
             payee?: string | null;
             /** Purpose */
             purpose?: string | null;
+            /**
+             * Split Count
+             * @default 0
+             */
+            split_count: number;
+        };
+        /** TransactionSplitItem */
+        TransactionSplitItem: {
+            /** Amount */
+            amount: number | string;
+            /** Category Id */
+            category_id?: number | null;
+            /** Note */
+            note?: string | null;
+        };
+        /** TransactionSplitRead */
+        TransactionSplitRead: {
+            /** Amount */
+            amount: string;
+            /** Category Id */
+            category_id?: number | null;
+            /** Category Name */
+            category_name?: string | null;
+            /** Id */
+            id: number;
+            /** Note */
+            note?: string | null;
         };
         /** TransactionUpdate */
         TransactionUpdate: {
@@ -2985,6 +3031,101 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["TransactionRead"];
                 };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_transaction_splits_api_transactions__transaction_id__splits_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                transaction_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TransactionSplitRead"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    replace_transaction_splits_api_transactions__transaction_id__splits_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                transaction_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TransactionSplitItem"][];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TransactionSplitRead"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_transaction_splits_api_transactions__transaction_id__splits_delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                transaction_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description Validation Error */
             422: {
