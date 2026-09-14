@@ -1,7 +1,7 @@
 """add ml_model_state table
 
 Revision ID: 1ad7fa040cd9
-Revises: 90be3ce67959
+Revises: 016ead2e3b42
 Create Date: 2026-09-13 23:11:14.520674
 
 """
@@ -14,7 +14,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision: str = "1ad7fa040cd9"
-down_revision: Union[str, Sequence[str], None] = "90be3ce67959"
+down_revision: Union[str, Sequence[str], None] = "016ead2e3b42"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
