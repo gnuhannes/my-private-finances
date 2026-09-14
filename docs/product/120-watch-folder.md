@@ -1,6 +1,6 @@
 # 120 — Watch Folder (Auto-Import)
 
-## Status: Planned 🔜
+## Status: Complete ✅
 
 ## Goal
 
