@@ -573,6 +573,7 @@
     "startingBalanceLabel": "Startsaldo",
     "asOfDateLabel": "Stand vom",
     "addAccount": "Konto hinzufügen",
+    "accountAdded": "Konto hinzugefügt.",
     "categoriesTitle": "Wählen Sie Ihre Startkategorien",
     "categoriesCopy": "Diese decken die meisten alltäglichen Ausgaben ab. Deaktivieren Sie, was Sie nicht benötigen, oder fügen Sie unten eigene hinzu — Sie können dies später jederzeit ändern.",
     "categoriesSubmit": "Ausgewählte Kategorien hinzufügen",
