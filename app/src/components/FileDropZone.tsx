@@ -1,6 +1,7 @@
 import { useCallback, useRef, useState } from "react";
 import type { DragEvent } from "react";
 import { useTranslation } from "react-i18next";
+import { isDesktop, pickNativeFile } from "../lib/desktop/nativeFile";
 import styles from "./FileDropZone.module.css";
 
 type Props = {
@@ -40,7 +41,18 @@ export function FileDropZone({ onFile, accept = ".csv", file, placeholder }: Pro
     [onFile],
   );
 
-  const handleClick = () => inputRef.current?.click();
+  const handleClick = () => {
+    if (isDesktop()) {
+      pickNativeFile(accept)
+        .then((picked) => picked && onFile(picked))
+        .catch(() => {
+          // User cancellation and picker errors both resolve/reject here;
+          // there's nothing actionable to show for either.
+        });
+      return;
+    }
+    inputRef.current?.click();
+  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selected = e.target.files?.[0];

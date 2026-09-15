@@ -1,6 +1,7 @@
-import { describe, expect, it, vi } from "vitest";
-import { render, screen, fireEvent } from "@testing-library/react";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { FileDropZone } from "../../src/components/FileDropZone";
+import * as nativeFile from "../../src/lib/desktop/nativeFile";
 
 describe("FileDropZone", () => {
   it("shows placeholder when no file is selected", () => {
@@ -51,5 +52,36 @@ describe("FileDropZone", () => {
     });
 
     expect(onFile).toHaveBeenCalledWith(file);
+  });
+});
+
+describe("FileDropZone desktop native picker", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it("uses the native picker instead of the hidden input inside the desktop shell", async () => {
+    const file = new File(["data"], "native.csv", { type: "text/csv" });
+    vi.spyOn(nativeFile, "isDesktop").mockReturnValue(true);
+    const pickSpy = vi.spyOn(nativeFile, "pickNativeFile").mockResolvedValue(file);
+    const onFile = vi.fn();
+
+    render(<FileDropZone onFile={onFile} file={null} accept=".csv" />);
+    fireEvent.click(screen.getByText("Drop a CSV file here or click to browse"));
+
+    await waitFor(() => expect(onFile).toHaveBeenCalledWith(file));
+    expect(pickSpy).toHaveBeenCalledWith(".csv");
+  });
+
+  it("does not call onFile when the native picker is cancelled", async () => {
+    vi.spyOn(nativeFile, "isDesktop").mockReturnValue(true);
+    const pickSpy = vi.spyOn(nativeFile, "pickNativeFile").mockResolvedValue(null);
+    const onFile = vi.fn();
+
+    render(<FileDropZone onFile={onFile} file={null} />);
+    fireEvent.click(screen.getByText("Drop a CSV file here or click to browse"));
+
+    await waitFor(() => expect(pickSpy).toHaveBeenCalled());
+    expect(onFile).not.toHaveBeenCalled();
   });
 });

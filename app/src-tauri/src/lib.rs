@@ -3,7 +3,9 @@ use std::net::TcpStream;
 use std::sync::Mutex;
 use std::time::{Duration, Instant};
 
-use tauri::{Manager, RunEvent};
+use tauri::menu::{Menu, MenuItem};
+use tauri::tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent};
+use tauri::{Manager, RunEvent, WindowEvent};
 use tauri_plugin_shell::process::{CommandChild, CommandEvent};
 use tauri_plugin_shell::ShellExt;
 
@@ -11,6 +13,7 @@ use tauri_plugin_shell::ShellExt;
 const SIDECAR_PORT: u16 = 5179;
 const HEALTH_CHECK_TIMEOUT: Duration = Duration::from_secs(20);
 const HEALTH_CHECK_INTERVAL: Duration = Duration::from_millis(200);
+const MAIN_WINDOW: &str = "main";
 
 /// Holds the running sidecar's handle so the exit hook can terminate it.
 /// `None` before spawn and after the sidecar has been told to stop.
@@ -55,24 +58,39 @@ fn terminate_unix(pid: u32) {
     }
 }
 
+/// Shows, unminimizes, and focuses the main window. Used by both the tray's
+/// left-click and the single-instance relaunch callback.
+fn show_main_window(app: &tauri::AppHandle) {
+    if let Some(window) = app.get_webview_window(MAIN_WINDOW) {
+        let _ = window.show();
+        let _ = window.unminimize();
+        let _ = window.set_focus();
+    }
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
+        // Must be the first plugin registered: on a relaunch it detects the
+        // already-running instance, forwards args/cwd to this callback, and
+        // exits the newly-launched process before anything else runs.
+        .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
+            show_main_window(app);
+        }))
+        .plugin(
+            tauri_plugin_log::Builder::default()
+                .level(log::LevelFilter::Info)
+                .build(),
+        )
         .plugin(tauri_plugin_shell::init())
+        .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_fs::init())
+        // Registers the myprivatefinance:// scheme (see tauri.conf.json ->
+        // plugins.deep-link). Stub only: nothing consumes deep-link events
+        // yet, this just claims the scheme for future integrations.
+        .plugin(tauri_plugin_deep_link::init())
         .manage(SidecarState(Mutex::new(None)))
         .setup(|app| {
-            if cfg!(debug_assertions) {
-                app.handle().plugin(
-                    tauri_plugin_log::Builder::default()
-                        .level(log::LevelFilter::Info)
-                        .build(),
-                )?;
-            }
-
-            // `.sidecar()` takes just the bundled binary's base name (Tauri
-            // strips the "binaries/" prefix and target-triple suffix from the
-            // `bundle.externalBin` entry in tauri.conf.json when installing it
-            // next to the app binary).
             let sidecar = app.shell().sidecar("my-private-finance-api")?;
             let (mut rx, child) = sidecar.spawn().expect("failed to spawn backend sidecar");
             app.state::<SidecarState>().0.lock().unwrap().replace(child);
@@ -106,14 +124,53 @@ pub fn run() {
                 );
             }
 
+            // System tray: left-click reopens the window, right-click shows
+            // the menu (just Quit for now). Closing the window hides it
+            // instead of exiting (see the on_window_event handler below), so
+            // the tray icon is the only way back in once minimized to it.
+            let quit_item = MenuItem::with_id(app, "quit", "Quit", true, None::<&str>)?;
+            let menu = Menu::with_items(app, &[&quit_item])?;
+            TrayIconBuilder::new()
+                .icon(
+                    app.default_window_icon()
+                        .cloned()
+                        .expect("app icon is bundled"),
+                )
+                .menu(&menu)
+                .show_menu_on_left_click(false)
+                .on_menu_event(|app, event| {
+                    if event.id() == "quit" {
+                        app.exit(0);
+                    }
+                })
+                .on_tray_icon_event(|tray, event| {
+                    if let TrayIconEvent::Click {
+                        button: MouseButton::Left,
+                        button_state: MouseButtonState::Up,
+                        ..
+                    } = event
+                    {
+                        show_main_window(tray.app_handle());
+                    }
+                })
+                .build(app)?;
+
             Ok(())
+        })
+        .on_window_event(|window, event| {
+            // Minimize to tray instead of closing: the only way to actually
+            // quit is the tray menu's Quit item (which calls app.exit(0) and
+            // is handled by the RunEvent::ExitRequested arm below).
+            if let WindowEvent::CloseRequested { api, .. } = event {
+                api.prevent_close();
+                let _ = window.hide();
+            }
         })
         .build(tauri::generate_context!())
         .expect("error while building tauri application")
         .run(|app_handle, event| {
-            // Fires when the last window closes (default close behavior is
-            // to request app exit) — stop the sidecar so no orphaned backend
-            // process is left running after the window disappears.
+            // Fires on an actual app exit (tray Quit) — stop the sidecar so
+            // no orphaned backend process is left running.
             if let RunEvent::ExitRequested { .. } = event {
                 if let Some(child) = app_handle.state::<SidecarState>().0.lock().unwrap().take() {
                     let pid = child.pid();

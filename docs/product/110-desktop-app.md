@@ -1,6 +1,6 @@
 # 110 — Desktop App
 
-## Status: In Progress 🚧 (Parts A + B shipped)
+## Status: In Progress 🚧 (Parts A + B + C shipped)
 
 ## Goal
 
@@ -113,6 +113,44 @@ GitHub Actions matrix:
   window-close click in this environment (no `xdotool`/`wmctrl`) — worth a
   manual check on a real desktop before relying on it, or an automated check
   in Part D's CI matrix.
+
+## Decisions (Part C, #180)
+
+- **System tray**: closing the window now hides it instead of exiting
+  (`WindowEvent::CloseRequested` → `prevent_close()` + `window.hide()`); the
+  tray's left-click shows/focuses the window again, right-click shows a menu
+  with a single Quit item that calls `app.exit(0)` — the only way to actually
+  terminate the app, which is what triggers Part B's `RunEvent::ExitRequested`
+  sidecar-SIGTERM cleanup.
+- **Native file dialogs**: `app/src/lib/desktop/nativeFile.ts` wraps
+  `@tauri-apps/plugin-dialog`'s `open()` + `@tauri-apps/plugin-fs`'s
+  `readFile()` into a `pickNativeFile(accept): Promise<File | null>` that
+  drops into the existing `FileDropZone` component's click handler — the
+  browser `<input type="file">` stays as the web fallback (`isDesktop()`
+  check), and the rest of the import flow (`ImportForm`, `useImportCsv`,
+  multipart upload) is untouched since both paths produce an ordinary `File`.
+  The dialog plugin auto-grants fs read scope for exactly the path it
+  returns, so the capability only needs `fs:allow-read-file` (no broad
+  filesystem access) alongside `dialog:default`.
+- Disabled Tauri's native window drag-drop (`dragDropEnabled: false`) so the
+  existing HTML5 drag-and-drop in `FileDropZone` keeps working in the webview
+  — Tauri's native handling and the browser's `ondrop` event are mutually
+  exclusive.
+- **Single instance**: `tauri-plugin-single-instance`, registered first in
+  the plugin chain per its own requirement. A second launch is detected and
+  focuses/shows the existing window instead of opening a duplicate — verified
+  by launching the compiled binary twice directly (the second process exits
+  immediately, only the first stays running).
+- **Deep link**: `tauri-plugin-deep-link` registered with the
+  `myprivatefinance://` scheme in `tauri.conf.json` (`plugins.deep-link.desktop.schemes`).
+  Stub only, as scoped — nothing consumes deep-link events yet.
+- Verified end-to-end on Linux via `cargo tauri dev`: tray icon builds
+  without panicking, sidecar spawn/health-check/API calls still work, and the
+  single-instance guard was confirmed with a real second process launch.
+  Tray click/menu interaction and the native file dialog's actual OS picker
+  UI weren't exercised by simulated clicks in this environment (no
+  `xdotool`/`wmctrl`) — same caveat as Part B's window-close path; worth a
+  manual pass on a real desktop before relying on them.
 
 ## Open Questions
 
