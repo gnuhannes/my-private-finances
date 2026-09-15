@@ -73,6 +73,18 @@ make -C app run
 
 The UI will be available at http://localhost:5173 and the API at http://127.0.0.1:5179.
 
+Run as a desktop app (Tauri shell + packaged backend, see
+[docs/product/110-desktop-app.md](docs/product/110-desktop-app.md)):
+
+```bash
+make desktop-dev    # dev loop: packages the backend, launches the Tauri window
+make desktop-build  # builds a distributable for the current OS
+```
+
+Requires the [Rust toolchain](https://www.rust-lang.org/tools/install) and, on
+Linux, Tauri's system dependencies (webkit2gtk, gtk3, etc. — see the
+[Tauri prerequisites guide](https://v2.tauri.app/start/prerequisites/)).
+
 ***
 
 ## Privacy and Data Handling

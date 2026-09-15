@@ -1,3 +1,17 @@
+// Inside the Tauri desktop shell, the frontend is served from its own
+// asset origin (tauri://localhost, or http://tauri.localhost on Windows) —
+// not from the sidecar's http://127.0.0.1:5179. A relative "/api/..." fetch
+// would resolve against the wrong origin, so requests are rewritten to an
+// absolute sidecar URL whenever the Tauri runtime is present. In the browser
+// (dev via the Vite proxy, or any future non-desktop deployment) this stays
+// empty and paths are used as-is. Read lazily (not module-scoped) so it
+// reflects the runtime environment at request time, not at import time.
+function apiBase(): string {
+  return typeof window !== "undefined" && "__TAURI_INTERNALS__" in window
+    ? "http://127.0.0.1:5179"
+    : "";
+}
+
 export class ApiError extends Error {
   status: number;
   body: unknown;
@@ -62,7 +76,7 @@ export async function apiRequest<T>(path: string, init: ApiInit = {}): Promise<T
 
   let res: Response;
   try {
-    res = await fetch(path, { ...rest, headers: buildHeaders(init), signal });
+    res = await fetch(apiBase() + path, { ...rest, headers: buildHeaders(init), signal });
   } catch (err) {
     if (err instanceof DOMException && err.name === "AbortError") {
       throw new TimeoutError(path);

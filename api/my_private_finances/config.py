@@ -50,9 +50,14 @@ class Settings(BaseSettings):
 
     # Browser origins allowed to call the API. Localhost-only by default; the
     # PWA/LAN roadmap (feature 130) must widen this *and* add auth (see #99).
+    # The tauri:// / http://tauri.localhost entries are the desktop shell's
+    # webview asset origin (Part B, #179) — unreachable from a real browser,
+    # so listing them here doesn't widen the *practical* attack surface.
     cors_origins: list[str] = [
         "http://localhost:5173",
         "http://127.0.0.1:5173",
+        "tauri://localhost",
+        "http://tauri.localhost",
     ]
 
     @property
