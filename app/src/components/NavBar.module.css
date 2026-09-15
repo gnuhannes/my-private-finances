@@ -50,9 +50,9 @@
   background: var(--primary-subtle);
 }
 
-.active {
-  color: var(--primary) !important;
-  background: var(--primary-subtle) !important;
+.links a.active {
+  color: var(--primary);
+  background: var(--primary-subtle);
 }
 
 /* ── Mobile ─────────────────────────────────────────────────────── */

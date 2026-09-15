@@ -33,16 +33,30 @@
 
   --radius: 12px;
   --radius-sm: 10px;
+  --radius-xs: 4px;
 
   --shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
 
   --focus: 2px solid rgba(59, 91, 219, 0.9);
 
+  /* A subtler surface tint for table headers / zebra rows — one step
+     between --surface and --border, not a plain re-tint of --surface. */
+  --surface-alt: #f6f7f9;
+
   /* Chart & semantic color aliases */
-  --color-accent: #3b5bdb;
   --color-success: #2f9e44;
-  --color-danger: #c92a2a;
   --color-border: rgba(0, 0, 0, 0.1);
+
+  /* Subtle status badges (confidence/status pills, inline banners) —
+     bg+text pairs so both stay legible against each other in both themes. */
+  --success-subtle-bg: #d4edda;
+  --success-subtle-text: #155724;
+  --warning-subtle-bg: #fff3cd;
+  --warning-subtle-text: #856404;
+  --danger-subtle-bg: #f8d7da;
+  --danger-subtle-text: #721c24;
+  --info-subtle-bg: #cce5ff;
+  --info-subtle-text: #004085;
 
   /* Categorical chart palette */
   --chart-1: #4c6ef5;
@@ -72,11 +86,23 @@
 
     --shadow: 0 10px 24px rgba(0, 0, 0, 0.4);
 
+    --surface-alt: #191b21;
+
     /* Chart & semantic color aliases (dark) */
-    --color-accent: #8aa2ff;
     --color-success: #51cf66;
-    --color-danger: #ff6b6b;
     --color-border: rgba(255, 255, 255, 0.1);
+
+    /* Subtle status badges (dark) — tinted backgrounds at low opacity with
+       the corresponding solid hue as the text color, so they read against
+       both --bg and --surface. */
+    --success-subtle-bg: rgba(81, 207, 102, 0.16);
+    --success-subtle-text: #51cf66;
+    --warning-subtle-bg: rgba(255, 212, 59, 0.16);
+    --warning-subtle-text: #ffd43b;
+    --danger-subtle-bg: rgba(255, 107, 107, 0.16);
+    --danger-subtle-text: #ff6b6b;
+    --info-subtle-bg: rgba(138, 162, 255, 0.16);
+    --info-subtle-text: #8aa2ff;
 
     /* Categorical chart palette (dark — lighter, more vivid) */
     --chart-1: #748ffc;

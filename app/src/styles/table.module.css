@@ -1,0 +1,67 @@
+/* Shared table shell, composed into the various *Table.module.css files.
+   Each consumer keeps its own .card padding/background/margin (those differ
+   by layout context) and composes this for the border/radius + table body. */
+
+.card {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th,
+.table td {
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+}
+
+.table th {
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  background: var(--surface-alt);
+}
+
+.table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.right {
+  text-align: right;
+}
+
+/* Confidence/status pill, e.g. a suggestion's match confidence or a
+   recurring pattern's detection level. */
+.badge {
+  display: inline-block;
+  padding: 0.15rem 0.5rem;
+  border-radius: var(--radius-xs);
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.badgeHigh {
+  background: var(--success-subtle-bg);
+  color: var(--success-subtle-text);
+}
+
+.badgeMedium {
+  background: var(--warning-subtle-bg);
+  color: var(--warning-subtle-text);
+}
+
+.badgeLow {
+  background: var(--danger-subtle-bg);
+  color: var(--danger-subtle-text);
+}
+
+@media (max-width: 640px) {
+  .cardScroll {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}

@@ -1,6 +1,6 @@
 import { useTranslation } from "react-i18next";
 import { BarChart, Bar, Cell, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
-import styles from "./TopPayeesBarChart.module.css";
+import styles from "../styles/ChartCard.module.css";
 
 const COLORS = [
   "var(--chart-1)",

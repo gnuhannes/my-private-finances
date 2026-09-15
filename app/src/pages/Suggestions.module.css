@@ -19,7 +19,7 @@
 }
 
 .subtitle {
-  color: var(--color-text-muted, #666);
+  color: var(--text-muted);
   margin: 0;
   max-width: 680px;
 }
@@ -34,12 +34,12 @@
 
 .trainResult {
   font-size: 0.9rem;
-  color: var(--color-text-muted, #666);
+  color: var(--text-muted);
   margin: 0 0 1rem;
 }
 
 .error {
-  color: var(--color-danger, #dc3545);
+  color: var(--danger);
   margin: 0 0 1rem;
   font-size: 0.9rem;
 }
@@ -68,19 +68,19 @@
 }
 
 .status {
-  color: var(--color-text-muted, #666);
+  color: var(--text-muted);
 }
 
 .emptyState {
   padding: 2rem;
   text-align: center;
-  border: 1px dashed var(--color-border, #ddd);
+  border: 1px dashed var(--color-border);
   border-radius: 8px;
-  color: var(--color-text-muted, #666);
+  color: var(--text-muted);
 }
 
 .empty {
-  color: var(--color-text-muted, #666);
+  color: var(--text-muted);
   padding: 1.5rem 0;
 }
 

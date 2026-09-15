@@ -136,5 +136,5 @@
 }
 
 .copyBtn:hover {
-  background: var(--surface-hover, var(--border));
+  background: var(--border);
 }
