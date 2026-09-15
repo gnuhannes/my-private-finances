@@ -20,6 +20,7 @@ help:
 	@echo "  make desktop-sidecar - Build the PyInstaller backend and stage it as a Tauri sidecar"
 	@echo "  make desktop-dev   - Run the desktop app in dev mode (cargo tauri dev)"
 	@echo "  make desktop-build - Build the desktop app for the current OS"
+	@echo "  make desktop-release - Cross-platform release (push a v* tag; runs in GitHub Actions)"
 
 .PHONY: ci
 ci: ci-backend ci-frontend check-openapi
@@ -88,3 +89,12 @@ desktop-dev: desktop-sidecar
 .PHONY: desktop-build
 desktop-build: desktop-sidecar
 	cd app && cargo tauri build
+
+.PHONY: desktop-release
+desktop-release:
+	@echo "Cross-platform release builds run in GitHub Actions (.github/workflows/desktop-release.yml),"
+	@echo "not locally — PyInstaller can't cross-compile the backend sidecar for other OSes/arches."
+	@echo ""
+	@echo "To cut a release: git tag vX.Y.Z && git push origin vX.Y.Z"
+	@echo "This builds .deb+.AppImage (Linux), .msi+.exe (Windows), and a universal .dmg (macOS),"
+	@echo "then publishes them to a GitHub release. Unsigned — see docs/product/110-desktop-app.md."
