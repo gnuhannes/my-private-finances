@@ -39,7 +39,8 @@ dev = [
     "pip-licenses (>=5.5.0,<6.0.0)",
     "alembic (>=1.19.2,<2.0.0)",
     "pytest-asyncio (>=1.4.0,<2.0.0)",
-    "pytest-cov (>=7.0.0,<8.0.0)"
+    "pytest-cov (>=7.0.0,<8.0.0)",
+    "pyinstaller (>=6.16.0,<7.0.0)"
 ]
 
 [tool.ruff]
