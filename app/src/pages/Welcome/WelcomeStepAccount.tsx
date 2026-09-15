@@ -22,12 +22,14 @@ export function WelcomeStepAccount({ defaultCurrency }: WelcomeStepAccountProps)
   const [currency, setCurrency] = useState(defaultCurrency);
   const [balance, setBalance] = useState("");
   const [asOfDate, setAsOfDate] = useState(todayIso());
+  const [justAdded, setJustAdded] = useState(false);
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     const trimmedName = name.trim();
     if (!trimmedName) return;
 
+    setJustAdded(false);
     const hasBalance = balance.trim() !== "";
     createAccount.mutate(
       {
@@ -43,6 +45,7 @@ export function WelcomeStepAccount({ defaultCurrency }: WelcomeStepAccountProps)
           setBalance("");
           setCurrency(defaultCurrency);
           setAsOfDate(todayIso());
+          setJustAdded(true);
         },
       },
     );
@@ -86,9 +89,12 @@ export function WelcomeStepAccount({ defaultCurrency }: WelcomeStepAccountProps)
           {t("welcome.asOfDateLabel")}
           <input type="date" value={asOfDate} onChange={(e) => setAsOfDate(e.target.value)} />
         </label>
-        <button type="submit" disabled={createAccount.isPending}>
-          {t("welcome.addAccount")}
-        </button>
+        <div className={styles.stepActions}>
+          <button type="submit" disabled={createAccount.isPending}>
+            {t("welcome.addAccount")}
+          </button>
+          {justAdded && <span className={styles.confirmation}>{t("welcome.accountAdded")}</span>}
+        </div>
       </form>
     </div>
   );

@@ -1,4 +1,5 @@
 .page {
+  box-sizing: border-box;
   max-width: 560px;
   margin: 0 auto;
   padding: 32px 24px;
@@ -108,9 +109,14 @@
 }
 
 .nextBtn {
-  background: var(--accent, var(--text));
+  background: var(--primary);
   color: var(--bg);
-  border: none;
+  border: 1px solid var(--primary);
+}
+
+.nextBtn:hover:not(:disabled) {
+  background: var(--primary-hover);
+  border-color: var(--primary-hover);
 }
 
 .status {

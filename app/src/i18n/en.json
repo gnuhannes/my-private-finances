@@ -573,6 +573,7 @@
     "startingBalanceLabel": "Starting balance",
     "asOfDateLabel": "As of date",
     "addAccount": "Add account",
+    "accountAdded": "Account added.",
     "categoriesTitle": "Pick your starter categories",
     "categoriesCopy": "These cover most everyday spending. Uncheck any you don't need, or add your own below — you can always change these later.",
     "categoriesSubmit": "Add selected categories",

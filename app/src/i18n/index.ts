@@ -29,4 +29,11 @@ void i18n.use(initReactI18next).init({
   },
 });
 
+// Keep <html lang> in sync so native browser UI (date picker tooltips,
+// spellcheck, screen readers) matches the selected app language.
+document.documentElement.lang = i18n.language;
+i18n.on("languageChanged", (lng) => {
+  document.documentElement.lang = lng;
+});
+
 export default i18n;

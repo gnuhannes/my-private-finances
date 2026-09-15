@@ -3,6 +3,7 @@ import { getNetWorth } from "../lib/api/netWorth";
 import {
   createAccount,
   updateAccount,
+  type Account,
   type AccountCreatePayload,
   type AccountUpdatePayload,
 } from "../lib/api/accounts";
@@ -18,7 +19,11 @@ export function useCreateAccount() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (data: AccountCreatePayload) => createAccount(data),
-    onSuccess: () => {
+    onSuccess: (created) => {
+      // Show the new account immediately instead of waiting on a refetch.
+      queryClient.setQueryData<Account[]>(["accounts"], (old) =>
+        old ? [...old, created] : [created],
+      );
       queryClient.invalidateQueries({ queryKey: ["accounts"] });
     },
   });

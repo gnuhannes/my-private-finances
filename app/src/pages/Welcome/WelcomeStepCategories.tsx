@@ -1,8 +1,12 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useCreateCategoriesBatch } from "../../hooks/useCategories";
+import { useCategories, useCreateCategoriesBatch } from "../../hooks/useCategories";
 import type { CategoryCreate, CostType } from "../../lib/api/categories";
 import styles from "./WelcomeWizard.module.css";
+
+function normalizeName(name: string): string {
+  return name.trim().toLowerCase();
+}
 
 type StarterGroup = "fixed" | "variable" | "income";
 
@@ -24,7 +28,10 @@ let customRowSeq = 0;
 
 export function WelcomeStepCategories() {
   const { t } = useTranslation();
+  const { data: categories } = useCategories();
   const createBatch = useCreateCategoriesBatch();
+
+  const existingNames = new Set((categories ?? []).map((c) => normalizeName(c.name)));
 
   const starterItems = GROUPS.flatMap((group) => {
     const items = t(`categories.starter.${group}`, {
@@ -64,18 +71,38 @@ export function WelcomeStepCategories() {
   }
 
   function handleSubmit() {
-    const picked: CategoryCreate[] = starterItems
-      .filter((item) => selected[item.id])
-      .map((item) => ({ name: item.label, cost_type: costTypeForGroup(item.group) }));
+    const pickedItems = starterItems.filter(
+      (item) => selected[item.id] && !existingNames.has(normalizeName(item.label)),
+    );
+    const picked: CategoryCreate[] = pickedItems.map((item) => ({
+      name: item.label,
+      cost_type: costTypeForGroup(item.group),
+    }));
 
-    const custom: CategoryCreate[] = customRows
-      .filter((row) => row.name.trim() !== "")
-      .map((row) => ({ name: row.name.trim(), cost_type: row.costType }));
+    const customToSubmit = customRows.filter(
+      (row) => row.name.trim() !== "" && !existingNames.has(normalizeName(row.name)),
+    );
+    const custom: CategoryCreate[] = customToSubmit.map((row) => ({
+      name: row.name.trim(),
+      cost_type: row.costType,
+    }));
 
     const payload = [...picked, ...custom];
     if (payload.length === 0) return;
 
-    createBatch.mutate(payload, { onSuccess: () => setSubmitted(true) });
+    const submittedCustomIds = new Set(customToSubmit.map((row) => row.id));
+    createBatch.mutate(payload, {
+      onSuccess: () => {
+        setSubmitted(true);
+        // Already created — uncheck/clear so a repeat click can't re-add them.
+        setSelected((prev) => {
+          const next = { ...prev };
+          for (const item of pickedItems) next[item.id] = false;
+          return next;
+        });
+        setCustomRows((rows) => rows.filter((row) => !submittedCustomIds.has(row.id)));
+      },
+    });
   }
 
   return (
