@@ -10,7 +10,7 @@
 }
 
 .subtitle {
-  color: var(--color-text-muted, #666);
+  color: var(--text-muted);
   margin: 0 0 1.5rem;
 }
 
@@ -22,7 +22,7 @@
 }
 
 .kpiCard {
-  border: 1px solid var(--color-border, #ddd);
+  border: 1px solid var(--color-border);
   border-radius: 8px;
   padding: 1rem 1.25rem;
   min-width: 160px;
@@ -30,7 +30,7 @@
 
 .kpiLabel {
   font-size: 0.8rem;
-  color: var(--color-text-muted, #666);
+  color: var(--text-muted);
   margin: 0;
 }
 
@@ -46,11 +46,11 @@
 }
 
 .negative {
-  color: var(--color-danger, #dc3545);
+  color: var(--danger);
 }
 
 .chartSection {
-  border: 1px solid var(--color-border, #ddd);
+  border: 1px solid var(--color-border);
   border-radius: 8px;
   padding: 1rem 1.25rem;
   margin-bottom: 2rem;
@@ -76,16 +76,16 @@
 .toggleBtn {
   padding: 0.2rem 0.6rem;
   border-radius: 4px;
-  border: 1px solid var(--color-border, #ddd);
+  border: 1px solid var(--color-border);
   background: none;
   cursor: pointer;
   font-size: 0.8rem;
 }
 
 .toggleActive {
-  background: var(--color-accent, #0070f3);
+  background: var(--primary);
   color: #fff;
-  border-color: var(--color-accent, #0070f3);
+  border-color: var(--primary);
 }
 
 .tableSection {
@@ -114,7 +114,7 @@
 
 .currencyInput {
   padding: 0.3rem 0.5rem;
-  border: 1px solid var(--color-border, #ddd);
+  border: 1px solid var(--color-border);
   border-radius: 4px;
   font-size: 0.9rem;
   width: 60px;
@@ -123,18 +123,18 @@
 
 .createError {
   font-size: 0.85rem;
-  color: var(--color-danger, #dc3545);
+  color: var(--danger);
 }
 
 .hint {
   font-size: 0.78rem;
-  color: var(--color-text-muted, #666);
+  color: var(--text-muted);
   margin: 0;
   flex-basis: 100%;
 }
 
 .tableCard {
-  border: 1px solid var(--color-border, #ddd);
+  border: 1px solid var(--color-border);
   border-radius: 8px;
   overflow: hidden;
 }
@@ -147,15 +147,15 @@
 .table th,
 .table td {
   padding: 0.6rem 0.75rem;
-  border-bottom: 1px solid var(--color-border, #eee);
+  border-bottom: 1px solid var(--color-border);
   text-align: left;
 }
 
 .table th {
   font-size: 0.85rem;
   font-weight: 600;
-  color: var(--color-text-muted, #666);
-  background: var(--color-surface-alt, #fafafa);
+  color: var(--text-muted);
+  background: var(--surface-alt);
 }
 
 .table tbody tr:last-child td {
@@ -177,14 +177,14 @@
   border-radius: 4px;
   font-size: 0.72rem;
   font-weight: 500;
-  background: var(--color-border, #e9ecef);
-  color: var(--color-text-muted, #495057);
+  background: var(--color-border);
+  color: var(--text-muted);
   vertical-align: middle;
 }
 
 .openingInfo {
   font-size: 0.9rem;
-  color: var(--color-text-muted, #555);
+  color: var(--text-muted);
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -199,7 +199,7 @@
 
 .input {
   padding: 0.3rem 0.5rem;
-  border: 1px solid var(--color-border, #ddd);
+  border: 1px solid var(--color-border);
   border-radius: 4px;
   font-size: 0.9rem;
 }
@@ -217,7 +217,7 @@
   padding: 0.15rem 0.5rem;
   cursor: pointer;
   border-radius: 4px;
-  border: 1px solid var(--color-border, #ddd);
+  border: 1px solid var(--color-border);
   background: none;
 }
 
@@ -226,8 +226,8 @@
   padding: 0.25rem 0.7rem;
   cursor: pointer;
   border-radius: 4px;
-  border: 1px solid var(--color-accent, #0070f3);
-  color: var(--color-accent, #0070f3);
+  border: 1px solid var(--primary);
+  color: var(--primary);
   background: none;
 }
 
@@ -237,7 +237,7 @@
   cursor: pointer;
   border-radius: 4px;
   border: none;
-  background: var(--color-accent, #0070f3);
+  background: var(--primary);
   color: #fff;
 }
 
@@ -246,22 +246,22 @@
   padding: 0.25rem 0.6rem;
   cursor: pointer;
   border-radius: 4px;
-  border: 1px solid var(--color-border, #ddd);
+  border: 1px solid var(--color-border);
   background: none;
 }
 
 .status {
-  color: var(--color-text-muted, #666);
+  color: var(--text-muted);
   padding: 2rem 0;
 }
 
 .error {
-  color: var(--color-danger, #dc3545);
+  color: var(--danger);
   padding: 1rem 0;
 }
 
 .empty {
-  color: var(--color-text-muted, #666);
+  color: var(--text-muted);
   padding: 1.5rem 0;
   text-align: center;
 }

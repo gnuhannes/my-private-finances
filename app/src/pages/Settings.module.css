@@ -51,7 +51,7 @@
   padding: 6px 14px;
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  background: var(--bg-subtle, var(--bg));
+  background: var(--bg);
   color: var(--text);
   text-decoration: none;
   font-size: 0.9rem;
@@ -59,7 +59,7 @@
 }
 
 .downloadBtn:hover {
-  background: var(--bg-hover, var(--border));
+  background: var(--border);
 }
 
 .warning {

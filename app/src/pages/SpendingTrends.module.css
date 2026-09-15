@@ -10,7 +10,7 @@
 }
 
 .subtitle {
-  color: var(--color-text-muted, #666);
+  color: var(--text-muted);
   margin: 0 0 1.25rem;
 }
 
@@ -23,7 +23,7 @@
 
 .toggleLabel {
   font-size: 0.875rem;
-  color: var(--color-text-muted, #666);
+  color: var(--text-muted);
 }
 
 .monthToggle {
@@ -34,16 +34,16 @@
 .toggleBtn {
   padding: 0.2rem 0.6rem;
   border-radius: 4px;
-  border: 1px solid var(--color-border, #ddd);
+  border: 1px solid var(--color-border);
   background: none;
   cursor: pointer;
   font-size: 0.8rem;
 }
 
 .toggleActive {
-  background: var(--color-accent, #0070f3);
+  background: var(--primary);
   color: #fff;
-  border-color: var(--color-accent, #0070f3);
+  border-color: var(--primary);
 }
 
 .kpiRow {
@@ -54,7 +54,7 @@
 }
 
 .kpiCard {
-  border: 1px solid var(--color-border, #ddd);
+  border: 1px solid var(--color-border);
   border-radius: 8px;
   padding: 1rem 1.25rem;
   min-width: 160px;
@@ -62,7 +62,7 @@
 
 .kpiLabel {
   font-size: 0.8rem;
-  color: var(--color-text-muted, #666);
+  color: var(--text-muted);
   margin: 0;
 }
 
@@ -74,7 +74,7 @@
 }
 
 .chartSection {
-  border: 1px solid var(--color-border, #ddd);
+  border: 1px solid var(--color-border);
   border-radius: 8px;
   padding: 1rem 1.25rem;
   margin-bottom: 2rem;
@@ -92,7 +92,7 @@
 }
 
 .tableCard {
-  border: 1px solid var(--color-border, #ddd);
+  border: 1px solid var(--color-border);
   border-radius: 8px;
   overflow: hidden;
 }
@@ -105,15 +105,15 @@
 .table th,
 .table td {
   padding: 0.6rem 0.75rem;
-  border-bottom: 1px solid var(--color-border, #eee);
+  border-bottom: 1px solid var(--color-border);
   text-align: left;
 }
 
 .table th {
   font-size: 0.85rem;
   font-weight: 600;
-  color: var(--color-text-muted, #666);
-  background: var(--color-surface-alt, #fafafa);
+  color: var(--text-muted);
+  background: var(--surface-alt);
 }
 
 .table tbody tr:last-child td {
@@ -137,7 +137,7 @@
 
 .over {
   background: #fff0f0;
-  color: var(--color-danger, #dc3545);
+  color: var(--danger);
 }
 
 .under {
@@ -146,22 +146,22 @@
 }
 
 .on-track {
-  background: var(--color-surface-alt, #f5f5f5);
-  color: var(--color-text-muted, #555);
+  background: var(--surface-alt);
+  color: var(--text-muted);
 }
 
 .status {
-  color: var(--color-text-muted, #666);
+  color: var(--text-muted);
   padding: 2rem 0;
 }
 
 .error {
-  color: var(--color-danger, #dc3545);
+  color: var(--danger);
   padding: 1rem 0;
 }
 
 .empty {
-  color: var(--color-text-muted, #666);
+  color: var(--text-muted);
   padding: 1.5rem 0;
   text-align: center;
 }

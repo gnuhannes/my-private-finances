@@ -1,6 +1,5 @@
 .card {
-  border: 1px solid var(--color-border, #ddd);
-  border-radius: 8px;
+  composes: card from "../styles/table.module.css";
   padding: 1rem 1.25rem;
   margin-top: 1.5rem;
 }
@@ -11,25 +10,11 @@
 }
 
 .table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.table th,
-.table td {
-  padding: 0.5rem 0.75rem;
-  border-bottom: 1px solid var(--color-border, #eee);
-  text-align: left;
-}
-
-.table th {
-  font-weight: 600;
-  font-size: 0.85rem;
-  color: var(--color-text-muted, #666);
+  composes: table from "../styles/table.module.css";
 }
 
 .right {
-  text-align: right;
+  composes: right from "../styles/table.module.css";
 }
 
 .inactive {
@@ -37,26 +22,19 @@
 }
 
 .badge {
-  display: inline-block;
-  padding: 0.15rem 0.5rem;
-  border-radius: 4px;
-  font-size: 0.8rem;
-  font-weight: 500;
+  composes: badge from "../styles/table.module.css";
 }
 
 .badgeHigh {
-  background: #d4edda;
-  color: #155724;
+  composes: badgeHigh from "../styles/table.module.css";
 }
 
 .badgeMedium {
-  background: #fff3cd;
-  color: #856404;
+  composes: badgeMedium from "../styles/table.module.css";
 }
 
 .badgeLow {
-  background: #f8d7da;
-  color: #721c24;
+  composes: badgeLow from "../styles/table.module.css";
 }
 
 .actions {
@@ -79,7 +57,7 @@
 
 .confirmed {
   font-size: 0.8rem;
-  color: var(--color-success, #28a745);
+  color: var(--color-success);
   font-weight: 500;
 }
 
@@ -89,12 +67,12 @@
 }
 
 .overdue {
-  color: var(--color-danger, #dc3545);
+  color: var(--danger);
   font-weight: 600;
 }
 
 .annualAmount {
   font-variant-numeric: tabular-nums;
-  color: var(--color-text-muted, #666);
+  color: var(--text-muted);
   font-size: 0.9rem;
 }

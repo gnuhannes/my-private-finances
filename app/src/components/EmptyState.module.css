@@ -12,7 +12,7 @@
 }
 
 .cta {
-  color: var(--accent, var(--text));
+  color: var(--primary);
   text-decoration: underline;
   font-size: 0.9rem;
 }

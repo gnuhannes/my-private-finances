@@ -1,34 +1,14 @@
 .card {
-  border: 1px solid var(--color-border, #ddd);
-  border-radius: 8px;
+  composes: card from "../styles/table.module.css";
   overflow: hidden;
 }
 
 .table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.table th,
-.table td {
-  padding: 0.5rem 0.75rem;
-  border-bottom: 1px solid var(--color-border, #eee);
-  text-align: left;
-}
-
-.table th {
-  font-weight: 600;
-  font-size: 0.85rem;
-  color: var(--color-text-muted, #666);
-  background: var(--color-surface-alt, #fafafa);
-}
-
-.table tbody tr:last-child td {
-  border-bottom: none;
+  composes: table from "../styles/table.module.css";
 }
 
 .right {
-  text-align: right;
+  composes: right from "../styles/table.module.css";
 }
 
 .accountName {
@@ -37,7 +17,7 @@
 
 .date {
   white-space: nowrap;
-  color: var(--color-text-muted, #666);
+  color: var(--text-muted);
   font-size: 0.9rem;
 }
 
@@ -54,36 +34,29 @@
 }
 
 .badge {
-  display: inline-block;
-  padding: 0.15rem 0.5rem;
-  border-radius: 4px;
-  font-size: 0.8rem;
-  font-weight: 500;
+  composes: badge from "../styles/table.module.css";
 }
 
 .badgeHigh {
-  background: #d4edda;
-  color: #155724;
+  composes: badgeHigh from "../styles/table.module.css";
 }
 
 .badgeMedium {
-  background: #fff3cd;
-  color: #856404;
+  composes: badgeMedium from "../styles/table.module.css";
 }
 
 .badgeLow {
-  background: #f8d7da;
-  color: #721c24;
+  composes: badgeLow from "../styles/table.module.css";
 }
 
 .badgeAuto {
-  background: var(--color-border, #e9ecef);
-  color: var(--color-text-muted, #495057);
+  background: var(--border);
+  color: var(--text-muted);
 }
 
 .badgeManual {
-  background: #cce5ff;
-  color: #004085;
+  background: var(--info-subtle-bg);
+  color: var(--info-subtle-text);
 }
 
 .actions {
@@ -94,29 +67,29 @@
 .actions button {
   font-size: 0.8rem;
   padding: 0.2rem 0.6rem;
-  border-radius: 4px;
+  border-radius: var(--radius-xs);
   cursor: pointer;
   border: 1px solid transparent;
 }
 
-.confirmBtn {
-  background: #d4edda;
-  color: #155724;
-  border-color: #c3e6cb !important;
+.actions .confirmBtn {
+  background: var(--success-subtle-bg);
+  color: var(--success-subtle-text);
+  border-color: var(--success-subtle-text);
 }
 
 .confirmBtn:hover {
-  background: #c3e6cb;
+  filter: brightness(0.92);
 }
 
-.dismissBtn {
-  background: #f8f9fa;
-  color: #495057;
-  border-color: #dee2e6 !important;
+.actions .dismissBtn {
+  background: var(--surface-alt);
+  color: var(--text-muted);
+  border-color: var(--border);
 }
 
 .dismissBtn:hover {
-  background: #e9ecef;
+  background: var(--border);
 }
 
 @media (max-width: 640px) {

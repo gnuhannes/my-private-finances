@@ -10,7 +10,7 @@
 }
 
 .subtitle {
-  color: var(--color-text-muted, #666);
+  color: var(--text-muted);
   margin: 0 0 1.5rem;
 }
 
@@ -43,7 +43,7 @@
 }
 
 .summaryCard {
-  border: 1px solid var(--color-border, #ddd);
+  border: 1px solid var(--color-border);
   border-radius: 8px;
   padding: 0.75rem 1rem;
   min-width: 140px;
@@ -51,7 +51,7 @@
 
 .summaryLabel {
   font-size: 0.8rem;
-  color: var(--color-text-muted, #666);
+  color: var(--text-muted);
   margin: 0;
 }
 
@@ -62,17 +62,17 @@
 }
 
 .status {
-  color: var(--color-text-muted, #666);
+  color: var(--text-muted);
   margin: 2rem 0;
 }
 
 .error {
-  color: var(--color-danger, #dc3545);
+  color: var(--danger);
   margin: 2rem 0;
 }
 
 .empty {
-  color: var(--color-text-muted, #666);
+  color: var(--text-muted);
   margin: 2rem 0;
   text-align: center;
 }
